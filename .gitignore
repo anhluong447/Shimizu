@@ -1,0 +1,19 @@
+# Môi trường ảo
+venv/
+env/
+.venv/
+
+# Cấu hình bảo mật (Token bot)
+.env
+
+# Python rác
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# FFmpeg (File nặng, nên cài riêng)
+ffmpeg-8.1-essentials_build/
+
+# VS Code
+.vscode/
