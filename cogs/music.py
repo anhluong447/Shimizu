@@ -14,6 +14,7 @@ from discord.ext import commands
 def get_cookie_file():
     for f in os.listdir('.'):
         if 'cookies.txt' in f.lower():
+            print(f'[INFO] Đã tìm thấy file cookies: {f}')
             return f
     return None
 
