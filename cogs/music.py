@@ -425,6 +425,25 @@ class Music(commands.Cog):
         elif isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f'❌ Thiếu tham số: `{error.param.name}`')
 
+    def _get_artist_title(self, song):
+        """Tách Artist và Title từ thông tin bài hát"""
+        title = song.title
+        artist = song.uploader
+        
+        # Nếu tiêu đề có dạng "Artist - Title" hoặc "Artist: Title"
+        for sep in [' - ', ' – ', ' : ']:
+            if sep in title:
+                parts = title.split(sep, 1)
+                artist, title = parts[0], parts[1]
+                break
+            
+        # Clean các tag thừa
+        clean_regex = r'\(.*?\)|\[.*?\]|official|video|lyric|audio|full hd|mv|music video'
+        title = re.sub(clean_regex, '', title, flags=re.IGNORECASE).strip()
+        artist = re.sub(clean_regex, '', artist, flags=re.IGNORECASE).strip()
+        
+        return artist, title
+
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
         """Tự động pause/resume và disconnect khi phòng trống."""
@@ -663,6 +682,56 @@ class Music(commands.Cog):
         player.autoplay = not player.autoplay
         status = 'BẬT' if player.autoplay else 'TẮT'
         await ctx.send(f'✨ Chế độ Autoplay đã được **{status}**!', delete_after=10)
+
+    @commands.command(name='lyrics', aliases=['ly', 'l'])
+    async def lyrics(self, ctx, *, query: str = None):
+        """Xem lời bài hát đang phát hoặc tìm theo tên."""
+        player = self.get_player(ctx)
+        
+        if not query:
+            if not player.current:
+                return await ctx.send('❌ Không có bài nào đang phát để xem lời!')
+            artist, title = self._get_artist_title(player.current)
+        else:
+            if ' - ' in query:
+                artist, title = query.split(' - ', 1)
+            else:
+                artist, title = '', query
+
+        async with ctx.typing():
+            # Thử với artist + title trước, nếu không được thì thử title đơn thuần
+            async def fetch(a, t):
+                url = f"https://api.lyrics.ovh/v1/{a}/{t}"
+                try:
+                    import aiohttp
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(url, timeout=10) as resp:
+                            if resp.status == 200:
+                                return (await resp.json()).get('lyrics')
+                except: pass
+                return None
+
+            lyrics = await fetch(artist, title)
+            if not lyrics and artist: # Fallback: đảo ngược hoặc bỏ artist
+                lyrics = await fetch('', f"{artist} {title}")
+
+        if not lyrics:
+            search_name = f"{artist} - {title}" if artist else title
+            return await ctx.send(f'❌ Không tìm thấy lời cho: **{search_name}**')
+
+        # Cắt bớt nếu quá dài (Discord limit 4096)
+        if len(lyrics) > 4000:
+            lyrics = lyrics[:4000] + "\n\n...(còn tiếp)..."
+
+        embed = discord.Embed(
+            title=f'📜 Lời bài hát: {title}',
+            description=lyrics,
+            color=discord.Color.from_str('#FF6B9D')
+        )
+        if artist:
+            embed.set_author(name=artist)
+        embed.set_footer(text=f"Yêu cầu bởi {ctx.author.display_name}")
+        await ctx.send(embed=embed)
 
     @commands.command(name='stop', aliases=['leave', 'dc'])
     async def stop(self, ctx):
