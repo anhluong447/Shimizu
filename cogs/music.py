@@ -261,16 +261,48 @@ class MusicPlayer:
         return self._ff_opts
 
     async def fetch_related(self, song: SongInfo):
-        """Tìm bài hát liên quan dựa trên bài hiện tại"""
+        """Tìm bài hát liên quan dựa trên SoundCloud Station (giống mục Related tracks)"""
+        try:
+            # Lấy ID bài hát hiện tại từ metadata
+            song_id = song._data.get('id')
+            if not song_id:
+                return await self.fetch_related_fallback(song)
+            
+            station_url = f"https://soundcloud.com/discover/sets/track-stations:{song_id}"
+            
+            # Sử dụng ytdl với extract_flat để lấy danh sách cực nhanh
+            loop = self.bot.loop or asyncio.get_event_loop()
+            
+            # Cấu hình extract_flat tạm thời
+            flat_opts = {**YTDL_OPTS, 'extract_flat': True}
+            with yt_dlp.YoutubeDL(flat_opts) as ydl:
+                data = await loop.run_in_executor(None, lambda: ydl.extract_info(station_url, download=False))
+                
+            if data and 'entries' in data:
+                for entry in data['entries']:
+                    entry_url = entry.get('url')
+                    if not entry_url:
+                        continue
+                    # Bỏ qua bài hiện tại (kiểm tra ID trong URL)
+                    if str(song_id) not in entry_url:
+                        # Fetch full metadata cho bài liên quan được chọn
+                        return await SongInfo.from_url(entry_url, requester=self.bot.user, loop=self.bot.loop)
+                        
+        except Exception as e:
+            print(f'[DEBUG] Fetch related station error: {e}')
+            
+        return await self.fetch_related_fallback(song)
+
+    async def fetch_related_fallback(self, song: SongInfo):
+        """Dùng tìm kiếm từ khóa làm phương án dự phòng"""
         query = f"{song.title} {song.uploader} related"
         try:
             results = await SongInfo.search(query, loop=self.bot.loop)
             for r in results:
-                # Tránh trùng bài cũ (kiểm tra URL hoặc ID nếu có)
                 if r.get('webpage_url') != song.url and r.get('title') != song.title:
                     return await SongInfo.from_url(r, requester=self.bot.user, loop=self.bot.loop)
         except Exception as e:
-            print(f'[DEBUG] Fetch related error: {e}')
+            print(f'[DEBUG] Fetch related fallback error: {e}')
         return None
 
     async def _player_loop(self):
