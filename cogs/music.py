@@ -2,10 +2,13 @@ import discord
 import asyncio
 import yt_dlp
 import itertools
+import random
+import re
+from collections import deque
 from discord.ext import commands
 
-# Cấu hình yt-dlp
-ytdl_format_options = {
+# ─── Config ─────────────────────────────────────────────
+YTDL_OPTS = {
     'format': 'bestaudio/best',
     'restrictfilenames': True,
     'noplaylist': True,
@@ -14,143 +17,474 @@ ytdl_format_options = {
     'logtostderr': False,
     'quiet': True,
     'no_warnings': True,
-    'default_search': 'auto',
-    'source_address': '0.0.0.0'
+    'default_search': 'ytsearch',
+    'source_address': '0.0.0.0',
 }
 
-ffmpeg_options = {
+YTDL_SEARCH_OPTS = {**YTDL_OPTS, 'default_search': 'ytsearch5', 'extract_flat': True}
+
+FFMPEG_BASE = {
     'options': '-vn',
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'
 }
+FFMPEG_BASS = {
+    'options': '-vn -af "bass=g=10,equalizer=f=40:width_type=h:width=50:g=5"',
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'
+}
+FFMPEG_NIGHTCORE = {
+    'options': '-vn -af "asetrate=44100*1.25,aresample=44100,atempo=1.0"',
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'
+}
 
-ytdl = yt_dlp.YoutubeDL(ytdl_format_options)
-# Đường dẫn tương đối từ gốc project
-ffmpeg_exe = r'ffmpeg-8.1-essentials_build\bin\ffmpeg.exe'
+FFMPEG_EXE = r'ffmpeg-8.1-essentials_build\bin\ffmpeg.exe'
+ytdl = yt_dlp.YoutubeDL(YTDL_OPTS)
+ytdl_search = yt_dlp.YoutubeDL(YTDL_SEARCH_OPTS)
 
-class YTDLSource(discord.PCMVolumeTransformer):
-    def __init__(self, source, *, data, volume=0.5):
-        super().__init__(source, volume)
-        self.data = data
-        self.title = data.get('title')
-        self.url = data.get('url')
+REPEAT_OFF, REPEAT_ONE, REPEAT_ALL = 0, 1, 2
+REPEAT_LABELS = {0: 'Tắt', 1: '🔂 Lặp bài', 2: '🔁 Lặp hàng đợi'}
+
+# ─── Song Info (lightweight, re-creatable) ──────────────
+class SongInfo:
+    def __init__(self, data, requester):
+        self.title = data.get('title', 'Unknown')
+        self.url = data.get('webpage_url') or data.get('url', '')
+        self.stream_url = data.get('url', '')
+        self.thumbnail = data.get('thumbnail', '')
+        self.duration = data.get('duration', 0)
+        self.uploader = data.get('uploader', 'Unknown')
+        self.requester = requester
+        self._data = data
+
+    @property
+    def duration_str(self):
+        if not self.duration:
+            return 'Live'
+        m, s = divmod(int(self.duration), 60)
+        h, m = divmod(m, 60)
+        return f'{h}:{m:02d}:{s:02d}' if h else f'{m}:{s:02d}'
+
+    def make_source(self, ff_opts=None):
+        opts = ff_opts or FFMPEG_BASE
+        return discord.FFmpegPCMAudio(self.stream_url, executable=FFMPEG_EXE, **opts)
 
     @classmethod
-    async def from_url(cls, url, *, loop=None, stream=False):
+    async def from_url(cls, query, *, requester, loop=None):
         loop = loop or asyncio.get_event_loop()
-        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
-
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(query, download=False))
         if 'entries' in data:
             data = data['entries'][0]
+        return cls(data, requester)
 
-        filename = data['url'] if stream else ytdl.prepare_filename(data)
-        return cls(discord.FFmpegPCMAudio(filename, executable=ffmpeg_exe, **ffmpeg_options), data=data)
+    @classmethod
+    async def search(cls, query, *, loop=None):
+        loop = loop or asyncio.get_event_loop()
+        data = await loop.run_in_executor(None, lambda: ytdl_search.extract_info(query, download=False))
+        if 'entries' not in data:
+            return []
+        results = []
+        for e in data['entries'][:5]:
+            if e:
+                results.append({
+                    'title': e.get('title', '???'),
+                    'url': e.get('url') or e.get('webpage_url', ''),
+                    'duration': e.get('duration', 0),
+                    'uploader': e.get('uploader', ''),
+                })
+        return results
 
+# ─── Now Playing Embed Builder ──────────────────────────
+def build_np_embed(song: SongInfo, paused=False, repeat=REPEAT_OFF, audio_filter='Normal'):
+    status = '⏸️ Đang tạm dừng' if paused else '🎵 Đang phát'
+    embed = discord.Embed(
+        title=song.title,
+        url=song.url,
+        color=discord.Color.from_str('#FF6B9D') if not paused else discord.Color.greyple(),
+    )
+    embed.set_author(name=status, icon_url='https://i.imgur.com/JfETopg.png')
+    if song.thumbnail:
+        embed.set_thumbnail(url=song.thumbnail)
+    embed.add_field(name='⏱️ Thời lượng', value=f'`{song.duration_str}`', inline=True)
+    embed.add_field(name='🎤 Kênh', value=f'`{song.uploader}`', inline=True)
+    embed.add_field(name='🔊 Bộ lọc', value=f'`{audio_filter}`', inline=True)
+    embed.add_field(name='🔁 Lặp lại', value=f'`{REPEAT_LABELS[repeat]}`', inline=True)
+    embed.set_footer(text=f'Yêu cầu bởi {song.requester.display_name}', icon_url=song.requester.display_avatar.url)
+    return embed
+
+# ─── Controller View (Buttons) ─────────────────────────
+class ControllerView(discord.ui.View):
+    def __init__(self, player):
+        super().__init__(timeout=None)
+        self.player = player
+
+    @discord.ui.button(emoji='⏸️', style=discord.ButtonStyle.secondary, custom_id='ctrl_pause')
+    async def pause_resume(self, interaction: discord.Interaction, button: discord.ui.Button):
+        vc = interaction.guild.voice_client
+        if not vc:
+            return await interaction.response.send_message('Bot không ở trong voice!', ephemeral=True)
+        if vc.is_playing():
+            vc.pause()
+            button.emoji = '▶️'
+        elif vc.is_paused():
+            vc.resume()
+            button.emoji = '⏸️'
+        await self._update_np(interaction)
+
+    @discord.ui.button(emoji='⏭️', style=discord.ButtonStyle.primary, custom_id='ctrl_skip')
+    async def skip(self, interaction: discord.Interaction, button: discord.ui.Button):
+        vc = interaction.guild.voice_client
+        if vc and (vc.is_playing() or vc.is_paused()):
+            self.player.repeat_mode = REPEAT_OFF if self.player.repeat_mode == REPEAT_ONE else self.player.repeat_mode
+            vc.stop()
+            await interaction.response.send_message('⏭️ Đã bỏ qua!', ephemeral=True, delete_after=3)
+        else:
+            await interaction.response.send_message('Không có gì để skip!', ephemeral=True)
+
+    @discord.ui.button(emoji='⏹️', style=discord.ButtonStyle.danger, custom_id='ctrl_stop')
+    async def stop(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.player.queue.clear()
+        vc = interaction.guild.voice_client
+        if vc:
+            vc.stop()
+        await interaction.response.send_message('⏹️ Đã dừng và xóa hàng đợi!', ephemeral=True, delete_after=3)
+
+    @discord.ui.button(emoji='🔀', style=discord.ButtonStyle.secondary, custom_id='ctrl_shuffle')
+    async def shuffle(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if len(self.player.queue) < 2:
+            return await interaction.response.send_message('Hàng đợi quá ít để trộn!', ephemeral=True)
+        random.shuffle(self.player.queue)
+        await interaction.response.send_message('🔀 Đã trộn hàng đợi!', ephemeral=True, delete_after=3)
+
+    @discord.ui.button(emoji='🔁', style=discord.ButtonStyle.secondary, custom_id='ctrl_repeat')
+    async def repeat(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.player.repeat_mode = (self.player.repeat_mode + 1) % 3
+        await self._update_np(interaction)
+
+    async def _update_np(self, interaction):
+        if not self.player.current:
+            return await interaction.response.defer()
+        vc = interaction.guild.voice_client
+        paused = vc.is_paused() if vc else False
+        embed = build_np_embed(self.player.current, paused=paused, repeat=self.player.repeat_mode, audio_filter=self.player.filter_name)
+        await interaction.response.edit_message(embed=embed, view=self)
+
+# ─── Search Select View ────────────────────────────────
+class SearchSelect(discord.ui.Select):
+    def __init__(self, results, requester):
+        self.results = results
+        self.requester = requester
+        options = []
+        for i, r in enumerate(results):
+            dur = r.get('duration', 0)
+            dur_str = f'{dur // 60}:{dur % 60:02d}' if dur else 'Live'
+            options.append(discord.SelectOption(
+                label=r['title'][:100],
+                description=f'{r.get("uploader", "")} • {dur_str}'[:100],
+                value=str(i),
+            ))
+        super().__init__(placeholder='🔍 Chọn bài hát...', options=options, min_values=1, max_values=1)
+
+    async def callback(self, interaction: discord.Interaction):
+        idx = int(self.values[0])
+        chosen = self.results[idx]
+        cog = interaction.client.get_cog('Music')
+        if not cog:
+            return
+        ctx = await interaction.client.get_context(interaction.message)
+        player = cog.get_player(interaction)
+        await interaction.response.edit_message(content=f'⏳ Đang tải: **{chosen["title"]}**...', view=None)
+        song = await SongInfo.from_url(chosen['url'], requester=self.requester, loop=interaction.client.loop)
+        player.queue.append(song)
+        player.next.set()
+        await interaction.edit_original_response(content=f'✅ Đã thêm: **{song.title}** `[{song.duration_str}]`')
+
+class SearchView(discord.ui.View):
+    def __init__(self, results, requester):
+        super().__init__(timeout=30)
+        self.add_item(SearchSelect(results, requester))
+
+    async def on_timeout(self):
+        for item in self.children:
+            item.disabled = True
+
+# ─── Music Player (per guild) ──────────────────────────
 class MusicPlayer:
-    def __init__(self, ctx):
-        self.bot = ctx.bot
-        self._guild = ctx.guild
-        self._channel = ctx.channel
-        self._cog = ctx.cog
-
-        self.queue = asyncio.Queue()
+    def __init__(self, bot, guild, channel):
+        self.bot = bot
+        self.guild = guild
+        self.channel = channel
+        self.queue: deque[SongInfo] = deque()
         self.next = asyncio.Event()
+        self.current: SongInfo | None = None
+        self.np_message: discord.Message | None = None
+        self.repeat_mode = REPEAT_OFF
+        self.filter_name = 'Normal'
+        self._ff_opts = FFMPEG_BASE
+        self._task = bot.loop.create_task(self._player_loop())
 
-        self.np = None
-        self.volume = .5
-        self.current = None
+    def get_ff_opts(self):
+        return self._ff_opts
 
-        ctx.bot.loop.create_task(self.player_loop())
-
-    async def player_loop(self):
+    async def _player_loop(self):
         await self.bot.wait_until_ready()
-
         while not self.bot.is_closed():
             self.next.clear()
 
-            try:
-                async with asyncio.timeout(300):
-                    source = await self.queue.get()
-            except asyncio.TimeoutError:
-                return self.destroy(self._guild)
+            if self.repeat_mode == REPEAT_ONE and self.current:
+                song = self.current
+            elif self.queue:
+                song = self.queue.popleft()
+            else:
+                try:
+                    async with asyncio.timeout(300):
+                        await self.next.wait()
+                        continue
+                except asyncio.TimeoutError:
+                    await self._cleanup()
+                    return
 
-            source.volume = self.volume
-            self.current = source
+            self.current = song
+            source = discord.PCMVolumeTransformer(song.make_source(self.get_ff_opts()), volume=0.5)
+            vc = self.guild.voice_client
+            if not vc:
+                await self._cleanup()
+                return
 
-            self._guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
-            self.np = await self._channel.send(f'🎵 **Đang phát:** `{source.title}`')
-            
+            vc.play(source, after=lambda e: self.bot.loop.call_soon_threadsafe(self.next.set))
+
+            # Delete old NP message
+            if self.np_message:
+                try:
+                    await self.np_message.delete()
+                except discord.HTTPException:
+                    pass
+
+            embed = build_np_embed(song, repeat=self.repeat_mode, audio_filter=self.filter_name)
+            view = ControllerView(self)
+            self.np_message = await self.channel.send(embed=embed, view=view)
+
             await self.next.wait()
+
+            # Handle repeat_all: put song back at end
+            if self.repeat_mode == REPEAT_ALL:
+                self.queue.append(song)
+
             source.cleanup()
-            self.current = None
 
-    def destroy(self, guild):
-        return self.bot.loop.create_task(self._cog.cleanup(guild))
+    async def _cleanup(self):
+        try:
+            await self.guild.voice_client.disconnect()
+        except Exception:
+            pass
 
+    def destroy(self):
+        self._task.cancel()
+
+# ─── Music Cog ──────────────────────────────────────────
 class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.players = {}
+        self.players: dict[int, MusicPlayer] = {}
+
+    def get_player(self, ctx_or_interaction):
+        if isinstance(ctx_or_interaction, discord.Interaction):
+            guild = ctx_or_interaction.guild
+            channel = ctx_or_interaction.channel
+        else:
+            guild = ctx_or_interaction.guild
+            channel = ctx_or_interaction.channel
+
+        if guild.id not in self.players:
+            self.players[guild.id] = MusicPlayer(self.bot, guild, channel)
+        return self.players[guild.id]
 
     async def cleanup(self, guild):
+        if guild.id in self.players:
+            self.players[guild.id].destroy()
+            del self.players[guild.id]
         try:
             await guild.voice_client.disconnect()
-        except AttributeError:
-            pass
-        try:
-            del self.players[guild.id]
-        except KeyError:
+        except Exception:
             pass
 
-    def get_player(self, ctx):
-        try:
-            player = self.players[ctx.guild.id]
-        except KeyError:
-            player = MusicPlayer(ctx)
-            self.players[ctx.guild.id] = player
-        return player
+    async def _ensure_voice(self, ctx):
+        if not ctx.author.voice:
+            await ctx.send('❌ Bồ phải vào phòng voice trước!')
+            return False
+        if not ctx.voice_client:
+            await ctx.author.voice.channel.connect()
+        elif ctx.voice_client.channel != ctx.author.voice.channel:
+            await ctx.voice_client.move_to(ctx.author.voice.channel)
+        return True
 
+    # ── Commands ────────────────────────────────────────
     @commands.command(name='play', aliases=['p'])
-    async def play_(self, ctx, *, search: str):
-        vc = ctx.voice_client
-        if not vc:
-            await ctx.invoke(self.join)
+    async def play_(self, ctx, *, query: str):
+        """Phát nhạc (link hoặc từ khóa). Nếu là từ khóa sẽ hiện menu chọn bài."""
+        if not await self._ensure_voice(ctx):
+            return
 
-        player = self.get_player(ctx)
+        is_url = re.match(r'https?://', query)
+
+        if is_url:
+            async with ctx.typing():
+                song = await SongInfo.from_url(query, requester=ctx.author, loop=self.bot.loop)
+            player = self.get_player(ctx)
+            player.queue.append(song)
+            player.next.set()
+            await ctx.send(f'✅ Đã thêm: **{song.title}** `[{song.duration_str}]`', delete_after=10)
+        else:
+            async with ctx.typing():
+                results = await SongInfo.search(query, loop=self.bot.loop)
+            if not results:
+                return await ctx.send('❌ Không tìm thấy kết quả nào!')
+            view = SearchView(results, ctx.author)
+            await ctx.send('🔍 **Kết quả tìm kiếm:**', view=view, delete_after=35)
+
+    @commands.command(name='playnow', aliases=['pn'])
+    async def play_now(self, ctx, *, query: str):
+        """Phát ngay lập tức, nhảy cóc hàng đợi."""
+        if not await self._ensure_voice(ctx):
+            return
         async with ctx.typing():
-            source = await YTDLSource.from_url(search, loop=self.bot.loop, stream=True)
-            await player.queue.put(source)
-        await ctx.send(f'✅ Đã thêm vào hàng đợi: `{source.title}`')
+            song = await SongInfo.from_url(query, requester=ctx.author, loop=self.bot.loop)
+        player = self.get_player(ctx)
+        player.queue.appendleft(song)
+        vc = ctx.voice_client
+        if vc and vc.is_playing():
+            vc.stop()
+        else:
+            player.next.set()
+        await ctx.send(f'⚡ Phát ngay: **{song.title}**', delete_after=10)
 
     @commands.command(name='join', aliases=['j'])
     async def join(self, ctx):
-        if not ctx.author.voice:
-            return await ctx.send("Bồ phải vào phòng voice trước!")
-        destination = ctx.author.voice.channel
-        if ctx.voice_client:
-            await ctx.voice_client.move_to(destination)
-        else:
-            await destination.connect()
+        """Vào phòng voice."""
+        await self._ensure_voice(ctx)
 
     @commands.command(name='skip', aliases=['s'])
     async def skip(self, ctx):
-        if not ctx.voice_client or not ctx.voice_client.is_playing():
-            return await ctx.send("Không có nhạc đang phát để skip!")
-        ctx.voice_client.stop()
-        await ctx.send("⏭️ Đã bỏ qua bài hiện tại.")
+        """Bỏ qua bài hiện tại."""
+        vc = ctx.voice_client
+        if not vc or not (vc.is_playing() or vc.is_paused()):
+            return await ctx.send('❌ Không có nhạc để skip!')
+        player = self.get_player(ctx)
+        if player.repeat_mode == REPEAT_ONE:
+            player.repeat_mode = REPEAT_OFF
+        vc.stop()
+        await ctx.send('⏭️ Đã skip!', delete_after=5)
+
+    @commands.command(name='pause')
+    async def pause(self, ctx):
+        """Tạm dừng nhạc."""
+        vc = ctx.voice_client
+        if vc and vc.is_playing():
+            vc.pause()
+            await ctx.send('⏸️ Đã tạm dừng.', delete_after=5)
+
+    @commands.command(name='resume')
+    async def resume(self, ctx):
+        """Phát tiếp."""
+        vc = ctx.voice_client
+        if vc and vc.is_paused():
+            vc.resume()
+            await ctx.send('▶️ Tiếp tục phát.', delete_after=5)
 
     @commands.command(name='queue', aliases=['q'])
-    async def queue_info(self, ctx):
+    async def queue_info(self, ctx, page: int = 1):
+        """Xem hàng đợi (có phân trang)."""
         player = self.get_player(ctx)
-        if player.queue.empty():
-            return await ctx.send("Hàng đợi đang trống không!")
-        upcoming = list(itertools.islice(player.queue._queue, 0, 5))
-        fmt = '\n'.join(f"**{i+1}.** `{song.title}`" for i, song in enumerate(upcoming))
-        await ctx.send(f"📋 **Hàng đợi hiện tại:**\n{fmt}")
+        if not player.queue and not player.current:
+            return await ctx.send('📋 Hàng đợi trống!')
 
-    @commands.command(name='stop', aliases=['leave'])
+        items_per_page = 10
+        pages = max(1, (len(player.queue) + items_per_page - 1) // items_per_page)
+        page = max(1, min(page, pages))
+
+        embed = discord.Embed(title='📋 Hàng đợi nhạc', color=discord.Color.from_str('#FF6B9D'))
+        if player.current:
+            embed.add_field(name='🎵 Đang phát', value=f'**{player.current.title}** `[{player.current.duration_str}]`', inline=False)
+
+        start = (page - 1) * items_per_page
+        end = start + items_per_page
+        queue_list = list(player.queue)
+        chunk = queue_list[start:end]
+
+        if chunk:
+            desc = '\n'.join(f'`{start+i+1}.` **{s.title}** `[{s.duration_str}]`' for i, s in enumerate(chunk))
+            embed.add_field(name=f'Sắp tới ({len(player.queue)} bài)', value=desc, inline=False)
+
+        embed.set_footer(text=f'Trang {page}/{pages} • !queue <số trang> • Lặp: {REPEAT_LABELS[player.repeat_mode]}')
+        await ctx.send(embed=embed)
+
+    @commands.command(name='np', aliases=['now'])
+    async def now_playing(self, ctx):
+        """Xem bài đang phát."""
+        player = self.get_player(ctx)
+        if not player.current:
+            return await ctx.send('❌ Không có bài nào đang phát.')
+        vc = ctx.voice_client
+        paused = vc.is_paused() if vc else False
+        embed = build_np_embed(player.current, paused=paused, repeat=player.repeat_mode, audio_filter=player.filter_name)
+        view = ControllerView(player)
+        await ctx.send(embed=embed, view=view)
+
+    @commands.command(name='remove', aliases=['rm'])
+    async def remove(self, ctx, index: int):
+        """Xóa bài theo số thứ tự trong hàng đợi."""
+        player = self.get_player(ctx)
+        if index < 1 or index > len(player.queue):
+            return await ctx.send(f'❌ Số thứ tự phải từ 1 đến {len(player.queue)}!')
+        removed = player.queue[index - 1]
+        del player.queue[index - 1]
+        await ctx.send(f'🗑️ Đã xóa: **{removed.title}**', delete_after=5)
+
+    @commands.command(name='clear')
+    async def clear_queue(self, ctx):
+        """Xóa toàn bộ hàng đợi."""
+        player = self.get_player(ctx)
+        player.queue.clear()
+        await ctx.send('🗑️ Đã xóa toàn bộ hàng đợi!', delete_after=5)
+
+    @commands.command(name='shuffle')
+    async def shuffle(self, ctx):
+        """Trộn ngẫu nhiên hàng đợi."""
+        player = self.get_player(ctx)
+        if len(player.queue) < 2:
+            return await ctx.send('❌ Cần ít nhất 2 bài trong hàng đợi!')
+        random.shuffle(player.queue)
+        await ctx.send('🔀 Đã trộn hàng đợi!', delete_after=5)
+
+    @commands.command(name='repeat', aliases=['loop'])
+    async def repeat(self, ctx, mode: str = None):
+        """Chế độ lặp: off / one / all"""
+        player = self.get_player(ctx)
+        if mode is None:
+            player.repeat_mode = (player.repeat_mode + 1) % 3
+        elif mode.lower() in ('off', '0'):
+            player.repeat_mode = REPEAT_OFF
+        elif mode.lower() in ('one', '1', 'single'):
+            player.repeat_mode = REPEAT_ONE
+        elif mode.lower() in ('all', '2', 'queue'):
+            player.repeat_mode = REPEAT_ALL
+        else:
+            return await ctx.send('❌ Dùng: `!repeat off/one/all`')
+        await ctx.send(f'🔁 Chế độ lặp: **{REPEAT_LABELS[player.repeat_mode]}**', delete_after=5)
+
+    @commands.command(name='filter', aliases=['fx'])
+    async def audio_filter(self, ctx, name: str = None):
+        """Bộ lọc âm thanh: normal / bass / nightcore"""
+        player = self.get_player(ctx)
+        filters = {'normal': (FFMPEG_BASE, 'Normal'), 'bass': (FFMPEG_BASS, '🔊 Bass Boost'), 'nightcore': (FFMPEG_NIGHTCORE, '🌙 Nightcore')}
+        if name is None or name.lower() not in filters:
+            return await ctx.send('🔊 **Bộ lọc có sẵn:** `normal`, `bass`, `nightcore`\nDùng: `!filter <tên>`')
+        player._ff_opts, player.filter_name = filters[name.lower()]
+        await ctx.send(f'🔊 Bộ lọc đã chuyển sang: **{player.filter_name}**\n_Áp dụng từ bài tiếp theo._', delete_after=8)
+
+    @commands.command(name='stop', aliases=['leave', 'dc'])
     async def stop(self, ctx):
+        """Dừng phát và thoát phòng voice."""
         await self.cleanup(ctx.guild)
-        await ctx.send("👋 Tạm biệt bồ!")
+        await ctx.send('👋 Tạm biệt bồ!', delete_after=5)
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
