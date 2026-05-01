@@ -15,8 +15,18 @@ __pycache__/
 # FFmpeg (File nặng, nên cài riêng)
 ffmpeg-8.1-essentials_build/
 
+# Dev Logs
+DEV_LOG.md
+
 # VS Code
 .vscode/
 
 # Khóa SSH
 shimizu-key.pem
+
+# Temporary / Log files
+*.json
+*.txt
+!requirements.txt
+!cookies.txt
+scratch/

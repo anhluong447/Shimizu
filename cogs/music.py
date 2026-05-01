@@ -61,6 +61,7 @@ ytdl_search = yt_dlp.YoutubeDL(YTDL_SEARCH_OPTS)
 
 REPEAT_OFF, REPEAT_ONE, REPEAT_ALL = 0, 1, 2
 REPEAT_LABELS = {0: 'Tắt', 1: '🔂 Lặp bài', 2: '🔁 Lặp hàng đợi'}
+AUTOPLAY_LABELS = {False: 'Tắt', True: '✨ Đang bật'}
 
 # ─── Song Info (lightweight, re-creatable) ──────────────
 class SongInfo:
@@ -112,14 +113,9 @@ class SongInfo:
             return []
             
         return data['entries']
-            
-        if not data or 'entries' not in data:
-            return []
-            
-        return data['entries']
 
 # ─── Now Playing Embed Builder ──────────────────────────
-def build_np_embed(song: SongInfo, paused=False, repeat=REPEAT_OFF, audio_filter='Normal'):
+def build_np_embed(song: SongInfo, paused=False, repeat=REPEAT_OFF, audio_filter='Normal', autoplay=False):
     status = '⏸️ Đang tạm dừng' if paused else '🎵 Đang phát'
     embed = discord.Embed(
         title=song.title,
@@ -133,6 +129,7 @@ def build_np_embed(song: SongInfo, paused=False, repeat=REPEAT_OFF, audio_filter
     embed.add_field(name='🎤 Kênh', value=f'`{song.uploader}`', inline=True)
     embed.add_field(name='🔊 Bộ lọc', value=f'`{audio_filter}`', inline=True)
     embed.add_field(name='🔁 Lặp lại', value=f'`{REPEAT_LABELS[repeat]}`', inline=True)
+    embed.add_field(name='✨ Autoplay', value=f'`{AUTOPLAY_LABELS[autoplay]}`', inline=True)
     embed.set_footer(text=f'Yêu cầu bởi {song.requester.display_name}', icon_url=song.requester.display_avatar.url)
     return embed
 
@@ -185,12 +182,17 @@ class ControllerView(discord.ui.View):
         self.player.repeat_mode = (self.player.repeat_mode + 1) % 3
         await self._update_np(interaction)
 
+    @discord.ui.button(emoji='✨', style=discord.ButtonStyle.secondary, custom_id='ctrl_autoplay')
+    async def autoplay(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.player.autoplay = not self.player.autoplay
+        await self._update_np(interaction)
+
     async def _update_np(self, interaction):
         if not self.player.current:
             return await interaction.response.defer()
         vc = interaction.guild.voice_client
         paused = vc.is_paused() if vc else False
-        embed = build_np_embed(self.player.current, paused=paused, repeat=self.player.repeat_mode, audio_filter=self.player.filter_name)
+        embed = build_np_embed(self.player.current, paused=paused, repeat=self.player.repeat_mode, audio_filter=self.player.filter_name, autoplay=self.player.autoplay)
         await interaction.response.edit_message(embed=embed, view=self)
 
 # ─── Search Select View ────────────────────────────────
@@ -250,12 +252,26 @@ class MusicPlayer:
         self.current: SongInfo | None = None
         self.np_message: discord.Message | None = None
         self.repeat_mode = REPEAT_OFF
+        self.autoplay = False
         self.filter_name = 'Normal'
         self._ff_opts = FFMPEG_BASE
         self._task = bot.loop.create_task(self._player_loop())
 
     def get_ff_opts(self):
         return self._ff_opts
+
+    async def fetch_related(self, song: SongInfo):
+        """Tìm bài hát liên quan dựa trên bài hiện tại"""
+        query = f"{song.title} {song.uploader} related"
+        try:
+            results = await SongInfo.search(query, loop=self.bot.loop)
+            for r in results:
+                # Tránh trùng bài cũ (kiểm tra URL hoặc ID nếu có)
+                if r.get('webpage_url') != song.url and r.get('title') != song.title:
+                    return await SongInfo.from_url(r, requester=self.bot.user, loop=self.bot.loop)
+        except Exception as e:
+            print(f'[DEBUG] Fetch related error: {e}')
+        return None
 
     async def _player_loop(self):
         await self.bot.wait_until_ready()
@@ -266,6 +282,22 @@ class MusicPlayer:
                 song = self.current
             elif self.queue:
                 song = self.queue.popleft()
+            elif self.autoplay and self.current:
+                # Autoplay logic: fetch related song
+                try:
+                    msg = await self.channel.send("✨ **Autoplay:** Đang tìm bài hát liên quan...")
+                    song = await self.fetch_related(self.current)
+                    if song:
+                        await msg.edit(content=f"✨ **Autoplay:** Tiếp theo là **{song.title}**")
+                    else:
+                        await msg.edit(content="✨ **Autoplay:** Không tìm thấy bài liên quan nào.")
+                        # Nếu không tìm thấy thì đợi 300s như bình thường
+                        await self.next.wait()
+                        continue
+                except Exception as e:
+                    print(f'[ERROR] Autoplay loop: {e}')
+                    await self.next.wait()
+                    continue
             else:
                 try:
                     async with asyncio.timeout(300):
@@ -291,7 +323,7 @@ class MusicPlayer:
                 except discord.HTTPException:
                     pass
 
-            embed = build_np_embed(song, repeat=self.repeat_mode, audio_filter=self.filter_name)
+            embed = build_np_embed(song, repeat=self.repeat_mode, audio_filter=self.filter_name, autoplay=self.autoplay)
             view = ControllerView(self)
             self.np_message = await self.channel.send(embed=embed, view=view)
 
@@ -480,7 +512,7 @@ class Music(commands.Cog):
             return await ctx.send('❌ Không có bài nào đang phát.')
         vc = ctx.voice_client
         paused = vc.is_paused() if vc else False
-        embed = build_np_embed(player.current, paused=paused, repeat=player.repeat_mode, audio_filter=player.filter_name)
+        embed = build_np_embed(player.current, paused=paused, repeat=player.repeat_mode, audio_filter=player.filter_name, autoplay=player.autoplay)
         view = ControllerView(player)
         await ctx.send(embed=embed, view=view)
 
@@ -535,6 +567,14 @@ class Music(commands.Cog):
             return await ctx.send('🔊 **Bộ lọc có sẵn:** `normal`, `bass`, `nightcore`\nDùng: `!filter <tên>`')
         player._ff_opts, player.filter_name = filters[name.lower()]
         await ctx.send(f'🔊 Bộ lọc đã chuyển sang: **{player.filter_name}**\n_Áp dụng từ bài tiếp theo._', delete_after=8)
+
+    @commands.command(name='autoplay', aliases=['ap'])
+    async def autoplay(self, ctx):
+        """Bật/Tắt tự động phát bài hát liên quan."""
+        player = self.get_player(ctx)
+        player.autoplay = not player.autoplay
+        status = 'BẬT' if player.autoplay else 'TẮT'
+        await ctx.send(f'✨ Chế độ Autoplay đã được **{status}**!', delete_after=10)
 
     @commands.command(name='stop', aliases=['leave', 'dc'])
     async def stop(self, ctx):
