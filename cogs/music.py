@@ -109,7 +109,9 @@ class SongInfo:
         visitor_data = os.getenv('VISITOR_DATA')
         
         if po_token:
-            opts['extractor_args'] = {'youtube': {'po_token': [po_token], 'player_client': ['ios', 'web']}}
+            final_po = po_token if po_token.startswith('web+') else f'web+{po_token}'
+            opts['extractor_args'] = {'youtube': {'po_token': [final_po], 'player_client': ['web']}}
+            print(f'[DEBUG] Sử dụng PO Token (URL): {final_po[:20]}...')
         if visitor_data:
             opts['params'] = {'visitor_data': visitor_data}
 
@@ -130,13 +132,15 @@ class SongInfo:
         visitor_data = os.getenv('VISITOR_DATA')
         
         if po_token:
-            opts['extractor_args'] = {'youtube': {'po_token': [po_token], 'player_client': ['ios', 'web']}}
+            # Nếu bồ đã thêm web+ vào .env thì dùng luôn, nếu chưa thì thêm vào
+            final_po = po_token if po_token.startswith('web+') else f'web+{po_token}'
+            opts['extractor_args'] = {'youtube': {'po_token': [final_po], 'player_client': ['web']}}
+            print(f'[DEBUG] Sử dụng PO Token: {final_po[:20]}...')
         if visitor_data:
             opts['params'] = {'visitor_data': visitor_data}
             
         instance_ytdl = yt_dlp.YoutubeDL(opts)
         try:
-            # Lấy đầy đủ thông tin (không dùng extract_flat)
             data = await loop.run_in_executor(None, lambda: instance_ytdl.extract_info(search_query, download=False))
         except Exception as e:
             print(f'[DEBUG] Search error: {e}')
