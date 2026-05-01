@@ -32,6 +32,15 @@ YTDL_OPTS = {
     'default_search': 'ytsearch',
     'source_address': '0.0.0.0',
     'cookiefile': get_cookie_file(),
+    'extractor_args': {
+        'youtube': {
+            'player_client': ['ios', 'web'],
+            'po_token': [os.getenv('PO_TOKEN')],
+        }
+    },
+    'params': {
+        'visitor_data': os.getenv('VISITOR_DATA')
+    }
 }
 
 YTDL_SEARCH_OPTS = {**YTDL_OPTS, 'default_search': 'ytsearch5', 'noplaylist': True}
@@ -94,7 +103,18 @@ class SongInfo:
         if isinstance(query, dict):
             return cls(query, requester)
             
-        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(query, download=False))
+        # Nạp Token mới nhất từ môi trường
+        opts = YTDL_OPTS.copy()
+        po_token = os.getenv('PO_TOKEN')
+        visitor_data = os.getenv('VISITOR_DATA')
+        
+        if po_token:
+            opts['extractor_args'] = {'youtube': {'po_token': [po_token], 'player_client': ['ios', 'web']}}
+        if visitor_data:
+            opts['params'] = {'visitor_data': visitor_data}
+
+        instance_ytdl = yt_dlp.YoutubeDL(opts)
+        data = await loop.run_in_executor(None, lambda: instance_ytdl.extract_info(query, download=False))
         if 'entries' in data:
             data = data['entries'][0]
         return cls(data, requester)
@@ -103,9 +123,21 @@ class SongInfo:
     async def search(cls, query, *, loop=None):
         loop = loop or asyncio.get_event_loop()
         search_query = f'ytsearch5:{query}'
+        
+        # Nạp Token mới nhất cho Search
+        opts = YTDL_SEARCH_OPTS.copy()
+        po_token = os.getenv('PO_TOKEN')
+        visitor_data = os.getenv('VISITOR_DATA')
+        
+        if po_token:
+            opts['extractor_args'] = {'youtube': {'po_token': [po_token], 'player_client': ['ios', 'web']}}
+        if visitor_data:
+            opts['params'] = {'visitor_data': visitor_data}
+            
+        instance_ytdl = yt_dlp.YoutubeDL(opts)
         try:
             # Lấy đầy đủ thông tin (không dùng extract_flat)
-            data = await loop.run_in_executor(None, lambda: ytdl_search.extract_info(search_query, download=False))
+            data = await loop.run_in_executor(None, lambda: instance_ytdl.extract_info(search_query, download=False))
         except Exception as e:
             print(f'[DEBUG] Search error: {e}')
             return []
