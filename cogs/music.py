@@ -32,7 +32,6 @@ YTDL_OPTS = {
     'default_search': 'ytsearch',
     'source_address': '0.0.0.0',
     'cookiefile': get_cookie_file(),
-    'extractor_args': {'youtube': {'player_client': ['android', 'web_creator']}},
 }
 
 YTDL_SEARCH_OPTS = {**YTDL_OPTS, 'default_search': 'ytsearch5', 'noplaylist': True}
