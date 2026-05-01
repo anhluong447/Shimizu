@@ -428,36 +428,40 @@ class Music(commands.Cog):
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
         """Tự động pause/resume và disconnect khi phòng trống."""
+        if member.bot:
+            return
+
         vc = member.guild.voice_client
         if not vc or not vc.channel:
             return
 
         # Chỉ xử lý nếu có thay đổi liên quan đến channel của bot
-        if before.channel != vc.channel and after.channel != vc.channel:
-            return
+        if (before.channel and before.channel.id == vc.channel.id) or (after.channel and after.channel.id == vc.channel.id):
+            player = self.players.get(member.guild.id)
+            if not player:
+                return
 
-        player = self.get_player(member.guild)
-        humans = [m for m in vc.channel.members if not m.bot]
+            humans = [m for m in vc.channel.members if not m.bot]
 
-        if not humans:
-            # Không còn người: Pause và bắt đầu đếm ngược 15p
-            if vc.is_playing() and not player.auto_paused:
-                vc.pause()
-                player.auto_paused = True
-                await player.channel.send("⏸️ **Phòng trống:** Tạm dừng nhạc cho đến khi bồ quay lại.", delete_after=15)
+            if not humans:
+                # Không còn người: Pause và bắt đầu đếm ngược 15p
+                if vc.is_playing() and not player.auto_paused:
+                    vc.pause()
+                    player.auto_paused = True
+                    await player.channel.send("⏸️ **Phòng trống:** Tạm dừng nhạc cho đến khi bồ quay lại.", delete_after=15)
 
-            if not player.idle_task or player.idle_task.done():
-                player.idle_task = self.bot.loop.create_task(self._idle_disconnect(member.guild))
-        else:
-            # Có người: Huỷ đếm ngược và Resume nếu đang auto-pause
-            if player.idle_task:
-                player.idle_task.cancel()
-                player.idle_task = None
+                if not player.idle_task or player.idle_task.done():
+                    player.idle_task = self.bot.loop.create_task(self._idle_disconnect(member.guild))
+            else:
+                # Có người: Huỷ đếm ngược và Resume nếu đang auto-pause
+                if player.idle_task:
+                    player.idle_task.cancel()
+                    player.idle_task = None
 
-            if player.auto_paused and vc.is_paused():
-                vc.resume()
-                player.auto_paused = False
-                await player.channel.send("▶️ **Đã có người vào:** Tiếp tục quẩy thôi!", delete_after=10)
+                if player.auto_paused and vc.is_paused():
+                    vc.resume()
+                    player.auto_paused = False
+                    await player.channel.send("▶️ **Đã có người vào:** Tiếp tục quẩy thôi!", delete_after=10)
 
     async def _idle_disconnect(self, guild):
         """Task chờ 15 phút rồi thoát."""
