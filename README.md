@@ -13,7 +13,8 @@ Features a rich embed UI with buttons, search selection, queue management, and a
 - 🔁 **Repeat Modes** — Off / Single Track / Entire Queue.
 - 🔊 **Audio Filters** — Bass Boost and Nightcore effects via FFmpeg.
 - ⚡ **Play Now** — Skip the queue and play a song immediately.
-- 🧹 **Auto-Cleanup** — Bot leaves after 5 minutes of inactivity.
+- ✨ **Autoplay** — Automatically finds and plays "Related Tracks" from SoundCloud Stations when the queue ends.
+- 🧹 **Smart Presence** — Auto-pauses when the channel is empty, auto-resumes when members join, and auto-disconnects after 15 minutes of inactivity.
 
 ---
 
@@ -43,6 +44,7 @@ Features a rich embed UI with buttons, search selection, queue management, and a
 | --- | --- | --- |
 | `!repeat [off/one/all]` | `!loop` | Toggle repeat mode. |
 | `!filter <name>` | `!fx` | Audio filter: `normal`, `bass`, `nightcore`. |
+| `!autoplay` | `!ap` | Toggle automatic related track playback. |
 
 ### General
 | Command | Description |
