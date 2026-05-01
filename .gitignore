@@ -17,3 +17,6 @@ ffmpeg-8.1-essentials_build/
 
 # VS Code
 .vscode/
+
+# Khóa SSH
+shimizu-key.pem

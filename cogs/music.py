@@ -10,6 +10,13 @@ from collections import deque
 from discord.ext import commands
 
 # ─── Config ─────────────────────────────────────────────
+# Tìm file cookies có sẵn trong thư mục
+def get_cookie_file():
+    for f in os.listdir('.'):
+        if 'cookies.txt' in f.lower():
+            return f
+    return None
+
 YTDL_OPTS = {
     'format': 'bestaudio/best',
     'restrictfilenames': True,
@@ -21,7 +28,7 @@ YTDL_OPTS = {
     'no_warnings': True,
     'default_search': 'ytsearch',
     'source_address': '0.0.0.0',
-    'cookiefile': 'cookies.txt' if os.path.exists('cookies.txt') else None,
+    'cookiefile': get_cookie_file(),
     'extractor_args': {'youtube': {'player_client': ['android', 'web_creator']}},
 }
 
