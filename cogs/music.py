@@ -10,12 +10,14 @@ from collections import deque
 from discord.ext import commands
 
 # ─── Config ─────────────────────────────────────────────
-# Tìm file cookies có sẵn trong thư mục
+# Tìm file cookies bằng đường dẫn tuyệt đối
 def get_cookie_file():
-    for f in os.listdir('.'):
+    base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for f in os.listdir(base_path):
         if 'cookies.txt' in f.lower():
-            print(f'[INFO] Đã tìm thấy file cookies: {f}')
-            return f
+            cookie_path = os.path.join(base_path, f)
+            print(f'[INFO] Đã tìm thấy file cookies tại: {cookie_path}')
+            return cookie_path
     return None
 
 YTDL_OPTS = {
