@@ -29,21 +29,11 @@ YTDL_OPTS = {
     'logtostderr': False,
     'quiet': True,
     'no_warnings': True,
-    'default_search': 'ytsearch',
+    'default_search': 'scsearch', # Chuyển sang SoundCloud
     'source_address': '0.0.0.0',
-    'cookiefile': get_cookie_file(),
-    'extractor_args': {
-        'youtube': {
-            'player_client': ['ios', 'web'],
-            'po_token': [os.getenv('PO_TOKEN')],
-        }
-    },
-    'params': {
-        'visitor_data': os.getenv('VISITOR_DATA')
-    }
 }
 
-YTDL_SEARCH_OPTS = {**YTDL_OPTS, 'default_search': 'ytsearch5', 'noplaylist': True}
+YTDL_SEARCH_OPTS = {**YTDL_OPTS, 'default_search': 'scsearch5', 'noplaylist': True}
 
 FFMPEG_BASE = {
     'options': '-vn',
@@ -99,24 +89,10 @@ class SongInfo:
     @classmethod
     async def from_url(cls, query, *, requester, loop=None):
         loop = loop or asyncio.get_event_loop()
-        # Nếu đã là dữ liệu thô (từ search trả về), dùng luôn
         if isinstance(query, dict):
             return cls(query, requester)
             
-        # Nạp Token mới nhất từ môi trường
-        opts = YTDL_OPTS.copy()
-        po_token = os.getenv('PO_TOKEN')
-        visitor_data = os.getenv('VISITOR_DATA')
-        
-        if po_token:
-            final_po = po_token if po_token.startswith('web+') else f'web+{po_token}'
-            opts['extractor_args'] = {'youtube': {'po_token': [final_po], 'player_client': ['web']}}
-            print(f'[DEBUG] Sử dụng PO Token (URL): {final_po[:20]}...')
-        if visitor_data:
-            opts['params'] = {'visitor_data': visitor_data}
-
-        instance_ytdl = yt_dlp.YoutubeDL(opts)
-        data = await loop.run_in_executor(None, lambda: instance_ytdl.extract_info(query, download=False))
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(query, download=False))
         if 'entries' in data:
             data = data['entries'][0]
         return cls(data, requester)
@@ -124,27 +100,18 @@ class SongInfo:
     @classmethod
     async def search(cls, query, *, loop=None):
         loop = loop or asyncio.get_event_loop()
-        search_query = f'ytsearch5:{query}'
+        search_query = f'scsearch5:{query}'
         
-        # Nạp Token mới nhất cho Search
-        opts = YTDL_SEARCH_OPTS.copy()
-        po_token = os.getenv('PO_TOKEN')
-        visitor_data = os.getenv('VISITOR_DATA')
-        
-        if po_token:
-            # Nếu bồ đã thêm web+ vào .env thì dùng luôn, nếu chưa thì thêm vào
-            final_po = po_token if po_token.startswith('web+') else f'web+{po_token}'
-            opts['extractor_args'] = {'youtube': {'po_token': [final_po], 'player_client': ['web']}}
-            print(f'[DEBUG] Sử dụng PO Token: {final_po[:20]}...')
-        if visitor_data:
-            opts['params'] = {'visitor_data': visitor_data}
-            
-        instance_ytdl = yt_dlp.YoutubeDL(opts)
         try:
-            data = await loop.run_in_executor(None, lambda: instance_ytdl.extract_info(search_query, download=False))
+            data = await loop.run_in_executor(None, lambda: ytdl_search.extract_info(search_query, download=False))
         except Exception as e:
             print(f'[DEBUG] Search error: {e}')
             return []
+            
+        if not data or 'entries' not in data:
+            return []
+            
+        return data['entries']
             
         if not data or 'entries' not in data:
             return []
