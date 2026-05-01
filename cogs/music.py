@@ -40,7 +40,14 @@ FFMPEG_NIGHTCORE = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'
 }
 
-FFMPEG_EXE = r'ffmpeg-8.1-essentials_build\bin\ffmpeg.exe'
+import platform
+
+# Tự động nhận diện đường dẫn FFmpeg theo hệ điều hành
+if platform.system() == 'Windows':
+    FFMPEG_EXE = r'ffmpeg-8.1-essentials_build\bin\ffmpeg.exe'
+else:
+    FFMPEG_EXE = 'ffmpeg' # Trên Linux (AWS) đã cài qua apt
+
 ytdl = yt_dlp.YoutubeDL(YTDL_OPTS)
 ytdl_search = yt_dlp.YoutubeDL(YTDL_SEARCH_OPTS)
 
