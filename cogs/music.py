@@ -144,6 +144,7 @@ class ControllerView(discord.ui.View):
         vc = interaction.guild.voice_client
         if not vc:
             return await interaction.response.send_message('Bot không ở trong voice!', ephemeral=True)
+        self.player.auto_paused = False # Reset auto-pause when manual toggle
         if vc.is_playing():
             vc.pause()
             button.emoji = '▶️'
@@ -253,6 +254,8 @@ class MusicPlayer:
         self.np_message: discord.Message | None = None
         self.repeat_mode = REPEAT_OFF
         self.autoplay = False
+        self.auto_paused = False
+        self.idle_task: asyncio.Task | None = None
         self.filter_name = 'Normal'
         self._ff_opts = FFMPEG_BASE
         self._task = bot.loop.create_task(self._player_loop())
@@ -422,6 +425,51 @@ class Music(commands.Cog):
         elif isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f'❌ Thiếu tham số: `{error.param.name}`')
 
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        """Tự động pause/resume và disconnect khi phòng trống."""
+        vc = member.guild.voice_client
+        if not vc or not vc.channel:
+            return
+
+        # Chỉ xử lý nếu có thay đổi liên quan đến channel của bot
+        if before.channel != vc.channel and after.channel != vc.channel:
+            return
+
+        player = self.get_player(member.guild)
+        humans = [m for m in vc.channel.members if not m.bot]
+
+        if not humans:
+            # Không còn người: Pause và bắt đầu đếm ngược 15p
+            if vc.is_playing() and not player.auto_paused:
+                vc.pause()
+                player.auto_paused = True
+                await player.channel.send("⏸️ **Phòng trống:** Tạm dừng nhạc cho đến khi bồ quay lại.", delete_after=15)
+
+            if not player.idle_task or player.idle_task.done():
+                player.idle_task = self.bot.loop.create_task(self._idle_disconnect(member.guild))
+        else:
+            # Có người: Huỷ đếm ngược và Resume nếu đang auto-pause
+            if player.idle_task:
+                player.idle_task.cancel()
+                player.idle_task = None
+
+            if player.auto_paused and vc.is_paused():
+                vc.resume()
+                player.auto_paused = False
+                await player.channel.send("▶️ **Đã có người vào:** Tiếp tục quẩy thôi!", delete_after=10)
+
+    async def _idle_disconnect(self, guild):
+        """Task chờ 15 phút rồi thoát."""
+        try:
+            await asyncio.sleep(900) # 15 phút
+            if guild.id in self.players:
+                player = self.players[guild.id]
+                await player.channel.send("🔇 **Tự động thoát:** Phòng trống quá 15 phút, Shimizu đi ngủ đây!")
+            await self.cleanup(guild)
+        except asyncio.CancelledError:
+            pass
+
     # ── Commands ────────────────────────────────────────
     @commands.command(name='play', aliases=['p'])
     async def play_(self, ctx, *, query: str):
@@ -498,6 +546,8 @@ class Music(commands.Cog):
         """Tạm dừng nhạc."""
         vc = ctx.voice_client
         if vc and vc.is_playing():
+            player = self.get_player(ctx)
+            player.auto_paused = False
             vc.pause()
             await ctx.send('⏸️ Đã tạm dừng.', delete_after=5)
 
@@ -506,6 +556,8 @@ class Music(commands.Cog):
         """Phát tiếp."""
         vc = ctx.voice_client
         if vc and vc.is_paused():
+            player = self.get_player(ctx)
+            player.auto_paused = False
             vc.resume()
             await ctx.send('▶️ Tiếp tục phát.', delete_after=5)
 
