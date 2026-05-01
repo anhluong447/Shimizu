@@ -1,9 +1,11 @@
+import os
 import discord
 import asyncio
 import yt_dlp
 import itertools
 import random
 import re
+import traceback
 from collections import deque
 from discord.ext import commands
 
@@ -19,9 +21,11 @@ YTDL_OPTS = {
     'no_warnings': True,
     'default_search': 'ytsearch',
     'source_address': '0.0.0.0',
+    'cookiefile': 'cookies.txt' if os.path.exists('cookies.txt') else None,
+    'extractor_args': {'youtube': {'player_client': ['android', 'web_creator']}},
 }
 
-YTDL_SEARCH_OPTS = {**YTDL_OPTS, 'default_search': 'ytsearch5', 'extract_flat': True}
+YTDL_SEARCH_OPTS = {**YTDL_OPTS, 'default_search': 'ytsearch5', 'noplaylist': True}
 
 FFMPEG_BASE = {
     'options': '-vn',
@@ -50,7 +54,7 @@ class SongInfo:
         self.url = data.get('webpage_url') or data.get('url', '')
         self.stream_url = data.get('url', '')
         self.thumbnail = data.get('thumbnail', '')
-        self.duration = data.get('duration', 0)
+        self.duration = int(data.get('duration') or 0)
         self.uploader = data.get('uploader', 'Unknown')
         self.requester = requester
         self._data = data
@@ -59,7 +63,7 @@ class SongInfo:
     def duration_str(self):
         if not self.duration:
             return 'Live'
-        m, s = divmod(int(self.duration), 60)
+        m, s = divmod(self.duration, 60)
         h, m = divmod(m, 60)
         return f'{h}:{m:02d}:{s:02d}' if h else f'{m}:{s:02d}'
 
@@ -70,6 +74,10 @@ class SongInfo:
     @classmethod
     async def from_url(cls, query, *, requester, loop=None):
         loop = loop or asyncio.get_event_loop()
+        # Nếu đã là dữ liệu thô (từ search trả về), dùng luôn
+        if isinstance(query, dict):
+            return cls(query, requester)
+            
         data = await loop.run_in_executor(None, lambda: ytdl.extract_info(query, download=False))
         if 'entries' in data:
             data = data['entries'][0]
@@ -78,19 +86,18 @@ class SongInfo:
     @classmethod
     async def search(cls, query, *, loop=None):
         loop = loop or asyncio.get_event_loop()
-        data = await loop.run_in_executor(None, lambda: ytdl_search.extract_info(query, download=False))
-        if 'entries' not in data:
+        search_query = f'ytsearch5:{query}'
+        try:
+            # Lấy đầy đủ thông tin (không dùng extract_flat)
+            data = await loop.run_in_executor(None, lambda: ytdl_search.extract_info(search_query, download=False))
+        except Exception as e:
+            print(f'[DEBUG] Search error: {e}')
             return []
-        results = []
-        for e in data['entries'][:5]:
-            if e:
-                results.append({
-                    'title': e.get('title', '???'),
-                    'url': e.get('url') or e.get('webpage_url', ''),
-                    'duration': e.get('duration', 0),
-                    'uploader': e.get('uploader', ''),
-                })
-        return results
+            
+        if not data or 'entries' not in data:
+            return []
+            
+        return data['entries']
 
 # ─── Now Playing Embed Builder ──────────────────────────
 def build_np_embed(song: SongInfo, paused=False, repeat=REPEAT_OFF, audio_filter='Normal'):
@@ -174,27 +181,34 @@ class SearchSelect(discord.ui.Select):
         self.requester = requester
         options = []
         for i, r in enumerate(results):
-            dur = r.get('duration', 0)
+            dur = int(r.get('duration') or 0)
             dur_str = f'{dur // 60}:{dur % 60:02d}' if dur else 'Live'
+            uploader = r.get('uploader') or r.get('channel') or 'Unknown'
             options.append(discord.SelectOption(
-                label=r['title'][:100],
-                description=f'{r.get("uploader", "")} • {dur_str}'[:100],
+                label=r.get('title', 'Unknown')[:100],
+                description=f'{uploader} • {dur_str}'[:100],
                 value=str(i),
             ))
         super().__init__(placeholder='🔍 Chọn bài hát...', options=options, min_values=1, max_values=1)
 
     async def callback(self, interaction: discord.Interaction):
         idx = int(self.values[0])
-        chosen = self.results[idx]
+        chosen_raw_data = self.results[idx]
         cog = interaction.client.get_cog('Music')
         if not cog:
             return
-        ctx = await interaction.client.get_context(interaction.message)
+        
         player = cog.get_player(interaction)
-        await interaction.response.edit_message(content=f'⏳ Đang tải: **{chosen["title"]}**...', view=None)
-        song = await SongInfo.from_url(chosen['url'], requester=self.requester, loop=interaction.client.loop)
+        await interaction.response.edit_message(content=f'⏳ Đang thêm: **{chosen_raw_data.get("title", "Unknown")}**...', view=None)
+        
+        # Gửi thẳng raw data vào from_url để không phải fetch lại
+        song = await SongInfo.from_url(chosen_raw_data, requester=self.requester, loop=interaction.client.loop)
         player.queue.append(song)
-        player.next.set()
+        # Chỉ kick-start loop nếu bot đang rảnh
+        vc = interaction.guild.voice_client
+        if vc and not (vc.is_playing() or vc.is_paused()):
+            player.next.set()
+        
         await interaction.edit_original_response(content=f'✅ Đã thêm: **{song.title}** `[{song.duration_str}]`')
 
 class SearchView(discord.ui.View):
@@ -316,6 +330,15 @@ class Music(commands.Cog):
             await ctx.voice_client.move_to(ctx.author.voice.channel)
         return True
 
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.CommandInvokeError):
+            print(f'[ERROR] Command {ctx.command}: {error.original}')
+            traceback.print_exception(type(error.original), error.original, error.original.__traceback__)
+            await ctx.send(f'❌ Lỗi: `{error.original}`')
+        elif isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f'❌ Thiếu tham số: `{error.param.name}`')
+
     # ── Commands ────────────────────────────────────────
     @commands.command(name='play', aliases=['p'])
     async def play_(self, ctx, *, query: str):
@@ -326,19 +349,33 @@ class Music(commands.Cog):
         is_url = re.match(r'https?://', query)
 
         if is_url:
-            async with ctx.typing():
-                song = await SongInfo.from_url(query, requester=ctx.author, loop=self.bot.loop)
-            player = self.get_player(ctx)
-            player.queue.append(song)
-            player.next.set()
-            await ctx.send(f'✅ Đã thêm: **{song.title}** `[{song.duration_str}]`', delete_after=10)
+            try:
+                async with ctx.typing():
+                    song = await SongInfo.from_url(query, requester=ctx.author, loop=self.bot.loop)
+                player = self.get_player(ctx)
+                player.queue.append(song)
+                vc = ctx.voice_client
+                if vc and not (vc.is_playing() or vc.is_paused()):
+                    player.next.set()
+                await ctx.send(f'✅ Đã thêm: **{song.title}** `[{song.duration_str}]`', delete_after=10)
+            except Exception as e:
+                print(f'[ERROR] play URL: {e}')
+                traceback.print_exc()
+                await ctx.send(f'❌ Lỗi khi tải bài hát: `{e}`')
         else:
-            async with ctx.typing():
-                results = await SongInfo.search(query, loop=self.bot.loop)
-            if not results:
-                return await ctx.send('❌ Không tìm thấy kết quả nào!')
-            view = SearchView(results, ctx.author)
-            await ctx.send('🔍 **Kết quả tìm kiếm:**', view=view, delete_after=35)
+            try:
+                async with ctx.typing():
+                    print(f'[DEBUG] Searching for: {query}')
+                    results = await SongInfo.search(query, loop=self.bot.loop)
+                    print(f'[DEBUG] Found {len(results)} results')
+                if not results:
+                    return await ctx.send('❌ Không tìm thấy kết quả nào!')
+                view = SearchView(results, ctx.author)
+                await ctx.send('🔍 **Kết quả tìm kiếm:**', view=view, delete_after=35)
+            except Exception as e:
+                print(f'[ERROR] play search: {e}')
+                traceback.print_exc()
+                await ctx.send(f'❌ Lỗi khi tìm kiếm: `{e}`')
 
     @commands.command(name='playnow', aliases=['pn'])
     async def play_now(self, ctx, *, query: str):
@@ -350,7 +387,7 @@ class Music(commands.Cog):
         player = self.get_player(ctx)
         player.queue.appendleft(song)
         vc = ctx.voice_client
-        if vc and vc.is_playing():
+        if vc and (vc.is_playing() or vc.is_paused()):
             vc.stop()
         else:
             player.next.set()
