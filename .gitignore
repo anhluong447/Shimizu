@@ -25,6 +25,7 @@ DEV_LOG.md
 shimizu-key.pem
 
 # Temporary / Log files
+logs/
 *.json
 *.txt
 !requirements.txt
