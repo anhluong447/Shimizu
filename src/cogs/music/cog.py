@@ -6,6 +6,7 @@ import random
 import re
 import time
 import traceback
+import aiohttp
 from discord.ext import commands
 from .player import MusicPlayer
 from .models import SongInfo
@@ -63,8 +64,9 @@ class Music(commands.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandInvokeError):
-            print(f'[ERROR] Command {ctx.command}: {error.original}')
-            traceback.print_exception(type(error.original), error.original, error.original.__traceback__)
+            log.error(f'[ERROR] Command {ctx.command}: {error.original}')
+            # print(f'[ERROR] Command {ctx.command}: {error.original}')
+            # traceback.print_exception(type(error.original), error.original, error.original.__traceback__)
             await ctx.send(f'❌ Lỗi: `{error.original}`')
         elif isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f'❌ Thiếu tham số: `{error.param.name}`')
@@ -139,7 +141,7 @@ class Music(commands.Cog):
                     player.next.set()
                 await ctx.send(f'✅ Đã thêm: **{song.title}** `[{song.duration_str}]`', delete_after=10)
             except Exception as e:
-                traceback.print_exc()
+                log.error(f'Play error: {e}')
                 await ctx.send(f'❌ Lỗi khi tải bài hát: `{e}`')
         else:
             try:
@@ -150,7 +152,7 @@ class Music(commands.Cog):
                 view = SearchView(results, ctx.author)
                 await ctx.send('🔍 **Kết quả tìm kiếm:**', view=view, delete_after=35)
             except Exception as e:
-                traceback.print_exc()
+                log.error(f'Search error: {e}')
                 await ctx.send(f'❌ Lỗi khi tìm kiếm: `{e}`')
 
     @commands.command(name='playnow', aliases=['pn'])
@@ -403,21 +405,23 @@ class Music(commands.Cog):
             else:
                 artist, title = '', query
 
+        log.info(f"[LYRICS] Searching for: {artist} - {title}")
         async with ctx.typing():
             async def fetch(a, t):
                 url = f"https://api.lyrics.ovh/v1/{a}/{t}"
                 try:
-                    import aiohttp
                     async with aiohttp.ClientSession() as session:
                         async with session.get(url, timeout=10) as resp:
                             if resp.status == 200:
-                                return (await resp.json()).get('lyrics')
-                except Exception:
-                    pass
+                                res_json = await resp.json()
+                                return res_json.get('lyrics')
+                except Exception as e:
+                    log.error(f"[LYRICS] Fetch error: {e}")
                 return None
 
             lyrics_text = await fetch(artist, title)
             if not lyrics_text and artist:
+                log.info(f"[LYRICS] Not found, trying fallback: {artist} {title}")
                 lyrics_text = await fetch('', f"{artist} {title}")
 
         if not lyrics_text:
