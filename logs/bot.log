@@ -1,0 +1,20 @@
+2026-05-02 20:58:47,875 - Shimizu - INFO - --- Đang tải các module ---
+2026-05-02 20:58:47,954 - Shimizu - INFO - ✅ Đã tải: src.cogs.general
+2026-05-02 20:58:47,960 - Shimizu - INFO - ✅ Đã tải: src.cogs.secret
+2026-05-02 20:58:47,967 - Shimizu - INFO - ✅ Đã tải: src.cogs.utility
+2026-05-02 20:58:48,199 - Shimizu - INFO - ✅ Đã tải: src.cogs.music
+2026-05-02 20:58:48,202 - Shimizu - ERROR - ❌ Lỗi khi tải src.cogs.music.cog: Extension 'src.cogs.music.cog' raised an error: ClientException: Cog named 'Music' already loaded
+2026-05-02 20:58:48,257 - Shimizu - ERROR - ❌ Lỗi khi tải src.cogs.music.models: Extension 'src.cogs.music.models' has no 'setup' function.
+2026-05-02 20:58:48,301 - Shimizu - ERROR - ❌ Lỗi khi tải src.cogs.music.player: Extension 'src.cogs.music.player' has no 'setup' function.
+2026-05-02 20:58:48,304 - Shimizu - ERROR - ❌ Lỗi khi tải src.cogs.music.views: Extension 'src.cogs.music.views' has no 'setup' function.
+2026-05-02 20:58:48,306 - Shimizu - INFO - --- Hoàn tất tải module ---
+2026-05-02 20:58:51,147 - Shimizu - INFO - 🚀 Shimizu đã trực tuyến!
+2026-05-02 20:59:04,605 - Shimizu - INFO - --- Đang tải các module ---
+2026-05-02 20:59:04,611 - Shimizu - INFO - [LOAD] src.cogs.general
+2026-05-02 20:59:04,787 - Shimizu - INFO - [LOAD] src.cogs.music
+2026-05-02 20:59:04,789 - Shimizu - INFO - [LOAD] src.cogs.secret
+2026-05-02 20:59:04,792 - Shimizu - INFO - [LOAD] src.cogs.utility
+2026-05-02 20:59:04,792 - Shimizu - INFO - --- Hoàn tất tải module ---
+2026-05-02 20:59:07,568 - Shimizu - INFO - 🚀 Shimizu đã trực tuyến!
+2026-05-02 22:28:42,431 - Shimizu - INFO - 🚀 Shimizu đã trực tuyến!
+2026-05-02 22:28:48,730 - Shimizu - INFO - 🚀 Shimizu đã trực tuyến!

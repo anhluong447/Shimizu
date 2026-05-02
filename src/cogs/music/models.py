@@ -1,10 +1,13 @@
 import discord
 import yt_dlp
 import asyncio
+import re
 from src.core.config import YTDL_OPTS, FFMPEG_EXE, FFMPEG_OPTIONS
 from src.utils.formatters import format_duration
 
 ytdl = yt_dlp.YoutubeDL(YTDL_OPTS)
+ytdl_search = yt_dlp.YoutubeDL({**YTDL_OPTS, 'default_search': 'scsearch5', 'noplaylist': True})
+
 
 class SongInfo:
     def __init__(self, data, requester):
@@ -32,7 +35,6 @@ class SongInfo:
         loop = loop or asyncio.get_event_loop()
         if isinstance(query, dict):
             return cls(query, requester)
-            
         data = await loop.run_in_executor(None, lambda: ytdl.extract_info(query, download=False))
         if 'entries' in data:
             data = data['entries'][0]
@@ -40,16 +42,34 @@ class SongInfo:
 
     @classmethod
     async def search(cls, query, *, loop=None):
-        # We'll use a simplified search or move the complex search logic here
-        # For brevity in refactor, keeping the logic similar
         loop = loop or asyncio.get_event_loop()
-        search_opts = {**YTDL_OPTS, 'default_search': 'scsearch5'}
-        
-        async def perform_search(q):
-            with yt_dlp.YoutubeDL(search_opts) as ydl:
-                return await loop.run_in_executor(None, lambda: ydl.extract_info(f"scsearch5:{q}", download=False))
 
+        async def perform_search(q, limit=5):
+            search_query = f'scsearch{limit}:{q}'
+            try:
+                return await loop.run_in_executor(None, lambda: ytdl_search.extract_info(search_query, download=False))
+            except Exception as e:
+                print(f'[DEBUG] SoundCloud Search error for "{q}": {e}')
+                return None
+
+        # Step 1: Direct search
         data = await perform_search(query)
+
+        # Step 2: Query Refinement
+        if not data or 'entries' not in data or not data['entries']:
+            print(f'[DEBUG] No results for "{query}", refining query...')
+            clean_query = re.sub(r'\(.*?\)|\[.*?\]|official|video|lyric|audio|mv|music video|full hd|[^a-zA-Z0-9\sàáạảãâầấnậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]', ' ', query, flags=re.IGNORECASE)
+            clean_query = ' '.join(clean_query.split())
+            if clean_query and clean_query.lower() != query.lower():
+                data = await perform_search(clean_query)
+
+        # Step 3: Broad Match
+        if (not data or 'entries' not in data or not data['entries']) and ' - ' in query:
+            parts = query.split(' - ')
+            print(f'[DEBUG] Still no results, trying broad match with "{parts[-1]}"...')
+            data = await perform_search(parts[-1])
+
         if not data or 'entries' not in data:
             return []
+
         return data['entries']

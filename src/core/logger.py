@@ -29,6 +29,12 @@ def setup_logger(name="Shimizu"):
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
+    # Discord Library Logger
+    discord_logger = logging.getLogger('discord')
+    discord_logger.setLevel(logging.INFO)
+    discord_logger.addHandler(console_handler)
+    discord_logger.addHandler(file_handler)
+
     return logger
 
 log = setup_logger()
