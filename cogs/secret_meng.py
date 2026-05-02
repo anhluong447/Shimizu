@@ -44,14 +44,7 @@ class SecretMeng(commands.Cog):
 
             message = random.choice(lines)
             
-            # Gửi tin nhắn với phong cách "bí mật"
-            embed = discord.Embed(
-                description=f"**{message}**",
-                color=discord.Color.from_rgb(255, 182, 193) # Màu hồng nhẹ (Pink)
-            )
-            embed.set_footer(text="🔐 Decrypted from Shimizu Archive")
-            
-            await ctx.send(embed=embed)
+            await ctx.send(message)
 
         except Exception as e:
             await ctx.send(f"❌ Có lỗi xảy ra: {e}")
