@@ -57,8 +57,16 @@ class ShimizuBot(commands.Bot):
     async def on_message(self, message):
         if message.author.bot:
             return
+        
         # Log để debug xem bot có nhận được tin nhắn không
         log.info(f"Message from {message.author}: {message.content}")
+
+        # Lệnh debug nhanh
+        if message.content == f"{PREFIX}modules":
+            loaded = ", ".join(self.extensions.keys()) or "None"
+            await message.channel.send(f"📦 **Loaded modules:** `{loaded}`")
+            return
+
         await self.process_commands(message)
 
 bot = ShimizuBot()
