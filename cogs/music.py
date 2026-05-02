@@ -1,4 +1,5 @@
 import os
+import json
 import discord
 import asyncio
 import yt_dlp
@@ -83,8 +84,11 @@ class SongInfo:
         h, m = divmod(m, 60)
         return f'{h}:{m:02d}:{s:02d}' if h else f'{m}:{s:02d}'
 
-    def make_source(self, ff_opts=None):
-        opts = ff_opts or FFMPEG_BASE
+    def make_source(self, ff_opts=None, seek_time=0):
+        opts = (ff_opts or FFMPEG_BASE).copy()
+        if seek_time > 0:
+            # Chèn -ss vào trước đầu vào
+            opts['before_options'] = f"{opts['before_options']} -ss {seek_time}"
         return discord.FFmpegPCMAudio(self.stream_url, executable=FFMPEG_EXE, **opts)
 
     @classmethod
@@ -114,8 +118,16 @@ class SongInfo:
             
         return data['entries']
 
+# ─── Progress Bar Helper ────────────────────────────────
+def create_bar(current, total, length=15):
+    if total <= 0: return '──' + '🔘' + '──'
+    percent = current / total
+    filled = int(length * percent)
+    bar = '▬' * filled + '🔘' + '─' * (length - filled - 1)
+    return bar
+
 # ─── Now Playing Embed Builder ──────────────────────────
-def build_np_embed(song: SongInfo, paused=False, repeat=REPEAT_OFF, audio_filter='Normal', autoplay=False, volume=0.5):
+def build_np_embed(song: SongInfo, paused=False, repeat=REPEAT_OFF, audio_filter='Normal', autoplay=False, volume=0.5, current_time=0):
     status = '⏸️ Đang tạm dừng' if paused else '🎵 Đang phát'
     embed = discord.Embed(
         title=song.title,
@@ -125,7 +137,13 @@ def build_np_embed(song: SongInfo, paused=False, repeat=REPEAT_OFF, audio_filter
     embed.set_author(name=status, icon_url='https://i.imgur.com/JfETopg.png')
     if song.thumbnail:
         embed.set_thumbnail(url=song.thumbnail)
-    embed.add_field(name='⏱️ Thời lượng', value=f'`{song.duration_str}`', inline=True)
+    
+    # Progress Bar
+    bar = create_bar(current_time, song.duration)
+    cur_str = f'{int(current_time // 60)}:{int(current_time % 60):02d}'
+    dur_str = song.duration_str
+    
+    embed.add_field(name='⏱️ Tiến trình', value=f'`{cur_str}` {bar} `{dur_str}`', inline=False)
     embed.add_field(name='🎤 Kênh', value=f'`{song.uploader}`', inline=True)
     embed.add_field(name='🔊 Âm lượng', value=f'`{int(volume * 100)}%`', inline=True)
     embed.add_field(name='🔊 Bộ lọc', value=f'`{audio_filter}`', inline=True)
@@ -146,10 +164,14 @@ class ControllerView(discord.ui.View):
         if not vc:
             return await interaction.response.send_message('Bot không ở trong voice!', ephemeral=True)
         self.player.auto_paused = False # Reset auto-pause when manual toggle
+        
+        import time
         if vc.is_playing():
             vc.pause()
+            self.player.pause_time = time.time()
             button.emoji = '▶️'
         elif vc.is_paused():
+            self.player.total_paused += time.time() - self.player.pause_time
             vc.resume()
             button.emoji = '⏸️'
         await self._update_np(interaction)
@@ -210,7 +232,15 @@ class ControllerView(discord.ui.View):
             return await interaction.response.defer()
         vc = interaction.guild.voice_client
         paused = vc.is_paused() if vc else False
-        embed = build_np_embed(self.player.current, paused=paused, repeat=self.player.repeat_mode, audio_filter=self.player.filter_name, autoplay=self.player.autoplay, volume=self.player.volume)
+        embed = build_np_embed(
+            self.player.current, 
+            paused=paused, 
+            repeat=self.player.repeat_mode, 
+            audio_filter=self.player.filter_name, 
+            autoplay=self.player.autoplay, 
+            volume=self.player.volume,
+            current_time=self.player.get_current_time()
+        )
         await interaction.response.edit_message(embed=embed, view=self)
 
 # ─── Search Select View ────────────────────────────────
@@ -266,6 +296,7 @@ class MusicPlayer:
         self.guild = guild
         self.channel = channel
         self.queue: deque[SongInfo] = deque()
+        self.history: deque[SongInfo] = deque(maxlen=10)
         self.next = asyncio.Event()
         self.current: SongInfo | None = None
         self.np_message: discord.Message | None = None
@@ -275,8 +306,23 @@ class MusicPlayer:
         self.idle_task: asyncio.Task | None = None
         self.filter_name = 'Normal'
         self.volume = 0.5
+        
+        # Time tracking
+        self.start_time = 0
+        self.pause_time = 0
+        self.total_paused = 0
+        self.seek_offset = 0
+        
         self._ff_opts = FFMPEG_BASE
         self._task = bot.loop.create_task(self._player_loop())
+
+    def get_current_time(self):
+        if not self.start_time: return 0
+        vc = self.guild.voice_client
+        if vc and vc.is_paused():
+            return self.pause_time - self.start_time - self.total_paused + self.seek_offset
+        import time
+        return time.time() - self.start_time - self.total_paused + self.seek_offset
 
     def get_ff_opts(self):
         return self._ff_opts
@@ -361,12 +407,18 @@ class MusicPlayer:
                     return
 
             self.current = song
-            source = discord.PCMVolumeTransformer(song.make_source(self.get_ff_opts()), volume=self.volume)
+            source = discord.PCMVolumeTransformer(song.make_source(self.get_ff_opts(), seek_time=self.seek_offset), volume=self.volume)
             vc = self.guild.voice_client
             if not vc:
                 await self._cleanup()
                 return
 
+            import time
+            self.start_time = time.time()
+            self.total_paused = 0
+            # Giữ nguyên seek_offset nếu đang seek, nếu không reset về 0
+            # Lưu ý: seek command sẽ stop vc và trigger loop lại, chúng ta sẽ xử lý seek_offset ở command
+            
             vc.play(source, after=lambda e: self.bot.loop.call_soon_threadsafe(self.next.set))
 
             # Delete old NP message
@@ -376,16 +428,21 @@ class MusicPlayer:
                 except discord.HTTPException:
                     pass
 
-            embed = build_np_embed(song, repeat=self.repeat_mode, audio_filter=self.filter_name, autoplay=self.autoplay, volume=self.volume)
+            embed = build_np_embed(song, repeat=self.repeat_mode, audio_filter=self.filter_name, autoplay=self.autoplay, volume=self.volume, current_time=self.seek_offset)
             view = ControllerView(self)
             self.np_message = await self.channel.send(embed=embed, view=view)
 
             await self.next.wait()
 
+            # Thêm vào history trước khi sang bài mới
+            if self.current:
+                self.history.append(self.current)
+
             # Handle repeat_all: put song back at end
             if self.repeat_mode == REPEAT_ALL:
                 self.queue.append(song)
-
+            
+            self.seek_offset = 0 # Reset seek offset for next song
             source.cleanup()
 
     async def _cleanup(self):
@@ -402,6 +459,18 @@ class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.players: dict[int, MusicPlayer] = {}
+        self.playlist_file = 'playlists.json'
+        if not os.path.exists(self.playlist_file):
+            with open(self.playlist_file, 'w', encoding='utf-8') as f:
+                json.dump({}, f)
+
+    async def is_dj(self, ctx):
+        """Kiểm tra quyền DJ: Owner, Admin, hoặc có role 'DJ'"""
+        if await self.bot.is_owner(ctx.author):
+            return True
+        if ctx.author.guild_permissions.administrator:
+            return True
+        return any(role.name.lower() == 'dj' for role in ctx.author.roles)
 
     def get_player(self, ctx_or_interaction):
         if isinstance(ctx_or_interaction, discord.Interaction):
@@ -480,10 +549,12 @@ class Music(commands.Cog):
 
             humans = [m for m in vc.channel.members if not m.bot]
 
+            import time
             if not humans:
                 # Không còn người: Pause và bắt đầu đếm ngược 15p
                 if vc.is_playing() and not player.auto_paused:
                     vc.pause()
+                    player.pause_time = time.time()
                     player.auto_paused = True
                     await player.channel.send("⏸️ **Phòng trống:** Tạm dừng nhạc cho đến khi bồ quay lại.", delete_after=15)
 
@@ -496,6 +567,7 @@ class Music(commands.Cog):
                     player.idle_task = None
 
                 if player.auto_paused and vc.is_paused():
+                    player.total_paused += time.time() - player.pause_time
                     vc.resume()
                     player.auto_paused = False
                     await player.channel.send("▶️ **Đã có người vào:** Tiếp tục quẩy thôi!", delete_after=10)
@@ -573,6 +645,9 @@ class Music(commands.Cog):
     @commands.command(name='skip', aliases=['s'])
     async def skip(self, ctx):
         """Bỏ qua bài hiện tại."""
+        if not await self.is_dj(ctx):
+            return await ctx.send('❌ Bồ cần role `DJ` hoặc quyền `Admin` để skip!')
+            
         vc = ctx.voice_client
         if not vc or not (vc.is_playing() or vc.is_paused()):
             return await ctx.send('❌ Không có nhạc để skip!')
@@ -582,23 +657,71 @@ class Music(commands.Cog):
         vc.stop()
         await ctx.send('⏭️ Đã skip!', delete_after=5)
 
+    @commands.command(name='seek')
+    async def seek(self, ctx, time_str: str):
+        """Nhảy đến một thời điểm trong bài (ví dụ: 1:30 hoặc 90)."""
+        if not await self.is_dj(ctx):
+            return await ctx.send('❌ Bồ cần role `DJ` hoặc quyền `Admin` để seek!')
+            
+        player = self.get_player(ctx)
+        if not player.current:
+            return await ctx.send('❌ Không có gì đang phát!')
+            
+        # Parse time string
+        try:
+            if ':' in time_str:
+                parts = list(map(int, time_str.split(':')))
+                if len(parts) == 2: # mm:ss
+                    seconds = parts[0] * 60 + parts[1]
+                elif len(parts) == 3: # hh:mm:ss
+                    seconds = parts[0] * 3600 + parts[1] * 60 + parts[2]
+                else: raise ValueError
+            else:
+                seconds = int(time_str)
+        except ValueError:
+            return await ctx.send('❌ Định dạng thời gian không hợp lệ! (Dùng: `mm:ss` hoặc số giây)')
+            
+        if seconds < 0 or seconds > player.current.duration:
+            return await ctx.send(f'❌ Thời gian phải từ 0 đến {player.current.duration_str}!')
+            
+        player.seek_offset = seconds
+        vc = ctx.voice_client
+        if vc:
+            # Trick: stop then start again with offset
+            # We need to preserve current song for the loop
+            player.repeat_mode = REPEAT_ONE
+            vc.stop()
+            # Loop will start again, we'll reset repeat_mode after it starts
+            await asyncio.sleep(1)
+            player.repeat_mode = REPEAT_OFF
+            
+        await ctx.send(f'⏩ Đã nhảy đến `{time_str}`')
+
     @commands.command(name='pause')
     async def pause(self, ctx):
         """Tạm dừng nhạc."""
+        if not await self.is_dj(ctx):
+            return await ctx.send('❌ Bồ cần role `DJ` hoặc quyền `Admin` để pause!')
         vc = ctx.voice_client
         if vc and vc.is_playing():
             player = self.get_player(ctx)
             player.auto_paused = False
+            import time
+            player.pause_time = time.time()
             vc.pause()
             await ctx.send('⏸️ Đã tạm dừng.', delete_after=5)
 
     @commands.command(name='resume')
     async def resume(self, ctx):
         """Phát tiếp."""
+        if not await self.is_dj(ctx):
+            return await ctx.send('❌ Bồ cần role `DJ` hoặc quyền `Admin` để resume!')
         vc = ctx.voice_client
         if vc and vc.is_paused():
             player = self.get_player(ctx)
             player.auto_paused = False
+            import time
+            player.total_paused += time.time() - player.pause_time
             vc.resume()
             await ctx.send('▶️ Tiếp tục phát.', delete_after=5)
 
@@ -644,6 +767,8 @@ class Music(commands.Cog):
     @commands.command(name='remove', aliases=['rm'])
     async def remove(self, ctx, index: int):
         """Xóa bài theo số thứ tự trong hàng đợi."""
+        if not await self.is_dj(ctx):
+            return await ctx.send('❌ Bồ cần role `DJ` hoặc quyền `Admin` để remove bài!')
         player = self.get_player(ctx)
         if index < 1 or index > len(player.queue):
             return await ctx.send(f'❌ Số thứ tự phải từ 1 đến {len(player.queue)}!')
@@ -654,13 +779,52 @@ class Music(commands.Cog):
     @commands.command(name='clear')
     async def clear_queue(self, ctx):
         """Xóa toàn bộ hàng đợi."""
+        if not await self.is_dj(ctx):
+            return await ctx.send('❌ Bồ cần role `DJ` hoặc quyền `Admin` để clear queue!')
         player = self.get_player(ctx)
         player.queue.clear()
         await ctx.send('🗑️ Đã xóa toàn bộ hàng đợi!', delete_after=5)
 
+    @commands.command(name='move')
+    async def move(self, ctx, pos_from: int, pos_to: int):
+        """Di chuyển vị trí bài hát trong hàng đợi."""
+        player = self.get_player(ctx)
+        q_len = len(player.queue)
+        if pos_from < 1 or pos_from > q_len or pos_to < 1 or pos_to > q_len:
+            return await ctx.send(f'❌ Vị trí phải từ 1 đến {q_len}!')
+            
+        song = player.queue[pos_from - 1]
+        del player.queue[pos_from - 1]
+        player.queue.insert(pos_to - 1, song)
+        await ctx.send(f'🗂️ Đã chuyển **{song.title}** từ #{pos_from} sang #{pos_to}')
+
+    @commands.command(name='swap')
+    async def swap(self, ctx, pos1: int, pos2: int):
+        """Hoán đổi vị trí hai bài hát trong hàng đợi."""
+        player = self.get_player(ctx)
+        q_len = len(player.queue)
+        if pos1 < 1 or pos1 > q_len or pos2 < 1 or pos2 > q_len:
+            return await ctx.send(f'❌ Vị trí phải từ 1 đến {q_len}!')
+            
+        player.queue[pos1 - 1], player.queue[pos2 - 1] = player.queue[pos2 - 1], player.queue[pos1 - 1]
+        await ctx.send(f'🔄 Đã hoán đổi bài hát ở vị trí #{pos1} và #{pos2}')
+
+    @commands.command(name='history')
+    async def history(self, ctx):
+        """Xem các bài hát vừa phát gần đây."""
+        player = self.get_player(ctx)
+        if not player.history:
+            return await ctx.send('📜 Lịch sử trống!')
+            
+        desc = '\n'.join(f'`{i+1}.` **{s.title}**' for i, s in enumerate(reversed(player.history)))
+        embed = discord.Embed(title='📜 Lịch sử phát nhạc', description=desc, color=discord.Color.from_str('#FF6B9D'))
+        await ctx.send(embed=embed)
+
     @commands.command(name='shuffle')
     async def shuffle(self, ctx):
         """Trộn ngẫu nhiên hàng đợi."""
+        if not await self.is_dj(ctx):
+            return await ctx.send('❌ Bồ cần role `DJ` hoặc quyền `Admin` để shuffle!')
         player = self.get_player(ctx)
         if len(player.queue) < 2:
             return await ctx.send('❌ Cần ít nhất 2 bài trong hàng đợi!')
@@ -670,6 +834,8 @@ class Music(commands.Cog):
     @commands.command(name='repeat', aliases=['loop'])
     async def repeat(self, ctx, mode: str = None):
         """Chế độ lặp: off / one / all"""
+        if not await self.is_dj(ctx):
+            return await ctx.send('❌ Bồ cần role `DJ` hoặc quyền `Admin` để chỉnh loop!')
         player = self.get_player(ctx)
         if mode is None:
             player.repeat_mode = (player.repeat_mode + 1) % 3
@@ -686,6 +852,8 @@ class Music(commands.Cog):
     @commands.command(name='filter', aliases=['fx'])
     async def audio_filter(self, ctx, name: str = None):
         """Bộ lọc âm thanh: normal / bass / nightcore"""
+        if not await self.is_dj(ctx):
+            return await ctx.send('❌ Bồ cần role `DJ` hoặc quyền `Admin` để dùng bộ lọc!')
         player = self.get_player(ctx)
         filters = {'normal': (FFMPEG_BASE, 'Normal'), 'bass': (FFMPEG_BASS, '🔊 Bass Boost'), 'nightcore': (FFMPEG_NIGHTCORE, '🌙 Nightcore')}
         if name is None or name.lower() not in filters:
@@ -696,6 +864,8 @@ class Music(commands.Cog):
     @commands.command(name='autoplay', aliases=['ap'])
     async def autoplay(self, ctx):
         """Bật/Tắt tự động phát bài hát liên quan."""
+        if not await self.is_dj(ctx):
+            return await ctx.send('❌ Bồ cần role `DJ` hoặc quyền `Admin` để dùng autoplay!')
         player = self.get_player(ctx)
         player.autoplay = not player.autoplay
         status = 'BẬT' if player.autoplay else 'TẮT'
@@ -704,6 +874,8 @@ class Music(commands.Cog):
     @commands.command(name='volume', aliases=['vol', 'v'])
     async def volume(self, ctx, vol: int = None):
         """Chỉnh âm lượng (0-200)."""
+        if not await self.is_dj(ctx):
+            return await ctx.send('❌ Bồ cần role `DJ` hoặc quyền `Admin` để chỉnh âm lượng!')
         player = self.get_player(ctx)
         if vol is None:
             return await ctx.send(f'🔊 Âm lượng hiện tại: **{int(player.volume * 100)}%**')
@@ -771,8 +943,76 @@ class Music(commands.Cog):
     @commands.command(name='stop', aliases=['leave', 'dc'])
     async def stop(self, ctx):
         """Dừng phát và thoát phòng voice."""
+        if not await self.is_dj(ctx):
+            return await ctx.send('❌ Bồ cần role `DJ` hoặc quyền `Admin` để stop bot!')
         await self.cleanup(ctx.guild)
         await ctx.send('👋 Tạm biệt bồ!', delete_after=5)
+
+    # ── Playlist Commands ──────────────────────────────
+    @commands.command(name='save_playlist', aliases=['sp'])
+    async def save_playlist(self, ctx, name: str):
+        """Lưu hàng đợi hiện tại thành playlist."""
+        player = self.get_player(ctx)
+        if not player.current and not player.queue:
+            return await ctx.send('❌ Hàng đợi đang trống!')
+            
+        songs = []
+        if player.current:
+            songs.append(player.current._data)
+        for s in player.queue:
+            songs.append(s._data)
+            
+        with open(self.playlist_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            
+        data[name] = {
+            'creator': ctx.author.id,
+            'songs': songs
+        }
+        
+        with open(self.playlist_file, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+            
+        await ctx.send(f'💾 Đã lưu playlist **{name}** với {len(songs)} bài hát!')
+
+    @commands.command(name='load_playlist', aliases=['lp'])
+    async def load_playlist(self, ctx, name: str):
+        """Tải một playlist đã lưu vào hàng đợi."""
+        if not await self._ensure_voice(ctx):
+            return
+            
+        with open(self.playlist_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            
+        if name not in data:
+            return await ctx.send(f'❌ Không tìm thấy playlist tên `{name}`!')
+            
+        songs_data = data[name]['songs']
+        player = self.get_player(ctx)
+        
+        async with ctx.typing():
+            for s_data in songs_data:
+                song = await SongInfo.from_url(s_data, requester=ctx.author, loop=self.bot.loop)
+                player.queue.append(song)
+                
+        vc = ctx.voice_client
+        if vc and not (vc.is_playing() or vc.is_paused()):
+            player.next.set()
+            
+        await ctx.send(f'✅ Đã tải {len(songs_data)} bài từ playlist **{name}**!')
+
+    @commands.command(name='list_playlists', aliases=['lps'])
+    async def list_playlists(self, ctx):
+        """Xem danh sách các playlist đã lưu."""
+        with open(self.playlist_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            
+        if not data:
+            return await ctx.send('📂 Chưa có playlist nào được lưu!')
+            
+        desc = '\n'.join(f'• **{name}** ({len(info["songs"])} bài)' for name, info in data.items())
+        embed = discord.Embed(title='📂 Danh sách Playlists', description=desc, color=discord.Color.from_str('#FF6B9D'))
+        await ctx.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
