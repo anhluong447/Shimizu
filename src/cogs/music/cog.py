@@ -264,7 +264,7 @@ class Music(commands.Cog):
         embed.set_footer(text=f'Trang {page}/{pages} • Lặp: {REPEAT_LABELS[player.repeat_mode]}')
         await ctx.send(embed=embed)
 
-    @commands.command(name='np', aliases=['np', 'now'])
+    @commands.command(name='np', aliases=['now'])
     async def now_playing(self, ctx):
         """Xem bài hát đang phát hiện tại."""
         player = self.get_player(ctx)
