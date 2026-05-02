@@ -125,6 +125,7 @@ class Music(commands.Cog):
     # ── Commands ────────────────────────────────────────
     @commands.command(name='play', aliases=['p'])
     async def play_(self, ctx, *, query: str):
+        """Phát nhạc từ URL hoặc tìm kiếm từ khóa."""
         if not await self._ensure_voice(ctx): return
         is_url = re.match(r'https?://', query)
         if is_url:
@@ -154,6 +155,7 @@ class Music(commands.Cog):
 
     @commands.command(name='playnow', aliases=['pn'])
     async def play_now(self, ctx, *, query: str):
+        """Phát ngay lập tức (chèn vào đầu hàng đợi và skip bài hiện tại)."""
         if not await self._ensure_voice(ctx): return
         async with ctx.typing():
             song = await SongInfo.from_url(query, requester=ctx.author, loop=self.bot.loop)
@@ -168,10 +170,12 @@ class Music(commands.Cog):
 
     @commands.command(name='join', aliases=['j'])
     async def join(self, ctx):
+        """Mời bot vào phòng voice."""
         await self._ensure_voice(ctx)
 
     @commands.command(name='skip', aliases=['s'])
     async def skip(self, ctx):
+        """Bỏ qua bài hát hiện tại."""
         if not await self.is_dj(ctx):
             return await ctx.send('❌ Bồ cần role `DJ` hoặc quyền `Admin` để skip!')
         vc = ctx.voice_client
@@ -185,6 +189,7 @@ class Music(commands.Cog):
 
     @commands.command(name='seek')
     async def seek(self, ctx, time_str: str):
+        """Nhảy đến thời gian cụ thể (ví dụ: 1:30 hoặc 90)."""
         if not await self.is_dj(ctx):
             return await ctx.send('❌ Bồ cần role `DJ` hoặc quyền `Admin` để seek!')
         player = self.get_player(ctx)
@@ -213,6 +218,7 @@ class Music(commands.Cog):
 
     @commands.command(name='pause')
     async def pause(self, ctx):
+        """Tạm dừng phát nhạc."""
         if not await self.is_dj(ctx):
             return await ctx.send('❌ Bồ cần role `DJ` hoặc quyền `Admin` để pause!')
         vc = ctx.voice_client
@@ -225,6 +231,7 @@ class Music(commands.Cog):
 
     @commands.command(name='resume')
     async def resume(self, ctx):
+        """Tiếp tục phát nhạc."""
         if not await self.is_dj(ctx):
             return await ctx.send('❌ Bồ cần role `DJ` hoặc quyền `Admin` để resume!')
         vc = ctx.voice_client
@@ -237,6 +244,7 @@ class Music(commands.Cog):
 
     @commands.command(name='queue', aliases=['q'])
     async def queue_info(self, ctx, page: int = 1):
+        """Xem danh sách bài hát trong hàng đợi."""
         player = self.get_player(ctx)
         if not player.queue and not player.current:
             return await ctx.send('📋 Hàng đợi trống!')
@@ -254,8 +262,9 @@ class Music(commands.Cog):
         embed.set_footer(text=f'Trang {page}/{pages} • Lặp: {REPEAT_LABELS[player.repeat_mode]}')
         await ctx.send(embed=embed)
 
-    @commands.command(name='np', aliases=['now'])
+    @commands.command(name='np', aliases=['np', 'now'])
     async def now_playing(self, ctx):
+        """Xem bài hát đang phát hiện tại."""
         player = self.get_player(ctx)
         if not player.current:
             return await ctx.send('❌ Không có bài nào đang phát.')
@@ -269,6 +278,7 @@ class Music(commands.Cog):
 
     @commands.command(name='remove', aliases=['rm'])
     async def remove(self, ctx, index: int):
+        """Xóa một bài hát khỏi hàng đợi theo số thứ tự."""
         if not await self.is_dj(ctx): return
         player = self.get_player(ctx)
         if index < 1 or index > len(player.queue):
@@ -279,12 +289,14 @@ class Music(commands.Cog):
 
     @commands.command(name='clear')
     async def clear_queue(self, ctx):
+        """Xóa sạch hàng đợi."""
         if not await self.is_dj(ctx): return
         self.get_player(ctx).queue.clear()
         await ctx.send('🗑️ Đã xóa toàn bộ hàng đợi!', delete_after=5)
 
     @commands.command(name='move')
     async def move(self, ctx, pos_from: int, pos_to: int):
+        """Di chuyển bài hát từ vị trí này sang vị trí khác."""
         player = self.get_player(ctx)
         q_len = len(player.queue)
         if pos_from < 1 or pos_from > q_len or pos_to < 1 or pos_to > q_len:
@@ -296,6 +308,7 @@ class Music(commands.Cog):
 
     @commands.command(name='swap')
     async def swap(self, ctx, pos1: int, pos2: int):
+        """Hoán đổi vị trí của hai bài hát trong hàng đợi."""
         player = self.get_player(ctx)
         q_len = len(player.queue)
         if pos1 < 1 or pos1 > q_len or pos2 < 1 or pos2 > q_len:
@@ -305,6 +318,7 @@ class Music(commands.Cog):
 
     @commands.command(name='history')
     async def history(self, ctx):
+        """Xem lịch sử 10 bài hát vừa phát gần nhất."""
         player = self.get_player(ctx)
         if not player.history:
             return await ctx.send('📜 Lịch sử trống!')
@@ -314,6 +328,7 @@ class Music(commands.Cog):
 
     @commands.command(name='shuffle')
     async def shuffle(self, ctx):
+        """Trộn ngẫu nhiên hàng đợi."""
         if not await self.is_dj(ctx): return
         player = self.get_player(ctx)
         if len(player.queue) < 2:
@@ -323,6 +338,7 @@ class Music(commands.Cog):
 
     @commands.command(name='repeat', aliases=['loop'])
     async def repeat(self, ctx, mode: str = None):
+        """Chế độ lặp: off / one / all."""
         if not await self.is_dj(ctx): return
         player = self.get_player(ctx)
         if mode is None:
@@ -335,6 +351,7 @@ class Music(commands.Cog):
 
     @commands.command(name='filter', aliases=['fx'])
     async def audio_filter(self, ctx, name: str = None):
+        """Áp dụng bộ lọc âm thanh: normal / bass / nightcore."""
         if not await self.is_dj(ctx): return
         player = self.get_player(ctx)
         filters = {
@@ -349,14 +366,16 @@ class Music(commands.Cog):
 
     @commands.command(name='autoplay', aliases=['ap'])
     async def autoplay(self, ctx):
+        """Bật/Tắt tự động phát bài hát liên quan khi hết hàng đợi."""
         if not await self.is_dj(ctx): return
         player = self.get_player(ctx)
         player.autoplay = not player.autoplay
         status = 'BẬT' if player.autoplay else 'TẮT'
-        await ctx.send(f'✨ Autoplay đã được **{status}**!', delete_after=10)
+        await ctx.send(f'✨ Chế độ Autoplay đã được **{status}**!', delete_after=10)
 
     @commands.command(name='volume', aliases=['vol', 'v'])
     async def volume(self, ctx, vol: int = None):
+        """Chỉnh âm lượng (0-200)."""
         if not await self.is_dj(ctx): return
         player = self.get_player(ctx)
         if vol is None:
@@ -369,8 +388,58 @@ class Music(commands.Cog):
             vc.source.volume = player.volume
         await ctx.send(f'🔊 Đã chỉnh âm lượng: **{vol}%**', delete_after=5)
 
+    @commands.command(name='lyrics', aliases=['ly', 'l'])
+    async def lyrics(self, ctx, *, query: str = None):
+        """Xem lời bài hát đang phát hoặc tìm theo tên."""
+        player = self.get_player(ctx)
+        if not query:
+            if not player.current:
+                return await ctx.send('❌ Không có bài nào đang phát để xem lời!')
+            artist, title = self._get_artist_title(player.current)
+        else:
+            if ' - ' in query:
+                parts = query.split(' - ', 1)
+                artist, title = parts[0], parts[1]
+            else:
+                artist, title = '', query
+
+        async with ctx.typing():
+            async def fetch(a, t):
+                url = f"https://api.lyrics.ovh/v1/{a}/{t}"
+                try:
+                    import aiohttp
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(url, timeout=10) as resp:
+                            if resp.status == 200:
+                                return (await resp.json()).get('lyrics')
+                except Exception:
+                    pass
+                return None
+
+            lyrics_text = await fetch(artist, title)
+            if not lyrics_text and artist:
+                lyrics_text = await fetch('', f"{artist} {title}")
+
+        if not lyrics_text:
+            search_name = f"{artist} - {title}" if artist else title
+            return await ctx.send(f'❌ Không tìm thấy lời cho: **{search_name}**')
+
+        if len(lyrics_text) > 4000:
+            lyrics_text = lyrics_text[:4000] + "\n\n...(còn tiếp)..."
+
+        embed = discord.Embed(
+            title=f'📜 Lời bài hát: {title}',
+            description=lyrics_text,
+            color=discord.Color.from_str('#FF6B9D')
+        )
+        if artist:
+            embed.set_author(name=artist)
+        embed.set_footer(text=f"Yêu cầu bởi {ctx.author.display_name}")
+        await ctx.send(embed=embed)
+
     @commands.command(name='stop', aliases=['leave', 'dc'])
     async def stop(self, ctx):
+        """Dừng phát và thoát phòng voice."""
         if not await self.is_dj(ctx): return
         await self.cleanup(ctx.guild)
         await ctx.send('👋 Tạm biệt bồ!', delete_after=5)
@@ -378,6 +447,7 @@ class Music(commands.Cog):
     # ── Playlist Commands ──────────────────────────────
     @commands.command(name='save_playlist', aliases=['sp'])
     async def save_playlist(self, ctx, name: str):
+        """Lưu hàng đợi hiện tại thành playlist."""
         player = self.get_player(ctx)
         if not player.current and not player.queue:
             return await ctx.send('❌ Hàng đợi đang trống!')
@@ -393,6 +463,7 @@ class Music(commands.Cog):
 
     @commands.command(name='load_playlist', aliases=['lp'])
     async def load_playlist(self, ctx, name: str):
+        """Tải một playlist đã lưu vào hàng đợi."""
         if not await self._ensure_voice(ctx): return
         with open(PLAYLISTS_FILE, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -411,6 +482,7 @@ class Music(commands.Cog):
 
     @commands.command(name='list_playlists', aliases=['lps'])
     async def list_playlists(self, ctx):
+        """Xem danh sách các playlist đã lưu."""
         with open(PLAYLISTS_FILE, 'r', encoding='utf-8') as f:
             data = json.load(f)
         if not data:
