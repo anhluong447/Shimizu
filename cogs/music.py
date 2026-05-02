@@ -105,14 +105,34 @@ class SongInfo:
     @classmethod
     async def search(cls, query, *, loop=None):
         loop = loop or asyncio.get_event_loop()
-        search_query = f'scsearch5:{query}'
         
-        try:
-            data = await loop.run_in_executor(None, lambda: ytdl_search.extract_info(search_query, download=False))
-        except Exception as e:
-            print(f'[DEBUG] Search error: {e}')
-            return []
+        async def perform_search(q, limit=5):
+            search_query = f'scsearch{limit}:{q}'
+            try:
+                return await loop.run_in_executor(None, lambda: ytdl_search.extract_info(search_query, download=False))
+            except Exception as e:
+                print(f'[DEBUG] SoundCloud Search error for "{q}": {e}')
+                return None
+
+        # Bước 1: Tìm kiếm nguyên bản (Deep Search)
+        data = await perform_search(query)
+        
+        # Bước 2: Nếu không có kết quả, thử làm sạch query (Query Refinement)
+        if not data or 'entries' not in data or not data['entries']:
+            print(f'[DEBUG] No results for "{query}", refining query...')
+            # Xóa các ký tự đặc biệt, emoji và các tag thừa
+            clean_query = re.sub(r'\(.*?\)|\[.*?\]|official|video|lyric|audio|mv|music video|full hd|[^a-zA-Z0-9\sàáạảãâầấnậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]', ' ', query, flags=re.IGNORECASE)
+            clean_query = ' '.join(clean_query.split()) # Xóa khoảng trắng thừa
             
+            if clean_query and clean_query.lower() != query.lower():
+                data = await perform_search(clean_query)
+                
+        # Bước 3: Nếu vẫn không có kết quả, thử tìm theo từng phần (Broad Match)
+        if (not data or 'entries' not in data or not data['entries']) and ' - ' in query:
+            parts = query.split(' - ')
+            print(f'[DEBUG] Still no results, trying broad match with "{parts[-1]}"...')
+            data = await perform_search(parts[-1])
+
         if not data or 'entries' not in data:
             return []
             
@@ -346,14 +366,23 @@ class MusicPlayer:
                 data = await loop.run_in_executor(None, lambda: ydl.extract_info(station_url, download=False))
                 
             if data and 'entries' in data:
+                # Lọc bỏ các bài trong history hoặc queue để tránh loop
+                played_urls = [s.url for s in self.history]
+                queue_urls = [s.url for s in self.queue]
+                if self.current:
+                    queue_urls.append(self.current.url)
+
                 for entry in data['entries']:
                     entry_url = entry.get('url')
                     if not entry_url:
                         continue
-                    # Bỏ qua bài hiện tại (kiểm tra ID trong URL)
-                    if str(song_id) not in entry_url:
-                        # Fetch full metadata cho bài liên quan được chọn
-                        return await SongInfo.from_url(entry_url, requester=self.bot.user, loop=self.bot.loop)
+                    
+                    # Bỏ qua bài hiện tại và bài vừa phát
+                    if entry_url in played_urls or entry_url in queue_urls:
+                        continue
+                        
+                    # Fetch full metadata cho bài liên quan được chọn
+                    return await SongInfo.from_url(entry_url, requester=self.bot.user, loop=self.bot.loop)
                         
         except Exception as e:
             print(f'[DEBUG] Fetch related station error: {e}')
@@ -365,8 +394,14 @@ class MusicPlayer:
         query = f"{song.title} {song.uploader} related"
         try:
             results = await SongInfo.search(query, loop=self.bot.loop)
+            played_urls = [s.url for s in self.history]
+            queue_urls = [s.url for s in self.queue]
+            if self.current:
+                queue_urls.append(self.current.url)
+
             for r in results:
-                if r.get('webpage_url') != song.url and r.get('title') != song.title:
+                url = r.get('webpage_url') or r.get('url')
+                if url not in played_urls and url not in queue_urls:
                     return await SongInfo.from_url(r, requester=self.bot.user, loop=self.bot.loop)
         except Exception as e:
             print(f'[DEBUG] Fetch related fallback error: {e}')
@@ -760,7 +795,15 @@ class Music(commands.Cog):
             return await ctx.send('❌ Không có bài nào đang phát.')
         vc = ctx.voice_client
         paused = vc.is_paused() if vc else False
-        embed = build_np_embed(player.current, paused=paused, repeat=player.repeat_mode, audio_filter=player.filter_name, autoplay=player.autoplay)
+        embed = build_np_embed(
+            player.current, 
+            paused=paused, 
+            repeat=player.repeat_mode, 
+            audio_filter=player.filter_name, 
+            autoplay=player.autoplay,
+            volume=player.volume,
+            current_time=player.get_current_time()
+        )
         view = ControllerView(player)
         await ctx.send(embed=embed, view=view)
 
