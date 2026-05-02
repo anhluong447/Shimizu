@@ -14,7 +14,7 @@ class SecretMeng(commands.Cog):
 
     @commands.command(name='meng')
     async def meng(self, ctx):
-        """Randomly pick a line from the encrypted meng.ann file and display it."""
+        """What's this about? Hmmm...?"""
         if not self.key:
             await ctx.send("❌ Hệ thống chưa cấu hình SECRET_KEY.")
             return
