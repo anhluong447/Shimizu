@@ -54,4 +54,11 @@ class ShimizuBot(commands.Bot):
         log.info(f'Bot {self.user.name} is online!')
         await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=f"{PREFIX}play"))
 
+    async def on_message(self, message):
+        if message.author.bot:
+            return
+        # Log để debug xem bot có nhận được tin nhắn không
+        log.info(f"Message from {message.author}: {message.content}")
+        await self.process_commands(message)
+
 bot = ShimizuBot()
