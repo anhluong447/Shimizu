@@ -115,7 +115,7 @@ class SongInfo:
         return data['entries']
 
 # ─── Now Playing Embed Builder ──────────────────────────
-def build_np_embed(song: SongInfo, paused=False, repeat=REPEAT_OFF, audio_filter='Normal', autoplay=False):
+def build_np_embed(song: SongInfo, paused=False, repeat=REPEAT_OFF, audio_filter='Normal', autoplay=False, volume=0.5):
     status = '⏸️ Đang tạm dừng' if paused else '🎵 Đang phát'
     embed = discord.Embed(
         title=song.title,
@@ -127,6 +127,7 @@ def build_np_embed(song: SongInfo, paused=False, repeat=REPEAT_OFF, audio_filter
         embed.set_thumbnail(url=song.thumbnail)
     embed.add_field(name='⏱️ Thời lượng', value=f'`{song.duration_str}`', inline=True)
     embed.add_field(name='🎤 Kênh', value=f'`{song.uploader}`', inline=True)
+    embed.add_field(name='🔊 Âm lượng', value=f'`{int(volume * 100)}%`', inline=True)
     embed.add_field(name='🔊 Bộ lọc', value=f'`{audio_filter}`', inline=True)
     embed.add_field(name='🔁 Lặp lại', value=f'`{REPEAT_LABELS[repeat]}`', inline=True)
     embed.add_field(name='✨ Autoplay', value=f'`{AUTOPLAY_LABELS[autoplay]}`', inline=True)
@@ -188,12 +189,28 @@ class ControllerView(discord.ui.View):
         self.player.autoplay = not self.player.autoplay
         await self._update_np(interaction)
 
+    @discord.ui.button(emoji='🔉', style=discord.ButtonStyle.secondary, custom_id='ctrl_voldown')
+    async def vol_down(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.player.volume = max(0.0, self.player.volume - 0.1)
+        vc = interaction.guild.voice_client
+        if vc and vc.source:
+            vc.source.volume = self.player.volume
+        await self._update_np(interaction)
+
+    @discord.ui.button(emoji='🔊', style=discord.ButtonStyle.secondary, custom_id='ctrl_volup')
+    async def vol_up(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.player.volume = min(2.0, self.player.volume + 0.1)
+        vc = interaction.guild.voice_client
+        if vc and vc.source:
+            vc.source.volume = self.player.volume
+        await self._update_np(interaction)
+
     async def _update_np(self, interaction):
         if not self.player.current:
             return await interaction.response.defer()
         vc = interaction.guild.voice_client
         paused = vc.is_paused() if vc else False
-        embed = build_np_embed(self.player.current, paused=paused, repeat=self.player.repeat_mode, audio_filter=self.player.filter_name, autoplay=self.player.autoplay)
+        embed = build_np_embed(self.player.current, paused=paused, repeat=self.player.repeat_mode, audio_filter=self.player.filter_name, autoplay=self.player.autoplay, volume=self.player.volume)
         await interaction.response.edit_message(embed=embed, view=self)
 
 # ─── Search Select View ────────────────────────────────
@@ -257,6 +274,7 @@ class MusicPlayer:
         self.auto_paused = False
         self.idle_task: asyncio.Task | None = None
         self.filter_name = 'Normal'
+        self.volume = 0.5
         self._ff_opts = FFMPEG_BASE
         self._task = bot.loop.create_task(self._player_loop())
 
@@ -343,7 +361,7 @@ class MusicPlayer:
                     return
 
             self.current = song
-            source = discord.PCMVolumeTransformer(song.make_source(self.get_ff_opts()), volume=0.5)
+            source = discord.PCMVolumeTransformer(song.make_source(self.get_ff_opts()), volume=self.volume)
             vc = self.guild.voice_client
             if not vc:
                 await self._cleanup()
@@ -358,7 +376,7 @@ class MusicPlayer:
                 except discord.HTTPException:
                     pass
 
-            embed = build_np_embed(song, repeat=self.repeat_mode, audio_filter=self.filter_name, autoplay=self.autoplay)
+            embed = build_np_embed(song, repeat=self.repeat_mode, audio_filter=self.filter_name, autoplay=self.autoplay, volume=self.volume)
             view = ControllerView(self)
             self.np_message = await self.channel.send(embed=embed, view=view)
 
@@ -682,6 +700,23 @@ class Music(commands.Cog):
         player.autoplay = not player.autoplay
         status = 'BẬT' if player.autoplay else 'TẮT'
         await ctx.send(f'✨ Chế độ Autoplay đã được **{status}**!', delete_after=10)
+
+    @commands.command(name='volume', aliases=['vol', 'v'])
+    async def volume(self, ctx, vol: int = None):
+        """Chỉnh âm lượng (0-200)."""
+        player = self.get_player(ctx)
+        if vol is None:
+            return await ctx.send(f'🔊 Âm lượng hiện tại: **{int(player.volume * 100)}%**')
+        
+        if vol < 0 or vol > 200:
+            return await ctx.send('❌ Âm lượng phải từ 0 đến 200!')
+        
+        player.volume = vol / 100
+        vc = ctx.voice_client
+        if vc and vc.source:
+            vc.source.volume = player.volume
+        
+        await ctx.send(f'🔊 Đã chỉnh âm lượng thành: **{vol}%**', delete_after=5)
 
     @commands.command(name='lyrics', aliases=['ly', 'l'])
     async def lyrics(self, ctx, *, query: str = None):
