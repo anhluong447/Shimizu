@@ -36,6 +36,7 @@ Shimizu isn't just another music bot. It's designed to provide a premium, seamle
 - **Couple Trivia** — Encrypted interactive game with a 100-question pool to test how well you know each other.
 - **Dynamic Presence** — Bot status updates in real-time based on music playback and random moods.
 - **Secret Memories** — Secure, XOR-encrypted data storage for personal notes and memories.
+- **Tarot Divination** — Advanced 78-card inspired system (34 detailed cards) with ephemeral results, journaling, and social sharing.
 
 ---
 
@@ -62,6 +63,7 @@ Shimizu isn't just another music bot. It's designed to provide a premium, seamle
 | `/trivia` | Play the Couple Trivia game (2 players). |
 | `/ping` | Check bot and API latency. |
 | `/meng` | Access the encrypted memory box. |
+| `/tarot` | Mystical divination system (draw, spread, love, work). |
 
 ---
 
@@ -114,7 +116,8 @@ Shimizu/
 │   │   ├── utility.py   # Weather & Notifications
 │   │   ├── secret.py    # Encrypted memories
 │   │   ├── trivia.py    # Couple Trivia game
-│   │   └── presence.py  # Bot status management
+│   │   ├── presence.py  # Bot status management
+│   │   └── tarot.py     # Mystical Tarot system
 │   ├── core/            # Configuration and logging
 │   ├── services/        # External API integrations (Weather, etc.)
 │   └── utils/           # Shared helper functions
