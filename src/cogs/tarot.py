@@ -116,6 +116,7 @@ class Tarot(commands.Cog):
             await ctx.send_help(ctx.command)
 
     @tarot.command(name='draw', description='Rút 1 lá bài Tarot duy nhất (Cooldown 12h).')
+    @commands.cooldown(1, 43200, commands.BucketType.user)
     @app_commands.checks.cooldown(1, 43200, key=lambda i: (i.guild_id, i.user.id))
     async def draw(self, ctx):
         if not self.cards:
@@ -143,14 +144,8 @@ class Tarot(commands.Cog):
         view = TarotCardView(self.bot, card, rev, affinity, personal_msg)
         await msg.edit(embed=view.embed, view=view)
 
-    @draw.error
-    async def draw_error(self, ctx, error):
-        if isinstance(error, (commands.CommandOnCooldown, app_commands.CommandOnCooldown)):
-            hours, remainder = divmod(int(error.retry_after), 3600)
-            minutes, _ = divmod(remainder, 60)
-            await ctx.send(f"⏳ Hãy quay lại rút quẻ ngày sau **{hours}h {minutes}m** nữa nhé!", ephemeral=True)
-
     @tarot.command(name='spread', description='Trải 3 lá — Quá Khứ / Hiện Tại / Tương Lai.')
+    @commands.cooldown(1, 3600, commands.BucketType.user)
     @app_commands.checks.cooldown(1, 3600, key=lambda i: (i.guild_id, i.user.id))
     async def spread(self, ctx):
         if not self.cards: return
@@ -177,6 +172,28 @@ class Tarot(commands.Cog):
             embeds.append(embed)
 
         await msg.edit(embeds=embeds)
+
+    async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
+        if isinstance(error, app_commands.CommandOnCooldown):
+            hours, remainder = divmod(int(error.retry_after), 3600)
+            minutes, _ = divmod(remainder, 60)
+            msg = f"⏳ Hãy quay lại rút quẻ sau **{hours}h {minutes}m** nữa nhé!" if error.retry_after > 3600 else f"⏳ Vui lòng đợi **{minutes} phút** nữa."
+            if interaction.response.is_done():
+                await interaction.followup.send(msg, ephemeral=True)
+            else:
+                await interaction.response.send_message(msg, ephemeral=True)
+            return
+        log.error(f"[TAROT] App Command Error: {error}")
+
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        if not ctx.command or ctx.command.cog != self:
+            return
+        if isinstance(error, commands.CommandOnCooldown):
+            hours, remainder = divmod(int(error.retry_after), 3600)
+            minutes, _ = divmod(remainder, 60)
+            msg = f"⏳ Hãy quay lại rút quẻ sau **{hours}h {minutes}m** nữa nhé!" if error.retry_after > 3600 else f"⏳ Vui lòng đợi **{minutes} phút** nữa."
+            await ctx.send(msg, ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(Tarot(bot))
