@@ -62,7 +62,7 @@ class Tarot(commands.Cog):
         affinity = random.randint(10, 99)
         return card, reversed_, affinity
 
-    def _build_card_embed(self, card, reversed_, affinity, label=None, user_name=""):
+    def _build_card_embed(self, card, reversed_, affinity, mode="general", label=None):
         direction = "Ngược (Reversed)" if reversed_ else "Xuôi (Upright)"
         data = card['rev'] if reversed_ else card['up']
         arrow = "🔻" if reversed_ else "🔺"
@@ -87,11 +87,13 @@ class Tarot(commands.Cog):
         # Description (General)
         embed.add_field(name="📜 Thông điệp chung", value=data['desc'], inline=False)
         
-        # Love & Relationship
-        embed.add_field(name="💕 Tình duyên", value=data['love'], inline=False)
+        # Love & Relationship (Only in love or draw mode if you want, but user wants them separate)
+        if mode == "love":
+            embed.add_field(name="💕 Tình duyên", value=data['love'], inline=False)
         
         # Career & Finance
-        embed.add_field(name="💼 Sự nghiệp & Tài chính", value=data['work'], inline=False)
+        if mode == "work":
+            embed.add_field(name="💼 Sự nghiệp & Tài chính", value=data['work'], inline=False)
         
         # Action
         embed.add_field(name="💡 Lời khuyên hành động", value=f">>> {data['action']}", inline=False)
@@ -143,7 +145,7 @@ class Tarot(commands.Cog):
         }
         self._save_history()
 
-        embed = self._build_card_embed(card, rev, affinity, user_name=ctx.author.display_name)
+        embed = self._build_card_embed(card, rev, affinity, mode="general")
         embed.set_author(name=f"🔮 Trải bài của {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
         embed.set_footer(text="Shimizu Tarot", icon_url=self.bot.user.display_avatar.url)
 
@@ -185,7 +187,7 @@ class Tarot(commands.Cog):
         for i, card in enumerate(drawn):
             rev = random.random() < 0.35
             affinity = random.randint(10, 99)
-            embed = self._build_card_embed(card, rev, affinity, label=labels[i])
+            embed = self._build_card_embed(card, rev, affinity, mode="spread", label=labels[i])
             if i == 0:
                 embed.set_author(name=f"🔮 Dòng thời gian của {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
             if i == 2:
@@ -215,7 +217,7 @@ class Tarot(commands.Cog):
         await asyncio.sleep(2.5)
 
         card, rev, affinity = self._draw(love_pool)
-        embed = self._build_card_embed(card, rev, affinity)
+        embed = self._build_card_embed(card, rev, affinity, mode="love")
         embed.set_author(name=f"💕 Tình duyên của {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
         embed.set_footer(text="Shimizu Love Tarot", icon_url=self.bot.user.display_avatar.url)
         
@@ -237,7 +239,7 @@ class Tarot(commands.Cog):
         await asyncio.sleep(2.5)
 
         card, rev, affinity = self._draw(work_pool)
-        embed = self._build_card_embed(card, rev, affinity)
+        embed = self._build_card_embed(card, rev, affinity, mode="work")
         embed.set_author(name=f"💼 Sự nghiệp của {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
         embed.set_footer(text="Shimizu Career Tarot", icon_url=self.bot.user.display_avatar.url)
         
