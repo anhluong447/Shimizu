@@ -9,7 +9,7 @@ class WeatherService:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
                     if response.status == 200:
-                        data = await response.json()
+                        data = await response.json(content_type=None)
                         
                         # Current condition
                         curr = data['current_condition'][0]
