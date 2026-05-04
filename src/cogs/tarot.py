@@ -114,7 +114,7 @@ class Tarot(commands.Cog):
             color=discord.Color.dark_purple()
         )
         wait_embed.set_image(url=SHUFFLE_GIF)
-        msg = await ctx.send(embed=wait_embed)
+        msg = await ctx.send(embed=wait_embed, ephemeral=True)
         
         await asyncio.sleep(2.5)
 
@@ -169,7 +169,7 @@ class Tarot(commands.Cog):
             color=discord.Color.dark_purple()
         )
         wait_embed.set_image(url=SHUFFLE_GIF)
-        msg = await ctx.send(embed=wait_embed)
+        msg = await ctx.send(embed=wait_embed, ephemeral=True)
         await asyncio.sleep(3)
 
         drawn = random.sample(self.cards, 3)
@@ -205,7 +205,7 @@ class Tarot(commands.Cog):
 
         wait_embed = discord.Embed(title="💕 Đang kết nối với Cảm xúc...", color=discord.Color.from_str('#ff69b4'))
         wait_embed.set_image(url=SHUFFLE_GIF)
-        msg = await ctx.send(embed=wait_embed)
+        msg = await ctx.send(embed=wait_embed, ephemeral=True)
         await asyncio.sleep(2.5)
 
         card, rev, affinity = self._draw(love_pool)
@@ -227,7 +227,7 @@ class Tarot(commands.Cog):
 
         wait_embed = discord.Embed(title="🪙 Đang tính toán Mệnh tài vận...", color=discord.Color.gold())
         wait_embed.set_image(url=SHUFFLE_GIF)
-        msg = await ctx.send(embed=wait_embed)
+        msg = await ctx.send(embed=wait_embed, ephemeral=True)
         await asyncio.sleep(2.5)
 
         card, rev, affinity = self._draw(work_pool)
