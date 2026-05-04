@@ -7,13 +7,13 @@ class General(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='ping')
+    @commands.hybrid_command(name='ping', description='Kiểm tra độ trễ của bot.')
     async def ping(self, ctx):
         """Kiểm tra độ trễ của bot"""
         latency = round(self.bot.latency * 1000)
         await ctx.send(f'🏓 Pong! Latency: {latency}ms')
 
-    @commands.command(name='hello')
+    @commands.hybrid_command(name='hello', description='Chào hỏi người dùng.')
     async def hello(self, ctx):
         """Chào hỏi người dùng"""
         await ctx.send(f'Chào bồ {ctx.author.name}! Mình là Shimizu, hân hạnh được phục vụ! 🌸')

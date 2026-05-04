@@ -1,7 +1,7 @@
 import os
 import discord
 from discord.ext import commands
-from src.core.config import PREFIX, TOKEN
+from src.core.config import PREFIX, TOKEN, GUILD_ID
 from src.core.logger import log
 
 class ShimizuBot(commands.Bot):
@@ -14,6 +14,16 @@ class ShimizuBot(commands.Bot):
         log.info("--- Loading modules ---")
         await self.load_all_cogs()
         log.info("--- Modules loaded ---")
+
+        # Sync slash commands
+        if GUILD_ID:
+            guild = discord.Object(id=int(GUILD_ID))
+            self.tree.copy_global_to(guild=guild)
+            synced = await self.tree.sync(guild=guild)
+            log.info(f"[SYNC] Synced {len(synced)} commands to guild {GUILD_ID}")
+        else:
+            synced = await self.tree.sync()
+            log.info(f"[SYNC] Synced {len(synced)} commands globally")
 
     async def load_all_cogs(self):
         cogs_dir = os.path.join(os.path.dirname(__file__), 'cogs')
@@ -52,7 +62,7 @@ class ShimizuBot(commands.Bot):
 
     async def on_ready(self):
         log.info(f'Bot {self.user.name} is online!')
-        await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=f"{PREFIX}play"))
+        await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="/play"))
 
     async def on_message(self, message):
         if message.author.bot:

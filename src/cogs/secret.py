@@ -10,7 +10,7 @@ class Secret(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='meng')
+    @commands.hybrid_command(name='meng', description="What's this about? Hmmm...?")
     async def meng(self, ctx):
         """What's this about? Hmmm...?"""
         if not SECRET_KEY:

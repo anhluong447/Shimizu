@@ -3,6 +3,7 @@ import json
 import discord
 import datetime
 from discord.ext import commands, tasks
+from discord import app_commands
 from src.core.config import TIMEZONE, NOTIFICATIONS_FILE
 from src.services.weather import WeatherService
 from src.core.logger import log
@@ -83,7 +84,8 @@ class Utility(commands.Cog):
                     msg = f"🔔 **THÔNG BÁO HẸN GIỜ** ({notif['time']})\n\n> {notif['message']}\n\n*Đặt bởi: {notif['user_name']}*"
                     await channel.send(msg)
 
-    @commands.command(name='notify')
+    @commands.hybrid_command(name='notify', description='Đặt thông báo lặp lại hàng ngày.')
+    @app_commands.describe(time='Giờ thông báo (VD: 07:00)', message='Nội dung thông báo')
     async def notify(self, ctx, time: str, *, message: str):
         """Đặt thông báo lặp lại hàng ngày."""
         try:
@@ -103,7 +105,7 @@ class Utility(commands.Cog):
         except ValueError:
             await ctx.send("❌ Định dạng thời gian không đúng. Vui lòng dùng `HH:MM`.")
 
-    @commands.command(name='reminders', aliases=['notifs'])
+    @commands.hybrid_command(name='reminders', aliases=['notifs'], description='Xem danh sách thông báo hiện có.')
     async def reminders(self, ctx):
         """Xem danh sách các thông báo hiện có"""
         notifications = self.load_notifications()
@@ -120,7 +122,8 @@ class Utility(commands.Cog):
             )
         await ctx.send(embed=embed)
 
-    @commands.command(name='delnotify', aliases=['rmnotify'])
+    @commands.hybrid_command(name='delnotify', aliases=['rmnotify'], description='Xóa thông báo theo số thứ tự.')
+    @app_commands.describe(index='Số thứ tự thông báo cần xóa')
     async def delnotify(self, ctx, index: int):
         """Xóa thông báo theo số thứ tự."""
         notifications = self.load_notifications()

@@ -8,6 +8,7 @@ load_dotenv()
 # --- Bot Config ---
 TOKEN = os.getenv('DISCORD_TOKEN')
 SECRET_KEY = os.getenv('SECRET_KEY')
+GUILD_ID = os.getenv('GUILD_ID')
 PREFIX = '!'
 TIMEZONE = pytz.timezone('Asia/Ho_Chi_Minh')
 

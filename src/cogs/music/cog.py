@@ -8,6 +8,7 @@ import time
 import traceback
 import aiohttp
 from discord.ext import commands
+from discord import app_commands
 from .player import MusicPlayer
 from .models import SongInfo
 from .views import SearchView, ControllerView, build_np_embed
@@ -134,7 +135,8 @@ class Music(commands.Cog):
             pass
 
     # ── Commands ────────────────────────────────────────
-    @commands.command(name='play', aliases=['p'])
+    @commands.hybrid_command(name='play', aliases=['p'], description='Phát nhạc từ URL hoặc tìm kiếm từ khóa.')
+    @app_commands.describe(query='Tên bài hát hoặc URL')
     async def play_(self, ctx, *, query: str):
         """Phát nhạc từ URL hoặc tìm kiếm từ khóa."""
         if not await self._ensure_voice(ctx): return
@@ -164,7 +166,8 @@ class Music(commands.Cog):
                 log.error(f'Search error: {e}')
                 await ctx.send(f'❌ Lỗi khi tìm kiếm: `{e}`')
 
-    @commands.command(name='playnow', aliases=['pn'])
+    @commands.hybrid_command(name='playnow', aliases=['pn'], description='Phát ngay lập tức, chèn vào đầu hàng đợi.')
+    @app_commands.describe(query='Tên bài hát hoặc URL')
     async def play_now(self, ctx, *, query: str):
         """Phát ngay lập tức (chèn vào đầu hàng đợi và skip bài hiện tại)."""
         if not await self._ensure_voice(ctx): return
@@ -179,12 +182,12 @@ class Music(commands.Cog):
             player.next.set()
         await ctx.send(f'⚡ Phát ngay: **{song.title}**', delete_after=10)
 
-    @commands.command(name='join', aliases=['j'])
+    @commands.hybrid_command(name='join', aliases=['j'], description='Mời bot vào phòng voice.')
     async def join(self, ctx):
         """Mời bot vào phòng voice."""
         await self._ensure_voice(ctx)
 
-    @commands.command(name='skip', aliases=['s'])
+    @commands.hybrid_command(name='skip', aliases=['s'], description='Bỏ qua bài hát hiện tại.')
     async def skip(self, ctx):
         """Bỏ qua bài hát hiện tại."""
         if not await self.is_dj(ctx):
@@ -198,7 +201,8 @@ class Music(commands.Cog):
         vc.stop()
         await ctx.send('⏭️ Đã skip!', delete_after=5)
 
-    @commands.command(name='seek')
+    @commands.hybrid_command(name='seek', description='Nhảy đến thời gian cụ thể (VD: 1:30 hoặc 90).')
+    @app_commands.describe(time_str='Thời gian (VD: 1:30 hoặc 90)')
     async def seek(self, ctx, time_str: str):
         """Nhảy đến thời gian cụ thể (ví dụ: 1:30 hoặc 90)."""
         if not await self.is_dj(ctx):
@@ -227,7 +231,7 @@ class Music(commands.Cog):
             player.repeat_mode = REPEAT_OFF
         await ctx.send(f'⏩ Đã nhảy đến `{time_str}`')
 
-    @commands.command(name='pause')
+    @commands.hybrid_command(name='pause', description='Tạm dừng phát nhạc.')
     async def pause(self, ctx):
         """Tạm dừng phát nhạc."""
         if not await self.is_dj(ctx):
@@ -240,7 +244,7 @@ class Music(commands.Cog):
             vc.pause()
             await ctx.send('⏸️ Đã tạm dừng.', delete_after=5)
 
-    @commands.command(name='resume')
+    @commands.hybrid_command(name='resume', description='Tiếp tục phát nhạc.')
     async def resume(self, ctx):
         """Tiếp tục phát nhạc."""
         if not await self.is_dj(ctx):
@@ -253,7 +257,8 @@ class Music(commands.Cog):
             vc.resume()
             await ctx.send('▶️ Tiếp tục phát.', delete_after=5)
 
-    @commands.command(name='queue', aliases=['q'])
+    @commands.hybrid_command(name='queue', aliases=['q'], description='Xem danh sách bài hát trong hàng đợi.')
+    @app_commands.describe(page='Số trang (mặc định 1)')
     async def queue_info(self, ctx, page: int = 1):
         """Xem danh sách bài hát trong hàng đợi."""
         player = self.get_player(ctx)
@@ -273,7 +278,7 @@ class Music(commands.Cog):
         embed.set_footer(text=f'Trang {page}/{pages} • Lặp: {REPEAT_LABELS[player.repeat_mode]}')
         await ctx.send(embed=embed)
 
-    @commands.command(name='np', aliases=['now'])
+    @commands.hybrid_command(name='np', aliases=['now'], description='Xem bài hát đang phát hiện tại.')
     async def now_playing(self, ctx):
         """Xem bài hát đang phát hiện tại."""
         player = self.get_player(ctx)
@@ -287,7 +292,8 @@ class Music(commands.Cog):
         view = ControllerView(player)
         await ctx.send(embed=embed, view=view)
 
-    @commands.command(name='remove', aliases=['rm'])
+    @commands.hybrid_command(name='remove', aliases=['rm'], description='Xóa bài hát khỏi hàng đợi theo số thứ tự.')
+    @app_commands.describe(index='Số thứ tự bài hát cần xóa')
     async def remove(self, ctx, index: int):
         """Xóa một bài hát khỏi hàng đợi theo số thứ tự."""
         if not await self.is_dj(ctx): return
@@ -298,14 +304,15 @@ class Music(commands.Cog):
         del player.queue[index - 1]
         await ctx.send(f'🗑️ Đã xóa: **{removed.title}**', delete_after=5)
 
-    @commands.command(name='clear')
+    @commands.hybrid_command(name='clear', description='Xóa sạch hàng đợi.')
     async def clear_queue(self, ctx):
         """Xóa sạch hàng đợi."""
         if not await self.is_dj(ctx): return
         self.get_player(ctx).queue.clear()
         await ctx.send('🗑️ Đã xóa toàn bộ hàng đợi!', delete_after=5)
 
-    @commands.command(name='move')
+    @commands.hybrid_command(name='move', description='Di chuyển bài hát trong hàng đợi.')
+    @app_commands.describe(pos_from='Vị trí hiện tại', pos_to='Vị trí mới')
     async def move(self, ctx, pos_from: int, pos_to: int):
         """Di chuyển bài hát từ vị trí này sang vị trí khác."""
         player = self.get_player(ctx)
@@ -317,7 +324,8 @@ class Music(commands.Cog):
         player.queue.insert(pos_to - 1, song)
         await ctx.send(f'🗂️ Đã chuyển **{song.title}** từ #{pos_from} sang #{pos_to}')
 
-    @commands.command(name='swap')
+    @commands.hybrid_command(name='swap', description='Hoán đổi vị trí của hai bài hát.')
+    @app_commands.describe(pos1='Vị trí bài 1', pos2='Vị trí bài 2')
     async def swap(self, ctx, pos1: int, pos2: int):
         """Hoán đổi vị trí của hai bài hát trong hàng đợi."""
         player = self.get_player(ctx)
@@ -327,7 +335,7 @@ class Music(commands.Cog):
         player.queue[pos1 - 1], player.queue[pos2 - 1] = player.queue[pos2 - 1], player.queue[pos1 - 1]
         await ctx.send(f'🔄 Đã hoán đổi #{pos1} và #{pos2}')
 
-    @commands.command(name='history')
+    @commands.hybrid_command(name='history', description='Xem lịch sử 10 bài hát vừa phát gần nhất.')
     async def history(self, ctx):
         """Xem lịch sử 10 bài hát vừa phát gần nhất."""
         player = self.get_player(ctx)
@@ -337,7 +345,7 @@ class Music(commands.Cog):
         embed = discord.Embed(title='📜 Lịch sử phát nhạc', description=desc, color=discord.Color.from_str('#FF6B9D'))
         await ctx.send(embed=embed)
 
-    @commands.command(name='shuffle')
+    @commands.hybrid_command(name='shuffle', description='Trộn ngẫu nhiên hàng đợi.')
     async def shuffle(self, ctx):
         """Trộn ngẫu nhiên hàng đợi."""
         if not await self.is_dj(ctx): return
@@ -347,7 +355,8 @@ class Music(commands.Cog):
         random.shuffle(player.queue)
         await ctx.send('🔀 Đã trộn hàng đợi!', delete_after=5)
 
-    @commands.command(name='repeat', aliases=['loop'])
+    @commands.hybrid_command(name='repeat', aliases=['loop'], description='Chế độ lặp: off / one / all.')
+    @app_commands.describe(mode='Chế độ: off / one / all')
     async def repeat(self, ctx, mode: str = None):
         """Chế độ lặp: off / one / all."""
         if not await self.is_dj(ctx): return
@@ -360,7 +369,8 @@ class Music(commands.Cog):
         else: return await ctx.send('❌ Dùng: `!repeat off/one/all`')
         await ctx.send(f'🔁 Chế độ lặp: **{REPEAT_LABELS[player.repeat_mode]}**', delete_after=5)
 
-    @commands.command(name='filter', aliases=['fx'])
+    @commands.hybrid_command(name='filter', aliases=['fx'], description='Áp dụng bộ lọc âm thanh.')
+    @app_commands.describe(name='Tên bộ lọc: normal / bass / nightcore')
     async def audio_filter(self, ctx, name: str = None):
         """Áp dụng bộ lọc âm thanh: normal / bass / nightcore."""
         if not await self.is_dj(ctx): return
@@ -375,7 +385,7 @@ class Music(commands.Cog):
         player.filter_name = filters[name.lower()][1]
         await ctx.send(f'🔊 Bộ lọc: **{player.filter_name}** (áp dụng từ bài tiếp theo)', delete_after=8)
 
-    @commands.command(name='autoplay', aliases=['ap'])
+    @commands.hybrid_command(name='autoplay', aliases=['ap'], description='Bật/Tắt autoplay khi hết hàng đợi.')
     async def autoplay(self, ctx):
         """Bật/Tắt tự động phát bài hát liên quan khi hết hàng đợi."""
         if not await self.is_dj(ctx): return
@@ -384,7 +394,8 @@ class Music(commands.Cog):
         status = 'BẬT' if player.autoplay else 'TẮT'
         await ctx.send(f'✨ Chế độ Autoplay đã được **{status}**!', delete_after=10)
 
-    @commands.command(name='volume', aliases=['vol', 'v'])
+    @commands.hybrid_command(name='volume', aliases=['vol', 'v'], description='Chỉnh âm lượng (0-200).')
+    @app_commands.describe(vol='Âm lượng (0-200)')
     async def volume(self, ctx, vol: int = None):
         """Chỉnh âm lượng (0-200)."""
         if not await self.is_dj(ctx): return
@@ -399,7 +410,8 @@ class Music(commands.Cog):
             vc.source.volume = player.volume
         await ctx.send(f'🔊 Đã chỉnh âm lượng: **{vol}%**', delete_after=5)
 
-    @commands.command(name='lyrics', aliases=['ly', 'l'])
+    @commands.hybrid_command(name='lyrics', aliases=['ly', 'l'], description='Xem lời bài hát.')
+    @app_commands.describe(query='Tên bài hát (VD: Sabrina Carpenter - Espresso)')
     async def lyrics(self, ctx, *, query: str = None):
         """Xem lời bài hát đang phát hoặc tìm theo tên."""
         player = self.get_player(ctx)
@@ -475,7 +487,7 @@ class Music(commands.Cog):
         embed.set_footer(text=f"Yêu cầu bởi {ctx.author.display_name}")
         await ctx.send(embed=embed)
 
-    @commands.command(name='stop', aliases=['leave', 'dc'])
+    @commands.hybrid_command(name='stop', aliases=['leave', 'dc'], description='Dừng phát và thoát phòng voice.')
     async def stop(self, ctx):
         """Dừng phát và thoát phòng voice."""
         if not await self.is_dj(ctx): return
@@ -483,7 +495,8 @@ class Music(commands.Cog):
         await ctx.send('👋 Tạm biệt bồ!', delete_after=5)
 
     # ── Playlist Commands ──────────────────────────────
-    @commands.command(name='save_playlist', aliases=['sp'])
+    @commands.hybrid_command(name='save_playlist', aliases=['sp'], description='Lưu hàng đợi thành playlist.')
+    @app_commands.describe(name='Tên playlist')
     async def save_playlist(self, ctx, name: str):
         """Lưu hàng đợi hiện tại thành playlist."""
         player = self.get_player(ctx)
@@ -499,7 +512,8 @@ class Music(commands.Cog):
             json.dump(data, f, ensure_ascii=False, indent=4)
         await ctx.send(f'💾 Đã lưu playlist **{name}** với {len(songs)} bài!')
 
-    @commands.command(name='load_playlist', aliases=['lp'])
+    @commands.hybrid_command(name='load_playlist', aliases=['lp'], description='Tải playlist đã lưu vào hàng đợi.')
+    @app_commands.describe(name='Tên playlist')
     async def load_playlist(self, ctx, name: str):
         """Tải một playlist đã lưu vào hàng đợi."""
         if not await self._ensure_voice(ctx): return
@@ -518,7 +532,7 @@ class Music(commands.Cog):
             player.next.set()
         await ctx.send(f'✅ Đã tải {len(songs_data)} bài từ playlist **{name}**!')
 
-    @commands.command(name='list_playlists', aliases=['lps'])
+    @commands.hybrid_command(name='list_playlists', aliases=['lps'], description='Xem danh sách playlist đã lưu.')
     async def list_playlists(self, ctx):
         """Xem danh sách các playlist đã lưu."""
         with open(PLAYLISTS_FILE, 'r', encoding='utf-8') as f:
