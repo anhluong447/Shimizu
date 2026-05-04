@@ -181,10 +181,7 @@ class Utility(commands.Cog):
             
             embed.add_field(name=f"📅 DỰ BÁO NGÀY MAI ({fmt_date})", value=f">>> {tmr_text}", inline=False)
 
-            # Thumbnail & Footer
-            if w['current']['icon']:
-                embed.set_thumbnail(url=w['current']['icon'])
-            
+            # Footer
             embed.set_footer(text="Dữ liệu thời gian thực từ wttr.in", icon_url="https://cdn-icons-png.flaticon.com/512/3222/3222801.png")
             embed.timestamp = datetime.datetime.now()
             

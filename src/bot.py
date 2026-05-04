@@ -62,7 +62,6 @@ class ShimizuBot(commands.Bot):
 
     async def on_ready(self):
         log.info(f'Bot {self.user.name} is online!')
-        await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="/play"))
 
     async def on_message(self, message):
         if message.author.bot:
