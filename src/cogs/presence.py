@@ -17,7 +17,6 @@ class Presence(commands.Cog):
         
         self.idle_statuses = [
             "Đang coi mây bay ☁️",
-            "Tui đang chờ nhạc nè... 🎵",
             "Đang coi thời tiết nha 🌦️",
             "Chill chill trong server 🌸",
             "Đang đọc tâm trí Meng... 🧠",
@@ -68,7 +67,7 @@ class Presence(commands.Cog):
                     self.last_song_name = active_song
                     self.last_paused_state = is_paused
                     
-                    activity_name = f"{'⏸️ ' if is_paused else '🌸🎵 Đang nghe: '}{active_song}"
+                    activity_name = f"{'⏸️ ' if is_paused else '🎵'}{active_song}"
                     new_activity = discord.Activity(
                         type=discord.ActivityType.listening,
                         name=activity_name
