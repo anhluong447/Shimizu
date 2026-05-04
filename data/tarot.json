@@ -9,19 +9,25 @@
       "keywords": [
         "Khởi đầu mới",
         "Tự do",
-        "Ngây thơ"
+        "Ngây thơ",
+        "Phiêu lưu"
       ],
-      "desc": "Một chương mới đang mở ra. Bạn đang đứng trước bờ vực của một cuộc phiêu lưu đầy hứa hẹn, đòi hỏi một bước nhảy vọt của niềm tin.",
-      "action": "Hãy dũng cảm bước ra khỏi vùng an toàn. Đừng để nỗi sợ hãi giữ chân bạn lại!"
+      "desc": "The Fool đại diện cho sự khởi đầu của một hành trình tâm linh. Bạn đang đứng trước một trang giấy trắng hoàn toàn, nơi mọi khả năng đều có thể xảy ra. Đây là lúc để rũ bỏ gánh nặng quá khứ và bước đi với niềm tin thuần khiết nhất.",
+      "love": "Nếu bạn đang độc thân, một mối quan hệ mới đầy bất ngờ và thú vị sắp bắt đầu. Nếu đã có đôi, hãy cùng nhau thử những trải nghiệm mới mẻ, đừng ngại làm những điều 'điên rồ' để hâm nóng tình cảm.",
+      "work": "Một cơ hội nghề nghiệp mà bạn chưa từng nghĩ tới có thể xuất hiện. Hãy dũng cảm thử sức với lĩnh vực mới. Đừng quá lo lắng về kế hoạch chi tiết, hãy cứ bắt đầu trước đã.",
+      "action": "Hãy tin vào bản năng của mình và bước tới. Đây là ngày để nói 'Có' với những lời mời bất ngờ!"
     },
     "rev": {
       "keywords": [
         "Liều lĩnh",
-        "Thiếu suy nghĩ",
-        "Ngây ngô"
+        "Bốc đồng",
+        "Thiếu trách nhiệm",
+        "Trì trệ"
       ],
-      "desc": "Cảnh báo về những quyết định bốc đồng hoặc việc nhảy vào một tình huống mà không xem xét kỹ hậu quả. Đang có sự tắc nghẽn trong việc bắt đầu.",
-      "action": "Hãy chậm lại! Đánh giá kỹ rủi ro trước khi hành động, đừng để sự ngây thơ làm hại bạn."
+      "desc": "Lá bài ngược cảnh báo về sự thiếu chuẩn bị hoặc những quyết định mang tính phá hoại do quá ngây thơ. Bạn có thể đang cố trốn tránh thực tại bằng những cuộc vui vô bổ thay vì đối mặt với trách nhiệm.",
+      "love": "Cẩn thận với những mối quan hệ 'chớp nhoáng' thiếu cam kết. Đừng để sự tự do cá nhân trở thành sự ích kỷ khiến đối phương tổn thương. Đã đến lúc cần nghiêm túc hơn.",
+      "work": "Bạn đang thiếu sự tập trung và kỷ luật. Những kế hoạch viển vông có thể dẫn đến thất bại tài chính. Hãy xem xét lại xem bạn có đang quá mơ mộng mà bỏ qua thực tế hay không.",
+      "action": "Dừng lại và kiểm tra kỹ rủi ro. Đừng ký kết bất cứ thứ gì hay đưa ra quyết định lớn nào trong ngày hôm nay."
     }
   },
   {
@@ -33,20 +39,26 @@
     "up": {
       "keywords": [
         "Ý chí",
-        "Sáng tạo",
-        "Thực hành"
+        "Tài năng",
+        "Hiện thực hóa",
+        "Sức mạnh"
       ],
-      "desc": "Bạn hiện có đủ mọi công cụ, kỹ năng và nguồn lực để biến ý tưởng thành hiện thực. Đây là lúc hành động quyết đoán.",
-      "action": "Hãy sử dụng tối đa tài năng của bạn. Sự tập trung sẽ mang lại kết quả bất ngờ."
+      "desc": "The Magician là bậc thầy của các nguyên tố. Bạn đang ở đỉnh cao của khả năng sáng tạo và có đủ mọi nguồn lực cần thiết để biến ý tưởng thành hiện thực. Vũ trụ đang hỗ trợ để bạn lèo lái cuộc đời mình.",
+      "love": "Bạn có sức hút mãnh liệt và khả năng dẫn dắt mối quan hệ. Đây là lúc để chủ động bày tỏ hoặc thực hiện những bước tiến lớn. Sự tự tin của bạn chính là thỏi nam châm thu hút tình yêu.",
+      "work": "Khả năng chuyên môn và sự linh hoạt giúp bạn giải quyết mọi khó khăn. Một dự án lớn sẽ thành công nếu bạn tập trung toàn bộ ý chí. Đây là lúc để thể hiện bản thân với cấp trên.",
+      "action": "Hãy hành động ngay lập tức. Tập trung vào mục tiêu cao nhất và sử dụng tất cả những gì bạn đang có."
     },
     "rev": {
       "keywords": [
         "Thao túng",
+        "Lãng phí tài năng",
         "Thiếu tự tin",
-        "Lãng phí tài năng"
+        "Lừa dối"
       ],
-      "desc": "Có dấu hiệu của sự lừa dối (từ người khác hoặc tự lừa dối mình). Tiềm năng của bạn đang bị phung phí do thiếu định hướng.",
-      "action": "Cảnh giác với những lời hứa suông xung quanh. Hãy xem lại xem bạn đang làm việc vì mục tiêu gì."
+      "desc": "Năng lượng của Magician bị lệch lạc dẫn đến sự thao túng hoặc lừa lọc. Bạn có thể đang dùng tài năng của mình vào mục đích không tốt, hoặc đang cảm thấy bất lực dù thực tế bạn có thừa khả năng.",
+      "love": "Cảnh giác với sự thiếu trung thực trong tình cảm. Ai đó có thể đang dùng lời nói hoa mỹ để che đậy ý đồ cá nhân. Đừng để bị mê hoặc bởi vẻ bề ngoài hào nhoáng.",
+      "work": "Sự thiếu tự tin đang ngăn cản bạn tiến lên. Có dấu hiệu của sự cạnh tranh không lành mạnh hoặc gian lận trong công việc. Hãy cẩn thận với những lời hứa hẹn quá tốt đẹp.",
+      "action": "Hãy tự vấn lại lương tâm và mục đích của mình. Đừng cố gắng đi đường tắt hay lừa dối người khác."
     }
   },
   {
@@ -59,19 +71,25 @@
       "keywords": [
         "Trực giác",
         "Bí ẩn",
-        "Tiềm thức"
+        "Tiềm thức",
+        "Sự thông thái"
       ],
-      "desc": "Thời điểm để tin vào linh cảm hơn là logic. Có những bí ẩn đang dần được hé lộ nếu bạn biết lắng nghe tiếng nói nội tâm.",
-      "action": "Hãy dành thời gian thiền định, tĩnh tâm. Đừng vội vã quyết định khi chưa cảm thấy 'đúng' ở bên trong."
+      "desc": "Lá bài này đại diện cho sự tĩnh lặng và trí tuệ tâm linh. Bạn không cần phải đi tìm câu trả lời ở bên ngoài, mọi thứ đã nằm sẵn trong tiềm thức của bạn. Đây là lúc để quan sát và cảm nhận thay vì hành động.",
+      "love": "Mối quan hệ của bạn đang ở giai đoạn cần sự thấu hiểu thầm lặng. Nếu đang độc thân, hãy chú ý đến những giấc mơ hoặc những sự trùng hợp ngẫu nhiên, chúng đang chỉ dẫn bạn đến đúng người.",
+      "work": "Đừng vội vã đưa ra quyết định kinh doanh. Có những thông tin chưa được tiết lộ. Hãy giữ bí mật về các kế hoạch của bạn và chờ đợi thời điểm chín muồi khi trực giác mách bảo.",
+      "action": "Dành thời gian thiền định hoặc viết nhật ký. Hãy lắng nghe tiếng nói nội tâm, nó sẽ không lừa dối bạn."
     },
     "rev": {
       "keywords": [
         "Bí mật bị giấu",
         "Phớt lờ trực giác",
-        "Rối loạn cảm xúc"
+        "Sự hời hợt",
+        "Rối loạn"
       ],
-      "desc": "Bạn đang từ chối lắng nghe tiếng nói bên trong, hoặc ai đó đang che giấu bạn một sự thật quan trọng. Mọi thứ đang mờ mịt.",
-      "action": "Ngừng chạy theo ý kiến người khác. Đã đến lúc đối mặt với sự thật mà bạn đang lẩn tránh."
+      "desc": "Bạn đang bị ngắt kết nối với bản thân và quá phụ thuộc vào logic hoặc ý kiến của người khác. Những bí mật đen tối có thể bị phanh phui, gây ra sự xáo trộn mạnh mẽ về mặt cảm xúc.",
+      "love": "Có sự thiếu tin tưởng hoặc che giấu sự thật trong mối quan hệ. Đừng cố gắng lờ đi những dấu hiệu bất ổn mà trực giác đã cảnh báo. Hãy đối mặt với sự thật dù nó có làm bạn khó chịu.",
+      "work": "Thông tin sai lệch hoặc sự thiếu minh bạch đang gây hại cho sự nghiệp của bạn. Đừng vội tin vào những lời đồn thổi. Hãy kiểm chứng kỹ mọi nguồn tin trước khi hành động.",
+      "action": "Hãy ngừng việc suy nghĩ quá nhiều bằng lý trí. Tập trung quay về bên trong để tìm lại sự bình yên."
     }
   },
   {
@@ -83,20 +101,26 @@
     "up": {
       "keywords": [
         "Sung túc",
-        "Chăm sóc",
-        "Sáng tạo"
+        "Nuôi dưỡng",
+        "Sáng tạo",
+        "Mẫu tính"
       ],
-      "desc": "Đại diện cho sự nữ tính, vẻ đẹp và sự phong phú. Mọi nỗ lực của bạn đang đâm chồi nảy lộc và mang lại trái ngọt.",
-      "action": "Hãy nuôi dưỡng bản thân và các mối quan hệ. Dành thời gian kết nối với thiên nhiên và tận hưởng cái đẹp."
+      "desc": "The Empress đại diện cho sự màu mỡ của trái đất và tình yêu vô điều kiện. Bạn đang ở trong giai đoạn cực kỳ thịnh vượng, nơi mọi hạt giống bạn gieo trồng đều sẽ nảy mầm và phát triển mạnh mẽ.",
+      "love": "Tình yêu thăng hoa, ấm áp và tràn đầy sự quan tâm. Đây là thời điểm tuyệt vời cho việc hâm nóng tình cảm, đính hôn hoặc đón nhận tin vui về thành viên mới trong gia đình.",
+      "work": "Công việc tiến triển thuận lợi, đặc biệt là các lĩnh vực liên quan đến nghệ thuật, chăm sóc hoặc thiên nhiên. Tài chính đang trên đà phát triển bền vững nhờ sự kiên trì và tận tâm của bạn.",
+      "action": "Hãy chăm sóc bản thân nhiều hơn (spa, ăn ngon). Hãy dành thời gian cho thiên nhiên để tái tạo năng lượng."
     },
     "rev": {
       "keywords": [
-        "Phụ thuộc",
+        "Thiếu chăm sóc",
+        "Sự phụ thuộc",
         "Khô cằn",
-        "Thiếu yêu thương"
+        "Áp đặt"
       ],
-      "desc": "Cảm giác bị vắt kiệt sức lực vì chăm sóc người khác quá mức, hoặc bạn đang gặp vấn đề về sự tự tin và thiếu yêu bản thân.",
-      "action": "Phải biết nói KHÔNG! Hãy đặt bản thân lên ưu tiên hàng đầu trước khi muốn chăm lo cho ai khác."
+      "desc": "Năng lượng nuôi dưỡng bị biến thành sự kiểm soát hoặc bỏ bê bản thân. Bạn có thể đang cảm thấy trống rỗng, thiếu sáng tạo và gặp khó khăn trong việc thể hiện tình yêu thương.",
+      "love": "Sự quan tâm thái quá có thể gây ngột ngạt cho đối phương. Hoặc bạn đang quá bỏ bê bản thân khiến mối quan hệ trở nên khô khan. Cần tìm lại sự cân bằng giữa cho và nhận.",
+      "work": "Các kế hoạch bị đình trệ, thiếu sự sáng tạo và đột phá. Bạn có thể đang gặp vấn đề với những đồng nghiệp nữ hoặc cảm thấy không hài lòng với môi trường làm việc hiện tại.",
+      "action": "Hãy học cách yêu thương chính mình trước. Đừng cố gắng làm hài lòng tất cả mọi người xung quanh."
     }
   },
   {
@@ -109,19 +133,25 @@
       "keywords": [
         "Quyền lực",
         "Cấu trúc",
-        "Ổn định"
+        "Ổn định",
+        "Lý trí"
       ],
-      "desc": "Một giai đoạn đòi hỏi kỷ luật, trật tự và khả năng lãnh đạo. Bạn đang làm chủ được tình thế thông qua luật lệ và lý trí.",
-      "action": "Hãy thiết lập lại kế hoạch một cách logic. Logic và sự bền bỉ sẽ là chìa khóa."
+      "desc": "The Emperor là biểu tượng của sự trật tự và kỷ luật. Bạn đang nắm quyền kiểm soát và có khả năng xây dựng những nền móng vững chắc cho tương lai. Đây là lúc để hành động bằng cái đầu lạnh.",
+      "love": "Mối quan hệ cần sự cam kết và những nguyên tắc rõ ràng. Bạn hoặc đối phương đóng vai trò là trụ cột vững chắc. Sự ổn định này mang lại cảm giác an tâm tuyệt đối.",
+      "work": "Bạn đang ở vị thế lãnh đạo hoặc cần phải thể hiện bản lĩnh của một người đứng đầu. Kỷ luật và sự chuyên nghiệp sẽ giúp bạn đạt được những thành tựu to lớn và sự tôn trọng từ đồng nghiệp.",
+      "action": "Lập kế hoạch chi tiết cho mọi việc. Hãy giữ kỷ luật bản thân và tuân thủ các quy tắc đã đề ra."
     },
     "rev": {
       "keywords": [
         "Độc đoán",
         "Cứng nhắc",
-        "Mất kiểm soát"
+        "Mất kiểm soát",
+        "Yếu nhược"
       ],
-      "desc": "Sự lạm dụng quyền lực hoặc ngược lại là thiếu tính kỷ luật dẫn đến hỗn loạn. Cấu trúc hiện tại đang bị phá vỡ.",
-      "action": "Bớt kiểm soát lại! Sự linh hoạt lúc này mới cứu được ván cờ, đừng quá bảo thủ."
+      "desc": "Sự lạm dụng quyền lực hoặc thiếu tính kỷ luật dẫn đến sự hỗn loạn. Bạn có thể đang quá bảo thủ, không chịu lắng nghe hoặc ngược lại, đang tỏ ra quá yếu đuối trước những áp lực.",
+      "love": "Sự gia trưởng hoặc kiểm soát thái quá đang làm rạn nứt tình cảm. Có dấu hiệu của sự bất bình đẳng trong mối quan hệ. Cần phải học cách thấu hiểu và sẻ chia quyền lực.",
+      "work": "Môi trường làm việc độc đoán hoặc sự quản lý tồi tệ đang gây áp lực cho bạn. Kế hoạch bị đổ vỡ do thiếu cấu trúc hoặc sự can thiệp quá sâu của cấp trên. Tài chính bấp bênh.",
+      "action": "Hãy bớt cứng nhắc lại. Đôi khi sự linh hoạt và lắng nghe mới là cách để giữ vững quyền lực thực sự."
     }
   },
   {
@@ -134,19 +164,25 @@
       "keywords": [
         "Truyền thống",
         "Niềm tin",
+        "Trí tuệ",
         "Hướng dẫn"
       ],
-      "desc": "Bạn cần làm theo những khuôn mẫu, quy tắc đã được thiết lập. Hãy tìm kiếm sự hướng dẫn từ một người thầy hoặc tổ chức uy tín.",
-      "action": "Tôn trọng các giá trị cốt lõi. Đây chưa phải lúc để thử nghiệm những thứ quá phá cách."
+      "desc": "Hierophant đại diện cho những giá trị truyền thống và sự hướng dẫn về đạo đức. Đây là thời điểm để tuân thủ các quy chuẩn xã hội và tìm kiếm tri thức từ những người đi trước giàu kinh nghiệm.",
+      "love": "Mối quan hệ đang hướng tới sự cam kết lâu dài như hôn nhân hoặc các lễ nghi truyền thống. Đây là lúc để chia sẻ những giá trị sống chung và xây dựng niềm tin dựa trên sự tôn trọng.",
+      "work": "Hãy làm việc theo nhóm và tuân thủ các quy trình đã có sẵn. Đây không phải lúc để phá cách. Việc tham gia các khóa đào tạo hoặc tìm một người cố vấn (mentor) sẽ rất có lợi.",
+      "action": "Hãy tham khảo ý kiến từ người lớn tuổi hoặc người có kinh nghiệm. Hãy hành xử đúng mực và chuẩn mực."
     },
     "rev": {
       "keywords": [
         "Nổi loạn",
-        "Phá vỡ quy tắc",
-        "Hạn chế"
+        "Phá cách",
+        "Định kiến",
+        "Tự do"
       ],
-      "desc": "Sự bức bối với những luật lệ cũ kỹ và bảo thủ. Đang có sự thôi thúc muốn đạp đổ những định kiến để tìm tự do.",
-      "action": "Dám nghĩ khác biệt! Đừng sợ đi ngược lại đám đông nếu bạn tin đó là con đường đúng."
+      "desc": "Bạn đang cảm thấy gò bó bởi những luật lệ lỗi thời và muốn phá bỏ chúng để tìm lối đi riêng. Năng lượng này thôi thúc sự thay đổi nhưng cũng cảnh báo về sự thiếu định hướng nếu không cẩn thận.",
+      "love": "Hai bạn đang có những quan điểm trái ngược về tương lai hoặc truyền thống. Có sự thôi thúc phá bỏ những ràng buộc cũ để tìm kiếm sự tự do cá nhân trong tình cảm.",
+      "work": "Sự bất mãn với cấu trúc công ty hoặc những quy tắc cứng nhắc. Bạn muốn thử nghiệm những phương pháp mới nhưng gặp phải sự phản kháng. Cần cân nhắc kỹ giữa đổi mới và an toàn.",
+      "action": "Hãy dũng cảm suy nghĩ khác biệt. Tuy nhiên, đừng nổi loạn chỉ để chứng tỏ cái tôi của mình."
     }
   },
   {
@@ -159,19 +195,25 @@
       "keywords": [
         "Tình yêu",
         "Hòa hợp",
-        "Lựa chọn"
+        "Lựa chọn",
+        "Kết nối"
       ],
-      "desc": "Sự kết nối sâu sắc, tình yêu đích thực và sự đồng điệu về mặt linh hồn. Nó cũng đại diện cho một ngã rẽ lựa chọn quan trọng.",
-      "action": "Hãy đưa ra quyết định dựa trên trái tim và giá trị thật sự của bạn. Trân trọng người đang ở cạnh."
+      "desc": "The Lovers không chỉ là tình yêu lứa đôi mà còn là sự hòa hợp giữa các mặt đối lập. Bạn đang đứng trước một lựa chọn quan trọng đòi hỏi sự thống nhất giữa lý trí và con tim.",
+      "love": "Sự đồng điệu tuyệt vời về tâm hồn. Mối quan hệ đang ở giai đoạn thăng hoa nhất. Đối với người độc thân, một tình yêu sét đánh hoặc một sự lựa chọn giữa hai đối tượng có thể xảy ra.",
+      "work": "Sự hợp tác ăn ý mang lại kết quả vượt mong đợi. Bạn có thể cần phải đưa ra quyết định về định hướng sự nghiệp. Hãy chọn con đường phù hợp với giá trị cốt lõi của bản thân.",
+      "action": "Hãy lắng nghe trái tim mình. Đây là lúc để bày tỏ sự trân trọng với những người thân yêu nhất."
     },
     "rev": {
       "keywords": [
         "Mất cân bằng",
         "Xung đột",
-        "Lựa chọn sai"
+        "Lựa chọn sai",
+        "Sự chia rẽ"
       ],
-      "desc": "Sự rạn nứt trong giao tiếp hoặc cảm giác không đồng điệu. Bạn có thể đang đưa ra lựa chọn vì sợ hãi thay vì tình yêu.",
-      "action": "Giao tiếp thẳng thắn! Đừng lấp liếm những vấn đề đang tồn tại trong mối quan hệ."
+      "desc": "Sự mất kết nối giữa các cá nhân hoặc sự mâu thuẫn nội tâm về một lựa chọn. Bạn đang gặp khó khăn trong việc tìm tiếng nói chung và có thể đang trốn tránh những quyết định cần thiết.",
+      "love": "Mâu thuẫn, ghen tuông hoặc cảm giác không còn thuộc về nhau. Có thể có người thứ ba hoặc những yếu tố bên ngoài gây rạn nứt. Cần nhìn nhận lại sự cam kết của cả hai.",
+      "work": "Sự bất đồng trong nhóm làm việc gây đình trệ. Bạn có thể đã đưa ra một lựa chọn nghề nghiệp sai lầm vì áp lực bên ngoài. Tài chính gặp rắc rối do những quyết định thiếu nhất quán.",
+      "action": "Hãy ngồi lại và giao tiếp thẳng thắn. Đừng cố lờ đi những vấn đề đang tồn tại để đổi lấy sự bình yên giả tạo."
     }
   },
   {
@@ -184,19 +226,25 @@
       "keywords": [
         "Chiến thắng",
         "Quyết tâm",
-        "Kiểm soát"
+        "Kiểm soát",
+        "Tốc độ"
       ],
-      "desc": "Bạn đang vượt qua những lực lượng đối lập để tiến lên phía trước. Ý chí mạnh mẽ sẽ mang lại thành công vang dội.",
-      "action": "Giữ chặt dây cương! Đừng chệch hướng khỏi mục tiêu, bạn sắp đến đích rồi."
+      "desc": "The Chariot là biểu tượng của sự vinh quang đạt được nhờ ý chí thép. Bạn đang kiểm soát được những lực lượng đối lập và tiến băng băng về phía mục tiêu. Không gì có thể cản bước bạn lúc này.",
+      "love": "Bạn đang làm chủ được cảm xúc và dẫn dắt mối quan hệ tiến triển nhanh chóng. Đây cũng là lúc để vượt qua những khó khăn chung bằng sự đồng lòng và quyết đoán.",
+      "work": "Sự nghiệp thăng tiến mạnh mẽ. Bạn vượt qua mọi đối thủ cạnh tranh bằng sự tập trung cao độ. Khả năng quản lý và điều hành của bạn đang ở mức tốt nhất.",
+      "action": "Giữ vững tay lái và tập trung vào mục tiêu. Đừng để bất cứ điều gì làm bạn xao nhãng khỏi kế hoạch chính."
     },
     "rev": {
       "keywords": [
         "Mất phương hướng",
         "Hung hăng",
-        "Kháng cự"
+        "Kháng cự",
+        "Thất bại"
       ],
-      "desc": "Cảm giác bị đánh bại, mất kiểm soát tình huống hoặc đang cố gượng ép mọi việc theo ý mình một cách vô ích.",
-      "action": "Lùi lại một bước. Thay vì dùng sức mạnh mù quáng, hãy xem xét lại chiến lược của bạn."
+      "desc": "Năng lượng bị phân tán dẫn đến sự mất kiểm soát. Bạn có thể đang cố gắng thúc ép mọi việc quá mức hoặc đang bị cuốn đi bởi những cảm xúc tiêu cực mà không có đích đến rõ ràng.",
+      "love": "Mối quan hệ đang mất phương hướng hoặc có sự tranh giành quyền lực mệt mỏi. Sự nóng nảy và thiếu kiềm chế có thể gây ra những tổn thương không đáng có cho đối phương.",
+      "work": "Dự án gặp trục trặc bất ngờ do thiếu sự phối hợp. Bạn có thể đang quá tự mãn dẫn đến sai lầm. Cẩn thận với việc đưa ra những quyết định nóng vội trong kinh doanh.",
+      "action": "Hãy lùi lại một bước để xem xét lại hướng đi. Đôi khi chậm lại mới là cách nhanh nhất để về đích."
     }
   },
   {
@@ -209,19 +257,25 @@
       "keywords": [
         "Sức mạnh nội tâm",
         "Dũng cảm",
-        "Kiên nhẫn"
+        "Kiên nhẫn",
+        "Từ bi"
       ],
-      "desc": "Không phải sức mạnh thể chất, mà là sự thuần hóa những bản năng hoang dã bằng lòng trắc ẩn và sự kiên nhẫn dịu dàng.",
-      "action": "Hãy dùng sự mềm mỏng để giải quyết vấn đề. Sự kiên nhẫn sẽ thu phục được cả những điều khó khăn nhất."
+      "desc": "Strength không phải là sức mạnh của cơ bắp, mà là sự thuần hóa 'con thú' bên trong bằng lòng trắc ẩn và sự dịu dàng. Bạn có khả năng đối mặt với nghịch cảnh bằng sự bình tĩnh đến lạ kỳ.",
+      "love": "Sự thấu hiểu và kiên nhẫn đang giúp mối quan hệ vượt qua giai đoạn thử thách. Bạn có khả năng xoa dịu những cơn giận dữ của đối phương bằng tình yêu chân thành nhất.",
+      "work": "Bạn đang thể hiện sự bền bỉ đáng kinh ngạc. Khả năng chịu áp lực cao và xử lý tình huống khôn khéo giúp bạn giành được sự nể trọng. Hãy tiếp tục tin vào bản lĩnh của mình.",
+      "action": "Hãy dùng sự mềm mỏng để giải quyết các xung đột. Lòng dũng cảm thầm lặng sẽ mang lại chiến thắng cuối cùng."
     },
     "rev": {
       "keywords": [
         "Yếu đuối",
         "Nghi ngờ bản thân",
-        "Sợ hãi"
+        "Sợ hãi",
+        "Tự ti"
       ],
-      "desc": "Cảm giác năng lượng đang cạn kiệt, tự ti và để cho sự sợ hãi hoặc cơn giận dữ lấn át lý trí.",
-      "action": "Bạn mạnh mẽ hơn bạn nghĩ. Hãy tập trung xây dựng lại sự tự tin từ những điều nhỏ nhất."
+      "desc": "Bạn đang để nỗi sợ hãi và sự tự ti lấn át. Năng lượng nội tâm đang bị cạn kiệt, khiến bạn dễ bị tổn thương và không dám đối diện với những thử thách dù là nhỏ nhất.",
+      "love": "Sự thiếu tự tin đang gây ra những bất ổn trong tình cảm. Bạn có thể đang quá nhún nhường hoặc ngược lại, dễ nổi nóng vì cảm thấy không được coi trọng. Cần tìm lại giá trị bản thân.",
+      "work": "Bạn đang cảm thấy quá tải và muốn bỏ cuộc. Sự nghi ngờ về năng lực của bản thân khiến công việc đình trệ. Đừng để những thất bại nhỏ làm lung lay ý chí của bạn.",
+      "action": "Hãy tập trung vào việc xây dựng lại sự tự tin. Hãy nhớ rằng bạn đã từng mạnh mẽ như thế nào trong quá khứ."
     }
   },
   {
@@ -234,19 +288,25 @@
       "keywords": [
         "Suy ngẫm",
         "Cô độc",
-        "Tìm kiếm bên trong"
+        "Tìm kiếm chân lý",
+        "Trí tuệ"
       ],
-      "desc": "Thời điểm cần rút lui khỏi sự ồn ào của thế giới bên ngoài để tìm kiếm ánh sáng chân lý từ bên trong chính mình.",
-      "action": "Hãy dành thời gian ở một mình. Tắt điện thoại, đi dạo, và tự hỏi bản thân thực sự muốn gì."
+      "desc": "Đây là lúc để rút lui khỏi sự náo nhiệt để quay về với thế giới nội tâm. Ánh sáng từ cây đèn của ẩn sĩ sẽ dẫn bạn đến với những sự thật mà logic bình thường không thể thấy được.",
+      "love": "Một giai đoạn cần sự tĩnh lặng để hiểu rõ mong muốn của trái tim. Đối với người độc thân, đây là lúc để yêu thương chính mình trước khi bắt đầu một mối quan hệ mới.",
+      "work": "Hãy làm việc độc lập và tránh xa những cuộc tranh luận vô bổ. Đây là lúc để nghiên cứu sâu, lập kế hoạch hoặc tìm kiếm lời khuyên từ những bậc tiền bối uyên bác.",
+      "action": "Hãy dành ít nhất 30 phút một mình trong yên lặng. Tắt các thiết bị điện tử và lắng nghe hơi thở của mình."
     },
     "rev": {
       "keywords": [
         "Cô lập",
-        "Tách biệt quá mức",
+        "Tách biệt",
+        "Sự bảo thủ",
         "Lạc lối"
       ],
-      "desc": "Sự xa lánh xã hội quá mức dẫn đến trầm cảm, hoặc bạn đang từ chối nhìn vào sự thật bên trong.",
-      "action": "Đừng trốn chạy nữa. Hãy mở lòng kết nối lại với một người bạn tin tưởng."
+      "desc": "Sự cô độc bị biến thành sự cô lập tiêu cực. Bạn có thể đang quá khép kín, từ chối mọi sự giúp đỡ hoặc đang chìm đắm trong những suy nghĩ tiêu cực mà không tìm được lối thoát.",
+      "love": "Sự im lặng đáng sợ đang bao trùm mối quan hệ. Có dấu hiệu của sự xa cách về mặt tinh thần. Đừng để sự hướng nội biến thành sự ích kỷ khiến đối phương cảm thấy bị bỏ rơi.",
+      "work": "Sự thiếu kết nối với đồng nghiệp gây khó khăn cho công việc chung. Bạn có thể đang quá bảo thủ với ý kiến cá nhân và không chịu tiếp thu những thay đổi cần thiết.",
+      "action": "Hãy mở lòng và kết nối lại với thế giới. Một cuộc trò chuyện với người bạn tin tưởng sẽ giúp bạn rất nhiều."
     }
   },
   {
@@ -259,19 +319,25 @@
       "keywords": [
         "Vận may",
         "Thay đổi",
-        "Định mệnh"
+        "Định mệnh",
+        "Bước ngoặt"
       ],
-      "desc": "Bánh xe đang quay theo hướng có lợi cho bạn. Những thay đổi bất ngờ mang theo cơ hội lớn và sự can thiệp của số phận.",
-      "action": "Chớp lấy cơ hội! Đừng chống lại dòng chảy, hãy để Vũ trụ dẫn lối."
+      "desc": "Bánh xe định mệnh đang quay và nó mang theo những thay đổi tích cực ngoài mong đợi. Mọi thứ đang diễn ra đúng như những gì Vũ trụ đã sắp đặt cho bạn.",
+      "love": "Những cuộc gặp gỡ định mệnh hoặc những chuyển biến lớn trong tình cảm theo hướng tốt đẹp. Nếu đang gặp khó khăn, bánh xe sẽ sớm đưa bạn lên đỉnh cao của hạnh phúc.",
+      "work": "Cơ hội thăng tiến, trúng số hoặc những hợp đồng bất ngờ. Đây là lúc để mạo hiểm một chút vì may mắn đang đứng về phía bạn. Hãy tin vào sự sắp đặt của số phận.",
+      "action": "Hãy đón nhận mọi thay đổi với thái độ cởi mở. Đừng cố gắng chống lại dòng chảy của số phận."
     },
     "rev": {
       "keywords": [
         "Vận xui",
+        "Sự kháng cự",
         "Mất kiểm soát",
-        "Bám víu"
+        "Bế tắc"
       ],
-      "desc": "Những thay đổi không mong muốn đang đến. Có những điều nằm ngoài tầm kiểm soát khiến bạn cảm thấy bất lực.",
-      "action": "Chấp nhận rằng có những thứ bạn không thể thay đổi. Hãy học cách thích nghi."
+      "desc": "Bánh xe đang quay xuống, mang theo những thử thách không mong muốn. Bạn có thể cảm thấy mình là nạn nhân của hoàn cảnh, nhưng thực tế đây là bài học để bạn học cách buông bỏ.",
+      "love": "Những hiểu lầm liên tiếp hoặc sự can thiệp từ bên ngoài gây trục trặc. Đừng cố gượng ép mọi thứ vào lúc này, hãy kiên nhẫn chờ đợi vòng quay tiếp theo của bánh xe.",
+      "work": "Rủi ro tài chính hoặc những thay đổi nhân sự không có lợi. Có cảm giác mọi nỗ lực đều đổ sông đổ bể. Đã đến lúc xem lại xem bạn có đang đi ngược lại xu hướng chung hay không.",
+      "action": "Hãy giữ bình tĩnh và tiết kiệm. Đừng thực hiện những thay đổi lớn khi chưa thấy dấu hiệu khởi sắc."
     }
   },
   {
@@ -284,19 +350,25 @@
       "keywords": [
         "Công bằng",
         "Sự thật",
-        "Nghiệp quả (Karma)"
+        "Luật nhân quả",
+        "Trách nhiệm"
       ],
-      "desc": "Mọi hành động đều có hệ quả. Sự thật sẽ được phơi bày và sự công bằng sẽ được thực thi một cách chính xác.",
-      "action": "Hãy minh bạch, trung thực và nhận trách nhiệm về hành động của mình. Karma đang theo dõi bạn."
+      "desc": "Justice nhắc nhở rằng mọi hành động đều có hệ quả. Đây là lúc để đối mặt với sự thật một cách khách quan nhất và nhận lấy những gì bạn thực sự xứng đáng được nhận.",
+      "love": "Mối quan hệ dựa trên sự công bằng và tôn trọng lẫn nhau. Những vấn đề tồn đọng sẽ được giải quyết một cách minh bạch. Sự chân thành sẽ mang lại kết quả ngọt ngào.",
+      "work": "Các vấn đề pháp lý, hợp đồng sẽ được giải quyết thỏa đáng. Nếu bạn làm việc chăm chỉ và trung thực, phần thưởng sẽ sớm đến. Đây là lúc để hành xử chuyên nghiệp nhất.",
+      "action": "Hãy trung thực tuyệt đối. Hãy cân nhắc kỹ mọi khía cạnh trước khi đưa ra phán xét."
     },
     "rev": {
       "keywords": [
         "Bất công",
         "Thiếu trung thực",
-        "Đổ lỗi"
+        "Trốn tránh",
+        "Sai lầm"
       ],
-      "desc": "Bạn đang bị đối xử bất công, hoặc chính bạn đang trốn tránh trách nhiệm và lấp liếm sự thật.",
-      "action": "Đừng tự lừa dối mình nữa. Hãy đối mặt và giải quyết dứt điểm rắc rối thay vì đổ lỗi."
+      "desc": "Có sự thiên vị hoặc thiếu công bằng đang diễn ra. Bạn có thể đang cố trốn tránh trách nhiệm về những lỗi lầm cũ hoặc đang bị người khác đổ lỗi một cách vô lý.",
+      "love": "Sự thiếu thành thật đang phá hủy niềm tin. Bạn cảm thấy bị đối xử bất công hoặc chính bạn đang không công bằng với đối phương. Cần phải nhìn lại bản thân trước.",
+      "work": "Rắc rối với pháp luật hoặc những quy định bất công tại nơi làm việc. Cẩn thận với các hành vi gian lận hoặc thiếu minh bạch về tài chính. Kết quả có thể không như ý.",
+      "action": "Ngừng việc đổ lỗi cho hoàn cảnh. Hãy dũng cảm thừa nhận sai sót và sửa chữa nó ngay lập tức."
     }
   },
   {
@@ -307,21 +379,27 @@
     "img": "https://upload.wikimedia.org/wikipedia/commons/2/2b/RWS_Tarot_12_Hanged_Man.jpg",
     "up": {
       "keywords": [
+        "Tạm dừng",
         "Buông bỏ",
         "Góc nhìn mới",
         "Hy sinh"
       ],
-      "desc": "Bạn bị đặt vào trạng thái phải tạm dừng mọi thứ. Đôi khi sự hy sinh hiện tại sẽ mang lại sự giác ngộ lớn trong tương lai.",
-      "action": "Dừng việc cố gắng kiểm soát mọi thứ. Hãy thử nhìn vấn đề theo một góc độ hoàn toàn khác."
+      "desc": "Đôi khi để tiến lên, chúng ta cần phải dừng lại. The Hanged Man mời gọi bạn nhìn thế giới từ một góc độ hoàn toàn khác, chấp nhận sự trì trệ như một cơ hội để chiêm nghiệm sâu sắc hơn.",
+      "love": "Mối quan hệ đang ở trạng thái 'treo', không tiến cũng không lùi. Đây là lúc để buông bỏ sự kiểm soát và để mọi thứ diễn ra tự nhiên. Sự hy sinh vì nhau lúc này là cần thiết.",
+      "work": "Dự án bị đình trệ bất ngờ nhưng đừng quá lo lắng. Đây là khoảng lặng cần thiết để bạn nhận ra những sai sót tiềm ẩn. Hãy thử một cách tiếp cận hoàn toàn mới lạ.",
+      "action": "Đừng cố gắng thúc ép kết quả. Hãy thả lỏng và quan sát sự việc dưới một lăng kính khác."
     },
     "rev": {
       "keywords": [
-        "Trì hoãn",
-        "Cố chấp",
-        "Hy sinh vô ích"
+        "Trì hoãn vô ích",
+        "Sự cố chấp",
+        "Bế tắc",
+        "Hy sinh sai chỗ"
       ],
-      "desc": "Cảm giác bế tắc, lãng phí thời gian vì bạn không chịu thay đổi góc nhìn hoặc đang bám víu vào những thứ không còn thuộc về mình.",
-      "action": "Phải biết buông tay. Sự cố chấp lúc này chỉ làm bạn thêm đau khổ."
+      "desc": "Bạn đang kháng cự lại sự thay đổi cần thiết và cố bám lấy những thứ không còn thuộc về mình. Sự hy sinh của bạn có thể đang bị lợi dụng hoặc không mang lại giá trị thực sự.",
+      "love": "Sự bế tắc kéo dài khiến bạn mệt mỏi nhưng không dám kết thúc. Bạn đang hy sinh quá nhiều cho một người không xứng đáng. Cần phải tỉnh táo lại và nhìn nhận thực tế.",
+      "work": "Sự trì trệ do thiếu quyết đoán. Bạn đang lãng phí thời gian vào những việc không có tương lai. Đừng cố chấp với những phương pháp đã cũ kỹ và lỗi thời.",
+      "action": "Hãy tự hỏi mình đang bám víu vào điều gì. Đã đến lúc phải thay đổi tư duy và bước tiếp."
     }
   },
   {
@@ -334,19 +412,25 @@
       "keywords": [
         "Kết thúc",
         "Chuyển hóa",
+        "Lột xác",
         "Khởi đầu mới"
       ],
-      "desc": "Không phải cái chết vật lý! Đây là sự lột xác, chấm dứt một giai đoạn để mở đường cho những điều tươi mới hơn.",
-      "action": "Đóng lại cánh cửa cũ. Hãy mạnh dạn vứt bỏ những thứ đã lỗi thời trong cuộc sống của bạn."
+      "desc": "Lá bài này báo hiệu sự kết thúc của một giai đoạn quan trọng. Đừng sợ hãi, vì cái chết của cái cũ chính là mảnh đất màu mỡ để cái mới bắt đầu nảy mầm. Đây là sự lột xác cần thiết.",
+      "love": "Một mối quan hệ có thể kết thúc hoặc bước sang một chương hoàn toàn mới (như chuyển đến sống chung hoặc thay đổi cách yêu). Hãy để những thói quen cũ ra đi.",
+      "work": "Sự thay đổi lớn về nhân sự hoặc định hướng công ty. Có thể bạn sẽ nghỉ việc để bắt đầu một sự nghiệp hoàn toàn khác. Đừng níu kéo những gì đã đến lúc phải ra đi.",
+      "action": "Hãy dũng cảm đóng lại cánh cửa cũ. Đã đến lúc để quá khứ ngủ yên và đón nhận tương lai."
     },
     "rev": {
       "keywords": [
-        "Kháng cự",
-        "Sợ thay đổi",
-        "Trì trệ"
+        "Kháng cự thay đổi",
+        "Sợ hãi kết thúc",
+        "Trì trệ",
+        "Sống mòn"
       ],
-      "desc": "Bạn đang cố chấp níu kéo một mối quan hệ/công việc đã chết. Sự trì hoãn việc kết thúc chỉ làm kéo dài sự đau đớn.",
-      "action": "Chấp nhận sự thật! Càng sợ hãi sự thay đổi, bạn càng lún sâu vào bế tắc."
+      "desc": "Bạn đang cố chấp níu kéo một thứ đã chết lâm sàn. Nỗi sợ hãi sự thay đổi khiến bạn kẹt lại trong một vòng lặp đau khổ và không thể tiến bộ.",
+      "love": "Mối quan hệ đã cạn kiệt nhưng cả hai vẫn không chịu buông tay. Sự sợ hãi cô đơn đang giữ chân bạn lại trong một sự độc hại kéo dài. Cần phải dũng cảm đối mặt.",
+      "work": "Bạn đang bám trụ tại một công việc không còn mang lại giá trị gì chỉ vì sự an toàn giả tạo. Sự kháng cự thay đổi đang làm cản trở sự phát triển sự nghiệp của bạn.",
+      "action": "Hãy tự hỏi tại sao bạn lại sợ sự thay đổi đến thế. Sự lột xác dù đau đớn nhưng là cần thiết."
     }
   },
   {
@@ -358,20 +442,26 @@
     "up": {
       "keywords": [
         "Cân bằng",
-        "Hòa hợp",
-        "Điều độ"
+        "Hài hòa",
+        "Kiên nhẫn",
+        "Chừng mực"
       ],
-      "desc": "Tìm thấy điểm trung dung (Middle Path). Mọi thứ đang dần được điều hòa lại, mang lại sự bình yên trong tâm hồn.",
-      "action": "Hành xử chừng mực. Hãy kết hợp nhiều yếu tố lại với nhau một cách hài hòa thay vì chọn một thái cực."
+      "desc": "Thiên thần Temperance nhắc nhở về sự pha trộn hài hòa giữa các yếu tố. Bạn đang tìm thấy sự bình yên và cân bằng giữa các thái cực của cuộc sống. Mọi thứ đang dần ổn định.",
+      "love": "Sự hòa hợp và thấu hiểu sâu sắc. Hai bạn đang biết cách dung hòa cái tôi cá nhân để xây dựng một tổ ấm bình yên. Đây là giai đoạn của sự gắn kết bền chặt.",
+      "work": "Công việc tiến triển ổn định nhờ sự khéo léo và kiên nhẫn của bạn. Khả năng kết nối mọi người giúp bạn giải quyết các mâu thuẫn một cách êm đẹp. Tài chính ổn định.",
+      "action": "Hãy hành xử chừng mực trong mọi việc. Đừng vội vã, sự kiên nhẫn sẽ mang lại kết quả tốt nhất."
     },
     "rev": {
       "keywords": [
         "Mất cân bằng",
         "Cực đoan",
-        "Vội vã"
+        "Bốc đồng",
+        "Xung đột"
       ],
-      "desc": "Cuộc sống đang bị mất cân bằng trầm trọng (làm việc quá sức, ăn uống không điều độ, cảm xúc bốc đồng).",
-      "action": "Hãm phanh lại ngay! Bạn cần lập lại trật tự cho thói quen hàng ngày của mình."
+      "desc": "Sự mất cân bằng nghiêm trọng trong lối sống hoặc cảm xúc. Bạn có thể đang quá cực đoan, vội vã và thiếu kiên nhẫn, dẫn đến những sai lầm không đáng có.",
+      "love": "Xung đột do cái tôi quá lớn hoặc thiếu sự thấu cảm. Hai bạn đang đẩy nhau ra xa vì những bất đồng nhỏ nhặt. Cần phải tìm lại điểm chung để dung hòa.",
+      "work": "Sự thiếu tập trung và làm việc quá sức gây ra căng thẳng. Có dấu hiệu của sự lãng phí tài chính hoặc các quyết định bốc đồng trong kinh doanh. Cần lập lại trật tự.",
+      "action": "Hãy dành thời gian để lập lại sự cân bằng. Kiểm tra lại chế độ ăn uống, ngủ nghỉ và làm việc của bạn."
     }
   },
   {
@@ -384,19 +474,25 @@
       "keywords": [
         "Cám dỗ",
         "Ràng buộc",
+        "Ham muốn",
         "Vật chất"
       ],
-      "desc": "Bị giam cầm bởi những ham muốn tiêu cực, mối quan hệ độc hại hoặc nghiện ngập. Bạn tưởng mình không thể thoát ra, nhưng chìa khóa ở ngay trong tay bạn.",
-      "action": "Nhận thức rõ những thói quen/con người đang kéo bạn xuống. Đã đến lúc cắt đứt chuỗi xiềng xích này."
+      "desc": "The Devil đại diện cho những xiềng xích mà chúng ta tự đeo vào chân mình: sự nghiện ngập, ham muốn vật chất quá độ hoặc các mối quan hệ độc hại. Bạn tưởng mình bị nhốt, nhưng thực tế bạn có thể thoát ra bất cứ lúc nào.",
+      "love": "Một mối quan hệ đầy đam mê nhưng cũng đầy sự kiểm soát và ghen tuông. Có thể là sự ám ảnh về thể xác hoặc sự phụ thuộc cảm xúc không lành mạnh. Cần tỉnh táo để nhìn nhận lại.",
+      "work": "Sự tham vọng mù quáng có thể khiến bạn đánh mất đạo đức. Bạn đang bị cuốn vào vòng xoáy của tiền bạc và quyền lực mà quên đi giá trị thực sự của công việc.",
+      "action": "Hãy đối diện với những thói quen xấu của mình. Bạn cần tự do, đừng để sự ham muốn làm nô lệ cho chính mình."
     },
     "rev": {
       "keywords": [
         "Giải thoát",
-        "Tự do",
-        "Vượt qua sợ hãi"
+        "Tỉnh ngộ",
+        "Phá vỡ xiềng xích",
+        "Tự do"
       ],
-      "desc": "Bạn đang dần nhận ra và phá vỡ những trói buộc cũ. Sự thức tỉnh đang diễn ra, ánh sáng bắt đầu le lói.",
-      "action": "Tiếp tục mạnh mẽ bước đi. Bạn đang đi đúng hướng để giành lại sự tự do cho bản thân."
+      "desc": "Chúc mừng, bạn đang dần thoát khỏi những trói buộc tiêu cực. Sự tỉnh ngộ đang đến, giúp bạn nhìn thấy những sự thật phũ phàng mà trước đây bạn đã cố lờ đi.",
+      "love": "Bạn bắt đầu nhận ra sự độc hại của mối quan hệ và có ý định giải thoát. Sức hút mù quáng đang nhạt dần, nhường chỗ cho lý trí và sự tự tôn cá nhân.",
+      "work": "Bạn đang từ bỏ những tham vọng không lành mạnh hoặc những môi trường làm việc gây áp lực tiêu cực. Sự tự chủ về tài chính đang được thiết lập lại một cách lành mạnh hơn.",
+      "action": "Hãy tiếp tục mạnh mẽ bước ra khỏi bóng tối. Đừng quay đầu nhìn lại những gì đã làm hại bạn."
     }
   },
   {
@@ -408,20 +504,26 @@
     "up": {
       "keywords": [
         "Sụp đổ",
-        "Chấn động",
-        "Đột phá"
+        "Thay đổi đột ngột",
+        "Giác ngộ",
+        "Chấn động"
       ],
-      "desc": "Một sự kiện chấn động, bất ngờ làm sụp đổ những nền tảng tưởng chừng như vững chắc. Đau đớn nhưng là bài học bắt buộc của Vũ trụ.",
-      "action": "Đừng cố chống đỡ tòa tháp đang sập. Hãy để nó sập và dọn dẹp đống đổ nát để xây dựng lại từ đầu."
+      "desc": "The Tower báo hiệu một sự kiện gây sốc làm lung lay nền tảng cuộc sống. Đừng cố níu giữ những gì đang sụp đổ, vì đó là những cấu trúc yếu kém cần được phá bỏ để xây dựng lại vững chắc hơn.",
+      "love": "Sự đổ vỡ bất ngờ của một mối quan hệ hoặc một sự thật chấn động được phơi bày. Tuy đau đớn nhưng đây là cách duy nhất để bạn thoát khỏi những ảo tưởng bấy lâu nay.",
+      "work": "Mất việc, phá sản hoặc một dự án bị hủy bỏ đột ngột. Sự cố này buộc bạn phải thay đổi hoàn toàn cách tư duy và hướng đi. Đây là bước ngoặt quan trọng để tái cấu trúc lại sự nghiệp.",
+      "action": "Đừng cố gắng chống lại sự thay đổi. Hãy an toàn và bình tĩnh quan sát, chờ đợi bụi bặm lắng xuống rồi hãy dọn dẹp."
     },
     "rev": {
       "keywords": [
-        "Né tránh thảm họa",
-        "Từ chối học hỏi",
-        "Thay đổi ngầm"
+        "Tránh được thảm họa",
+        "Trì hoãn sự thật",
+        "Thay đổi ngầm",
+        "Kháng cự"
       ],
-      "desc": "Bạn vừa thoát khỏi một kiếp nạn trong gang tấc, hoặc bạn đang cố gắng chống lại sự thay đổi bắt buộc.",
-      "action": "Sự thật vẫn ở đó. Trốn tránh không làm nó biến mất, hãy dũng cảm đối diện."
+      "desc": "Bạn vừa thoát khỏi một cuộc khủng hoảng lớn trong gang tấc hoặc đang cố gắng chống lại sự sụp đổ tất yếu. Tuy nhiên, nếu nền tảng vẫn yếu, sự sụp đổ chỉ là vấn đề thời gian.",
+      "love": "Hai bạn đang cố gắng lấp liếm những vấn đề nghiêm trọng để duy trì mối quan hệ. Sự căng thẳng ngầm vẫn tồn tại và có thể nổ tung bất cứ lúc nào. Đừng trốn tránh sự thật.",
+      "work": "Bạn đang cố bám trụ tại một vị trí không còn an toàn. Sự khủng hoảng được kiềm chế tạm thời nhưng chưa được giải quyết triệt để. Cần chuẩn bị một phương án dự phòng ngay lập tức.",
+      "action": "Đừng chủ quan. Hãy đối mặt với những vết nứt trong kế hoạch của mình trước khi quá muộn."
     }
   },
   {
@@ -434,19 +536,25 @@
       "keywords": [
         "Hy vọng",
         "Chữa lành",
-        "Cảm hứng"
+        "Cảm hứng",
+        "Thanh thản"
       ],
-      "desc": "Sau cơn mưa trời lại sáng. Bạn đang bước vào một giai đoạn tràn đầy hy vọng, phước lành và sự chữa lành sâu sắc từ tinh thần.",
-      "action": "Hãy tin tưởng vào những điều tốt đẹp đang tới. Giữ cho tâm hồn luôn rộng mở."
+      "desc": "Sau cơn bão (The Tower), The Star xuất hiện mang theo sự bình yên và hy vọng. Ánh sáng dịu nhẹ của ngôi sao sẽ dẫn lối cho bạn đến sự chữa lành và niềm tin vào một tương lai tươi sáng.",
+      "love": "Một tình yêu thanh khiết, chân thành và đầy cảm hứng. Nếu bạn vừa trải qua tổn thương, đây là lúc để trái tim được hồi phục. Niềm tin vào tình yêu đang quay trở lại.",
+      "work": "Sự nghiệp đầy triển vọng với những ý tưởng sáng tạo mới. Bạn nhận được sự ủng hộ và công nhận. Tài chính bắt đầu khởi sắc sau một thời gian dài khó khăn. Hãy giữ vững niềm tin.",
+      "action": "Hãy mở lòng đón nhận những điều tốt đẹp. Hãy dành thời gian để chữa lành tâm hồn và mơ về những điều lớn lao."
     },
     "rev": {
       "keywords": [
-        "Mất niềm tin",
-        "Tuyệt vọng",
-        "Thiếu cảm hứng"
+        "Mất hy vọng",
+        "Chán nản",
+        "Thiếu niềm tin",
+        "Sự trống rỗng"
       ],
-      "desc": "Cảm thấy bế tắc, ngắt kết nối với Vũ trụ và để bóng tối của sự chán nản bao trùm lấy mình.",
-      "action": "Đừng phóng đại nỗi đau. Hãy tìm một nguồn cảm hứng nhỏ bé nào đó để kéo bản thân lên."
+      "desc": "Bạn đang cảm thấy mất kết nối với Vũ trụ và chìm trong sự bi quan. Bóng tối của sự hoài nghi khiến bạn không thấy được những phước lành đang ở ngay trước mắt mình.",
+      "love": "Sự thất vọng về đối phương hoặc cảm giác mất niềm tin vào tình yêu. Bạn đang tự cô lập mình trong nỗi buồn và không cho phép ai bước vào thế giới của mình. Cần mở lòng ra.",
+      "work": "Cạn kiệt ý tưởng và nhiệt huyết. Bạn làm việc như một cái máy mà không thấy được ý nghĩa. Sự thiếu tự tin khiến bạn bỏ lỡ những cơ hội tiềm năng. Cần tìm lại nguồn cảm hứng.",
+      "action": "Đừng quá bi quan. Hãy tìm những niềm vui nhỏ bé mỗi ngày để khơi dậy lại ngọn lửa hy vọng."
     }
   },
   {
@@ -457,21 +565,27 @@
     "img": "https://upload.wikimedia.org/wikipedia/commons/7/7f/RWS_Tarot_18_Moon.jpg",
     "up": {
       "keywords": [
-        "Ảo giác",
-        "Sợ hãi",
-        "Tiềm thức"
+        "Ảo tưởng",
+        "Nỗi sợ",
+        "Trực giác",
+        "Bí ẩn"
       ],
-      "desc": "Mọi thứ không như vẻ bề ngoài. Sự lo lắng và nỗi sợ hãi từ tiềm thức đang đánh lừa bạn, tạo ra những bóng đen không có thực.",
-      "action": "Cẩn thận với những quyết định lúc này. Hãy dùng trực giác thay vì đôi mắt để cảm nhận sự thật."
+      "desc": "Dưới ánh trăng, mọi thứ đều mờ ảo và dễ gây nhầm lẫn. Lá bài cảnh báo về những nỗi sợ hãi từ tiềm thức đang đánh lừa bạn. Đây là lúc cần dùng trực giác để nhìn thấu màn sương mù.",
+      "love": "Có những bất ổn chưa rõ ràng trong tình cảm. Sự ghen tuông vô cớ hoặc những bí mật đang làm bạn lo lắng. Đừng vội phán xét, hãy chờ đợi cho đến khi mọi thứ sáng tỏ hơn dưới ánh mặt trời.",
+      "work": "Môi trường làm việc đầy rẫy những tin đồn và sự không minh bạch. Cẩn thận với các quyết định kinh doanh lúc này vì thông tin bạn có có thể bị bóp méo. Hãy tin vào linh cảm của mình.",
+      "action": "Hãy thận trọng. Đừng đưa ra những quyết định quan trọng khi tâm trạng đang bất ổn hoặc hoang mang."
     },
     "rev": {
       "keywords": [
         "Sự thật lộ diện",
-        "Hết bối rối",
-        "Vượt qua ảo ảnh"
+        "Vượt qua nỗi sợ",
+        "Xua tan ảo ảnh",
+        "Rõ ràng"
       ],
-      "desc": "Sương mù đang tan dần. Những bí mật đen tối hoặc sự nhầm lẫn cuối cùng cũng được làm sáng tỏ.",
-      "action": "Đối diện với sự thật dù nó có phũ phàng. Mọi thứ đã rõ ràng, hãy đưa ra quyết định."
+      "desc": "Mặt trời sắp mọc và màn sương đang tan dần. Những nỗi sợ hãi vô căn cứ đang bị đẩy lùi, nhường chỗ cho sự thật và sự tỉnh táo. Bạn bắt đầu nhìn thấy rõ ràng con đường phía trước.",
+      "love": "Những hiểu lầm lâu nay cuối cùng cũng được giải tỏa. Những bí mật bị che giấu bấy lâu nay được phơi bày, giúp cả hai hiểu rõ nhau hơn. Cảm giác bồn chồn lo lắng bắt đầu biến mất.",
+      "work": "Mọi âm mưu hoặc sai sót trong công việc bị đưa ra ánh sáng. Bạn tìm thấy lối thoát cho những bế tắc bấy lâu nay. Các dự án bắt đầu có định hướng rõ ràng hơn bao giờ hết.",
+      "action": "Hãy đối diện với sự thật dù nó có phũ phàng. Sự rõ ràng lúc này là chìa khóa để tiến lên."
     }
   },
   {
@@ -482,21 +596,27 @@
     "img": "https://upload.wikimedia.org/wikipedia/commons/1/17/RWS_Tarot_19_Sun.jpg",
     "up": {
       "keywords": [
-        "Niềm vui",
         "Thành công",
-        "Tỏa sáng"
+        "Niềm vui",
+        "Lạc quan",
+        "Sức sống"
       ],
-      "desc": "Một trong những lá bài rực rỡ nhất! Đại diện cho vinh quang, sự ấm áp, thành công rực rỡ và sức sống mãnh liệt.",
-      "action": "Tận hưởng khoảnh khắc này đi! Hãy lan tỏa năng lượng tích cực của bạn cho mọi người xung quanh."
+      "desc": "The Sun là lá bài tuyệt vời nhất trong bộ ẩn chính. Nó đại diện cho sự rực rỡ, may mắn thuần khiết và sự thành công vang dội trên mọi phương diện của cuộc sống. Bạn đang tỏa sáng rực rỡ.",
+      "love": "Tình yêu viên mãn, hạnh phúc và tràn đầy năng lượng tích cực. Nếu đang độc thân, một tình yêu tươi mới và nồng cháy đang đến. Đây là giai đoạn của sự gắn kết và niềm vui ngập tràn.",
+      "work": "Sự nghiệp thăng hoa rực rỡ. Bạn nhận được sự công nhận xứng đáng và gặt hái được những thành quả lớn. Tài chính dồi dào, các dự án đều mang lại lợi nhuận cao. Hãy tự tin tỏa sáng.",
+      "action": "Hãy tận hưởng trọn vẹn niềm vui này. Đừng ngần ngại chia sẻ năng lượng tích cực của bạn với mọi người."
     },
     "rev": {
       "keywords": [
-        "Nỗi buồn tạm thời",
-        "Tự ti",
-        "Niềm vui bị che khuất"
+        "Niềm vui bị che khuất",
+        "Tự mãn",
+        "Trì hoãn",
+        "Kém may mắn"
       ],
-      "desc": "Những đám mây đang che khuất mặt trời. Thành công có thể bị trì hoãn hoặc bạn đang không biết cách tận hưởng những gì mình đang có.",
-      "action": "Hãy tập trung vào những điều tích cực nhỏ bé. Mặt trời vẫn ở đó, chỉ là tạm khuất sau mây thôi."
+      "desc": "Mặt trời vẫn ở đó nhưng đang bị mây che khuất. Thành công có thể đến chậm hơn dự kiến hoặc bạn đang quá tự mãn dẫn đến những sai sót nhỏ không đáng có. Tuy nhiên, năng lượng vẫn rất tích cực.",
+      "love": "Có chút nỗi buồn hoặc sự thiếu hụt niềm vui tạm thời. Có thể bạn đang kỳ vọng quá cao dẫn đến thất vọng nhẹ. Đừng quá lo lắng, mây rồi sẽ tan và mặt trời sẽ lại chiếu sáng thôi.",
+      "work": "Công việc gặp chút khó khăn hoặc sự công nhận bị trì hoãn. Cẩn thận với thái độ quá tự tin dẫn đến chủ quan. Tài chính vẫn ổn định nhưng cần quản lý chặt chẽ hơn một chút.",
+      "action": "Hãy kiên nhẫn và khiêm tốn. Đừng để những rắc rối nhỏ làm hỏng tâm trạng tuyệt vời của bạn."
     }
   },
   {
@@ -509,19 +629,25 @@
       "keywords": [
         "Tái sinh",
         "Thức tỉnh",
-        "Phán xét nội tâm"
+        "Sự phán xét",
+        "Tiếng gọi"
       ],
-      "desc": "Tiếng kèn gọi bạn thức tỉnh. Đã đến lúc đánh giá lại toàn bộ quá khứ, tha thứ cho bản thân và bước sang một trang hoàn toàn mới.",
-      "action": "Lắng nghe tiếng gọi từ linh hồn. Rũ bỏ những gánh nặng cũ để chuẩn bị cho sự tái sinh."
+      "desc": "Lá bài Judgement mời gọi bạn thực hiện một cuộc tự vấn sâu sắc. Đã đến lúc rũ bỏ con người cũ, tha thứ cho những lỗi lầm quá khứ để tái sinh thành một phiên bản tốt đẹp hơn.",
+      "love": "Mối quan hệ đang ở giai đoạn cần sự đánh giá lại để tiến tới một mức độ cam kết cao hơn. Đây là lúc để tha thứ cho nhau và cùng nhau xây dựng tương lai trên một nền tảng mới mẻ.",
+      "work": "Bạn đang đứng trước một bước ngoặt sự nghiệp quan trọng. Một quyết định lớn cần được đưa ra dựa trên sự thấu suốt về quá khứ và tầm nhìn cho tương lai. Sự công nhận đang đến.",
+      "action": "Hãy lắng nghe tiếng gọi từ linh hồn bạn. Đã đến lúc đưa ra quyết định dứt khoát để bước sang trang mới."
     },
     "rev": {
       "keywords": [
-        "Trì hoãn",
-        "Sợ hãi",
-        "Nghi ngờ bản thân"
+        "Do dự",
+        "Nghi ngờ",
+        "Sợ phán xét",
+        "Trốn tránh"
       ],
-      "desc": "Bạn đang phớt lờ tiếng gọi từ bên trong vì sợ hãi sự thay đổi, hoặc đang tự phán xét bản thân quá khắt khe.",
-      "action": "Hãy ngừng dằn vặt bản thân về những lỗi lầm trong quá khứ. Đã đến lúc tha thứ và tiến lên."
+      "desc": "Bạn đang phớt lờ tiếng chuông thức tỉnh vì nỗi sợ hãi hoặc sự tự ti. Bạn lo sợ bị người khác phán xét hoặc đang tự phán xét mình quá khắt khe, dẫn đến việc không dám thay đổi.",
+      "love": "Sự thiếu quyết đoán đang làm mối quan hệ trở nên mệt mỏi. Bạn hoặc đối phương đang trốn tránh việc đối diện với những vấn đề thực sự. Cần phải dũng cảm nhìn thẳng vào sự thật.",
+      "work": "Bỏ lỡ cơ hội thăng tiến do thiếu tự tin hoặc do dự quá lâu. Bạn có thể đang gặp rắc rối với những sai lầm trong quá khứ chưa được giải quyết triệt để. Cần quyết liệt hơn.",
+      "action": "Đừng sợ hãi sự thay đổi. Hãy tha thứ cho bản thân và mạnh dạn đưa ra lựa chọn, dù nó có khó khăn đến đâu."
     }
   },
   {
@@ -532,21 +658,27 @@
     "img": "https://upload.wikimedia.org/wikipedia/commons/f/ff/RWS_Tarot_21_World.jpg",
     "up": {
       "keywords": [
-        "Hoàn thành",
         "Viên mãn",
-        "Chuyến đi mới"
+        "Thành tựu",
+        "Hoàn thành",
+        "Chuyến đi"
       ],
-      "desc": "Kết thúc trọn vẹn của một chu kỳ. Bạn đã hoàn thành xuất sắc mục tiêu, đạt được sự toàn vẹn và sẵn sàng cho một chương mới ở đẳng cấp cao hơn.",
-      "action": "Ăn mừng chiến thắng! Tự hào về chặng đường đã qua và mở rộng tầm nhìn cho hành trình tiếp theo."
+      "desc": "Điểm kết thúc hoàn hảo của một hành trình dài. Bạn đã đạt được sự toàn vẹn và thấu hiểu mọi thứ xung quanh. Đây là lúc để tận hưởng thành quả và chuẩn bị cho một chu kỳ mới cao hơn.",
+      "love": "Một tình yêu viên mãn, hạnh phúc trọn vẹn. Mối quan hệ có thể tiến tới hôn nhân hoặc một bước tiến cực kỳ quan trọng khác. Sự hòa hợp tuyệt đối giữa hai tâm hồn.",
+      "work": "Bạn đã đạt được mục tiêu lớn nhất trong sự nghiệp. Thành công này mang lại sự công nhận quốc tế hoặc một vị thế vững chắc. Đây là lúc để ăn mừng và mở rộng tầm nhìn ra thế giới.",
+      "action": "Hãy tự hào về những gì bạn đã làm được. Hãy sẵn sàng cho những hành trình vĩ đại tiếp theo."
     },
     "rev": {
       "keywords": [
+        "Chưa hoàn thành",
         "Thiếu sót",
         "Trì hoãn",
-        "Chưa trọn vẹn"
+        "Gò bó"
       ],
-      "desc": "Chỉ còn một bước nhỏ nữa là đến đích nhưng bạn lại chùn bước. Đang có điều gì đó chưa được giải quyết triệt để.",
-      "action": "Đừng bỏ cuộc ở phút chót! Hãy nhìn lại xem mảnh ghép cuối cùng đang thiếu là gì để hoàn thiện nó."
+      "desc": "Bạn đã ở rất gần đích nhưng vẫn còn thiếu một mảnh ghép cuối cùng. Có cảm giác mọi việc vẫn chưa thực sự trọn vẹn hoặc bạn đang gặp khó khăn trong việc kết thúc một chu kỳ cũ.",
+      "love": "Mối quan hệ vẫn còn những vướng mắc chưa được giải quyết dứt điểm khiến bạn cảm thấy chưa thực sự hài lòng. Cần một nỗ lực cuối cùng để đạt được sự hòa hợp trọn vẹn.",
+      "work": "Dự án gần như hoàn tất nhưng bị đình trệ ở phút chót. Bạn có thể đang thiếu sự công nhận xứng đáng hoặc cảm thấy bị gò bó trong một môi trường không còn đủ chỗ cho bạn phát triển.",
+      "action": "Hãy nhìn lại xem điều gì còn đang thiếu. Một nỗ lực nhỏ nữa thôi sẽ mang lại sự viên mãn thực sự."
     }
   },
   {
@@ -558,20 +690,26 @@
     "up": {
       "keywords": [
         "Tình yêu mới",
-        "Cảm xúc",
-        "Thấu cảm"
+        "Cảm xúc tràn đầy",
+        "Thấu cảm",
+        "Hạnh phúc"
       ],
-      "desc": "Chiếc cốc tràn đầy nước đại diện cho sự khởi đầu của một tình yêu, tình bạn hoặc sự thức tỉnh mạnh mẽ về mặt cảm xúc.",
-      "action": "Hãy mở rộng trái tim để đón nhận những cảm xúc tươi mới. Đừng ngại bày tỏ tình cảm."
+      "desc": "Chiếc cốc tràn trề đại diện cho sự khởi đầu của một nguồn năng lượng cảm xúc mạnh mẽ. Một món quà từ Vũ trụ đang được trao tặng cho trái tim bạn.",
+      "love": "Sự bắt đầu của một tình yêu mới nồng cháy hoặc một giai đoạn cảm xúc mới trong mối quan hệ hiện tại. Trái tim bạn đang mở rộng và sẵn sàng đón nhận niềm hạnh phúc.",
+      "work": "Môi trường làm việc đầy sự thấu hiểu và hỗ trợ. Bạn có cảm hứng dồi dào để thực hiện những ý tưởng mới. Sự hài lòng về mặt tinh thần cao hơn cả giá trị vật chất.",
+      "action": "Hãy mở lòng đón nhận những cảm xúc mới. Đừng ngần ngại bày tỏ tình yêu thương với mọi người."
     },
     "rev": {
       "keywords": [
         "Kìm nén",
         "Tổn thương",
-        "Cạn kiệt cảm xúc"
+        "Cạn kiệt cảm xúc",
+        "Bế tắc"
       ],
-      "desc": "Trái tim bạn đang đóng kín hoặc đang chịu đựng nỗi đau chưa được nguôi ngoai. Cảm xúc đang bị kìm nén quá mức.",
-      "action": "Hãy cho phép bản thân được khóc, được bộc lộ. Giữ mãi nỗi buồn chỉ làm bạn thêm độc hại."
+      "desc": "Năng lượng cảm xúc bị tắc nghẽn hoặc bị từ chối. Bạn đang cảm thấy trống rỗng và khô cằn, có thể do những tổn thương chưa được chữa lành trong quá khứ.",
+      "love": "Sự thất vọng về tình cảm hoặc cảm giác bị bỏ rơi. Bạn đang đóng cửa trái tim vì sợ bị tổn thương lần nữa. Cần phải học cách yêu thương bản thân trước khi yêu người khác.",
+      "work": "Môi trường làm việc thiếu sự thấu cảm, gây ra sự mệt mỏi về tinh thần. Bạn làm việc thiếu cảm hứng và cảm thấy không được coi trọng. Cần tìm lại nguồn động lực từ bên trong.",
+      "action": "Hãy cho phép bản thân được nghỉ ngơi và chữa lành. Đừng cố gượng ép cảm xúc của mình lúc này."
     }
   },
   {
@@ -582,21 +720,27 @@
     "img": "https://upload.wikimedia.org/wikipedia/commons/c/c9/Cups13.jpg",
     "up": {
       "keywords": [
-        "Trực giác",
-        "Trắc ẩn",
+        "Thấu cảm",
+        "Trực giác mạnh",
+        "Sự dịu dàng",
         "Yêu thương"
       ],
-      "desc": "Sự trưởng thành trong cảm xúc. Bạn mang năng lượng của một người biết lắng nghe, thấu hiểu và xoa dịu nỗi đau của người khác.",
-      "action": "Hãy dùng sự dịu dàng và lòng trắc ẩn để đối đãi với người xung quanh. Trực giác của bạn đang rất chính xác."
+      "desc": "Người phụ nữ của cảm xúc và trực giác. Bạn mang năng lượng của một người biết lắng nghe, xoa dịu nỗi đau và mang lại sự bình yên cho người khác bằng trái tim nhân hậu.",
+      "love": "Một tình yêu dịu dàng, sâu sắc và đầy sự hy sinh. Bạn là người kết nối tuyệt vời, luôn biết cách làm cho đối phương cảm thấy được yêu thương và thấu hiểu tận cùng.",
+      "work": "Khả năng thấu hiểu tâm lý giúp bạn thành công trong các mối quan hệ công việc. Bạn nhận được sự yêu mến từ đồng nghiệp. Đây là lúc để dùng lòng trắc ẩn để dẫn dắt mọi người.",
+      "action": "Hãy tin vào trực giác của bạn. Hãy dành sự quan tâm cho những người đang cần sự giúp đỡ từ bạn."
     },
     "rev": {
       "keywords": [
-        "Đa cảm",
-        "Lụy tình",
-        "Mất kiểm soát"
+        "Quá nhạy cảm",
+        "Thao túng cảm xúc",
+        "Yếu đuối",
+        "Lụy tình"
       ],
-      "desc": "Sự nhạy cảm thái quá dẫn đến suy diễn, yếu đuối, hoặc để người khác lợi dụng lòng tốt của mình.",
-      "action": "Đừng để cảm xúc lấn át lý trí. Hãy vạch ra ranh giới rõ ràng trong các mối quan hệ."
+      "desc": "Sự nhạy cảm biến thành sự yếu đuối và dễ bị tổn thương. Bạn có thể đang dùng cảm xúc để thao túng người khác hoặc đang quá chìm đắm trong thế giới riêng mà quên mất thực tại.",
+      "love": "Sự suy diễn và ghen tuông vô cớ do quá nhạy cảm. Bạn dễ bị tổn thương bởi những lời nói vô tình. Cần phải học cách kiểm soát cảm xúc để không làm khổ mình và người khác.",
+      "work": "Sự thiếu tập trung do cảm xúc cá nhân chi phối quá nhiều. Bạn dễ bị ảnh hưởng bởi môi trường xung quanh dẫn đến mệt mỏi. Cần phải vạch rõ ranh giới giữa công việc và tình cảm.",
+      "action": "Đừng để cảm xúc lôi kéo bạn đi quá xa. Hãy tập trung vào những việc thực tế và cụ thể."
     }
   },
   {
@@ -608,20 +752,26 @@
     "up": {
       "keywords": [
         "Điềm tĩnh",
-        "Kiểm soát cảm xúc",
-        "Ngoại giao"
+        "Lòng trắc ẩn",
+        "Kiểm soát",
+        "Trí tuệ cảm xúc"
       ],
-      "desc": "Làm chủ hoàn toàn cảm xúc. Đại diện cho sự ổn định, đáng tin cậy và khả năng đưa ra lời khuyên tuyệt vời trong tình cảm.",
-      "action": "Dù trong lòng có sóng gió, hãy giữ cái đầu lạnh và trái tim ấm. Lắng nghe trước khi phản ứng."
+      "desc": "Bậc thầy kiểm soát cảm xúc. Dù sóng gió bên ngoài có lớn đến đâu, bên trong bạn vẫn là một mặt hồ tĩnh lặng. Sự thông thái này giúp bạn trở thành chỗ dựa vững chắc cho mọi người.",
+      "love": "Một người đàn ông lý tưởng trong tình yêu: điềm tĩnh, ấm áp và cực kỳ thấu hiểu. Mối quan hệ dựa trên sự tôn trọng và hòa hợp sâu sắc về mặt tinh thần.",
+      "work": "Bạn đang thể hiện trí tuệ cảm xúc (EQ) cao trong công việc. Khả năng ngoại giao và giải quyết mâu thuẫn giúp bạn đạt được những thành tựu lớn mà không cần dùng đến vũ lực.",
+      "action": "Hãy giữ cái đầu lạnh và trái tim ấm. Đây là lúc để đưa ra những lời khuyên hữu ích cho người khác."
     },
     "rev": {
       "keywords": [
         "Thao túng",
+        "Lạnh lùng",
         "Bất ổn",
-        "Lạnh lùng"
+        "Thiếu cảm thông"
       ],
-      "desc": "Sự thao túng cảm xúc độc hại, ghen tuông ngầm hoặc hoàn toàn đóng băng cảm xúc để bảo vệ bản thân.",
-      "action": "Đừng dùng tình cảm như một vũ khí để thao túng người khác. Cần đối diện thẳng thắn với cảm xúc thật."
+      "desc": "Sự kiểm soát cảm xúc biến thành sự lạnh lùng và thao túng tinh vi. Bạn có thể đang dùng tình cảm như một công cụ để đạt được mục đích cá nhân mà không quan tâm đến nỗi đau của người khác.",
+      "love": "Có sự thiếu chân thành hoặc thao túng cảm xúc trong mối quan hệ. Một người có thể đang tỏ ra điềm tĩnh nhưng thực chất là đang đóng băng cảm xúc để gây áp lực cho đối phương.",
+      "work": "Sự thiếu trung thực trong các mối quan hệ đối tác. Bạn có thể gặp phải những người lãnh đạo giả tạo, chỉ biết nghĩ cho bản thân. Tài chính có dấu hiệu bị ảnh hưởng bởi sự mập mờ.",
+      "action": "Hãy tự vấn lại lòng mình. Đừng dùng điểm mạnh của mình để làm tổn thương người khác."
     }
   },
   {
@@ -632,21 +782,27 @@
     "img": "https://upload.wikimedia.org/wikipedia/commons/f/fd/Pents01.jpg",
     "up": {
       "keywords": [
-        "Cơ hội mới",
-        "Tài chính",
-        "Thịnh vượng"
+        "Cơ hội tài chính",
+        "Sự ổn định",
+        "Thực tế",
+        "Thành quả"
       ],
-      "desc": "Một cơ hội cụ thể, thực tế đang xuất hiện (công việc mới, thu nhập mới). Lời hứa hẹn về sự ổn định và sung túc vật chất.",
-      "action": "Hãy nắm bắt cơ hội này và bắt tay vào hành động thực tế. Chăm chỉ sẽ mang lại tiền bạc."
+      "desc": "Một cơ hội vật chất cụ thể đang được Vũ trụ trao cho bạn. Đây có thể là một dự án mới, một khoản đầu tư sinh lời hoặc một công việc đầy triển vọng mang lại sự an tâm tuyệt đối.",
+      "love": "Mối quan hệ đang bước vào giai đoạn ổn định và thực tế hơn. Nếu đang độc thân, đây là dấu hiệu của việc gặp được một người có nền tảng vững chắc và đáng tin cậy.",
+      "work": "Thành công bước đầu trong một dự án kinh doanh. Bạn nhận được sự hỗ trợ về tài chính hoặc một lời mời làm việc hấp dẫn. Đây là lúc để hiện thực hóa những kế hoạch bằng hành động.",
+      "action": "Hãy bắt tay vào làm việc ngay. Đây là ngày tuyệt vời để đầu tư hoặc lập kế hoạch tài chính dài hạn."
     },
     "rev": {
       "keywords": [
         "Bỏ lỡ cơ hội",
-        "Mất tiền",
-        "Thiếu thực tế"
+        "Mất mát tài chính",
+        "Thiếu thực tế",
+        "Trì hoãn"
       ],
-      "desc": "Những kế hoạch tài chính bị trì hoãn, một lời mời làm việc hụt hoặc sự quản lý tiền bạc yếu kém.",
-      "action": "Kiểm tra lại ngân sách! Tránh những khoản đầu tư rủi ro hoặc mua sắm bốc đồng lúc này."
+      "desc": "Bạn có thể đang bỏ qua một cơ hội vàng vì sự chần chừ hoặc thiếu thực tế. Năng lượng vật chất đang bị tắc nghẽn, dẫn đến những lo lắng về tiền bạc và sự an toàn.",
+      "love": "Mối quan hệ gặp trục trặc do các vấn đề tài chính hoặc sự thiếu ổn định trong cuộc sống. Đừng để những lo toan vật chất làm hỏng đi tình cảm chân thành giữa hai người.",
+      "work": "Cẩn thận với những khoản đầu tư rủi ro. Các kế hoạch kinh doanh bị đình trệ bất ngờ hoặc gặp khó khăn về vốn. Cần xem lại tính khả thi của những gì bạn đang làm.",
+      "action": "Hãy cẩn trọng với túi tiền của mình. Đừng đưa ra những quyết định mua sắm bốc đồng lúc này."
     }
   },
   {
@@ -657,21 +813,27 @@
     "img": "https://upload.wikimedia.org/wikipedia/commons/8/88/Pents13.jpg",
     "up": {
       "keywords": [
+        "Sung túc",
         "Đảm đang",
         "Thực tế",
-        "Hưởng thụ"
+        "Hào phóng"
       ],
-      "desc": "Năng lượng của một người biết cân bằng giữa công việc và chăm sóc gia đình. Sự ổn định, ấm áp và biết tận hưởng cuộc sống.",
-      "action": "Tự thưởng cho mình một bữa ăn ngon hoặc một món đồ yêu thích. Hãy biến không gian sống trở nên tiện nghi hơn."
+      "desc": "Người phụ nữ của sự thịnh vượng và ổn định. Bạn biết cách quản lý tài chính thông minh đồng thời vẫn tạo ra một không gian ấm cúng và đầy đủ cho những người thân yêu xung quanh mình.",
+      "love": "Một tình yêu thực tế, ấm áp và đáng tin cậy. Bạn là chỗ dựa vững chắc cho đối phương về cả tinh thần lẫn vật chất. Mối quan hệ hướng tới sự xây dựng tổ ấm vững bền.",
+      "work": "Bạn đang thể hiện khả năng quản lý xuất sắc. Sự thực tế và chăm chỉ mang lại cho bạn một vị thế vững chắc và sự giàu có bền vững. Hãy tiếp tục duy trì sự ổn định này.",
+      "action": "Hãy tự thưởng cho mình một món quà hoặc một bữa tối thịnh soạn. Hãy biến ngôi nhà của mình trở nên ấm cúng hơn."
     },
     "rev": {
       "keywords": [
         "Thực dụng",
         "Ích kỷ",
-        "Ám ảnh vật chất"
+        "Lo lắng quá mức",
+        "Mất cân bằng"
       ],
-      "desc": "Quá ám ảnh về tiền bạc, ghen tị với tài sản của người khác, hoặc bỏ bê bản thân vì công việc.",
-      "action": "Tiền không phải là tất cả. Đừng để vật chất làm mờ mắt và đánh mất đi những giá trị tinh thần."
+      "desc": "Quá ám ảnh về tiền bạc dẫn đến sự keo kiệt hoặc ngược lại là sự hoang phí vô độ. Bạn đang quá tập trung vào vật chất mà quên đi việc nuôi dưỡng tâm hồn và các mối quan hệ xung quanh.",
+      "love": "Sự ghen tị về vật chất hoặc sự thực dụng đang làm xấu đi tình cảm. Một người có thể đang quá quan tâm đến túi tiền của đối phương hơn là trái tim họ. Cần tỉnh táo lại.",
+      "work": "Sự thiếu tập trung do lo lắng quá mức về tài chính. Bạn có thể đang gặp rắc rối vì sự tham lam hoặc quản lý yếu kém. Cần lập lại sự cân bằng giữa làm việc và nghỉ ngơi.",
+      "action": "Hãy dừng việc lo lắng về tiền bạc một chút. Hãy dành thời gian để kết nối với những giá trị phi vật chất."
     }
   },
   {
@@ -682,21 +844,27 @@
     "img": "https://upload.wikimedia.org/wikipedia/commons/1/1c/Pents14.jpg",
     "up": {
       "keywords": [
-        "Kinh doanh",
+        "Thành công tài chính",
         "Quyền lực",
-        "Thành tựu"
+        "Ổn định",
+        "Giàu có"
       ],
-      "desc": "Đỉnh cao của sự thành công về vật chất và sự nghiệp. Một người đáng tin cậy, hào phóng và có tư duy kinh doanh nhạy bén.",
-      "action": "Hãy suy nghĩ dài hạn. Đầu tư một cách khôn ngoan và bảo vệ những gì bạn đã nỗ lực xây dựng."
+      "desc": "Đỉnh cao của sự thành đạt. Bạn đã nỗ lực làm việc và giờ là lúc hưởng thụ thành quả. Lá bài đại diện cho một người đàn ông có tầm nhìn, bản lĩnh và sự hào phóng tuyệt vời.",
+      "love": "Mối quan hệ cực kỳ vững chắc và đầy đủ về vật chất. Bạn hoặc đối phương là người bảo hộ tuyệt vời, mang lại cảm giác an toàn và sự sung túc cho gia đình. Một tình yêu bền bỉ.",
+      "work": "Sự nghiệp đang ở đỉnh cao. Khả năng kinh doanh nhạy bén giúp bạn đạt được những thành tựu vang dội. Bạn là một nhà lãnh đạo có uy tín và được mọi người nể trọng tuyệt đối.",
+      "action": "Hãy suy nghĩ về việc đầu tư dài hạn. Hãy hào phóng giúp đỡ những người xung quanh bằng nguồn lực của bạn."
     },
     "rev": {
       "keywords": [
+        "Tham lam",
         "Độc đoán",
-        "Tham nhũng",
-        "Bất tài"
+        "Bất tài",
+        "Phá sản"
       ],
-      "desc": "Sự bảo thủ thái quá, tham lam, hoặc quản lý tài chính tồi tệ dẫn đến nguy cơ phá sản, mất uy tín.",
-      "action": "Cảnh giác với lòng tham! Đừng vì cái lợi trước mắt mà đánh đổi cả uy tín và sự nghiệp."
+      "desc": "Sự tham lam quá độ dẫn đến sự mù quáng. Bạn có thể đang dùng mọi thủ đoạn để đạt được tiền bạc hoặc đang quản lý tài sản một cách tồi tệ dẫn đến nguy cơ mất trắng mọi thứ.",
+      "love": "Mối quan hệ bị chi phối bởi tiền bạc và sự kiểm soát. Có sự thiếu chân thành và thực dụng thái quá. Đừng để vật chất trở thành bức tường ngăn cách giữa hai trái tim.",
+      "work": "Thất bại trong kinh doanh do sự bảo thủ và thiếu tầm nhìn. Cẩn thận với các hành vi gian lận hoặc những người đối tác thiếu trung thực. Tài chính đang gặp nguy hiểm thực sự.",
+      "action": "Hãy kiểm tra lại đạo đức nghề nghiệp của mình. Tiền bạc sẽ đến và đi, nhưng uy tín thì khó xây dựng lại."
     }
   },
   {
@@ -707,21 +875,27 @@
     "img": "https://upload.wikimedia.org/wikipedia/commons/1/1a/Swords01.jpg",
     "up": {
       "keywords": [
-        "Đột phá",
         "Sự thật",
-        "Rõ ràng"
+        "Trí tuệ",
+        "Rõ ràng",
+        "Quyết đoán"
       ],
-      "desc": "Thanh kiếm chém đứt sự mờ mịt. Một ý tưởng mới lóe lên, sự thật được phơi bày và trí tuệ được khai sáng.",
-      "action": "Hãy nhìn thẳng vào sự thật. Dùng lý trí sắc bén để cắt bỏ những rắc rối đang cản đường bạn."
+      "desc": "Thanh kiếm của lý trí chém đứt màn sương mù của sự nhầm lẫn. Một ý tưởng mới sắc bén xuất hiện giúp bạn nhìn thấu bản chất của mọi vấn đề đang gặp phải.",
+      "love": "Sự thẳng thắn và minh bạch trong tình cảm. Đây là lúc để nói ra sự thật và giải quyết dứt điểm các mâu thuẫn bằng lý trí. Sự rõ ràng này mang lại một khởi đầu mới tích cực.",
+      "work": "Đột phá về ý tưởng hoặc một quyết định cắt giảm những thứ thừa thãi để tập trung vào mục tiêu chính. Bạn có sự tỉnh táo tuyệt vời để xử lý mọi khó khăn trong công việc.",
+      "action": "Hãy nói ra sự thật. Dùng lý trí để đưa ra quyết định thay vì để cảm xúc chi phối."
     },
     "rev": {
       "keywords": [
-        "Mơ hồ",
-        "Tổn thương",
-        "Sai lệch"
+        "Sự nhầm lẫn",
+        "Lời nói gây tổn thương",
+        "Thiếu tỉnh táo",
+        "Bế tắc"
       ],
-      "desc": "Suy nghĩ bị đình trệ, những lời nói gây sát thương hoặc một sự thật bị bóp méo khiến bạn bối rối.",
-      "action": "Đừng vội vã đưa ra quyết định lúc này. Hãy cẩn thận với lời nói của mình để tránh gây tổn thương."
+      "desc": "Thanh kiếm đang quay ngược lại gây tổn thương cho chính bạn. Suy nghĩ bị rối loạn, sự thật bị bóp méo hoặc những lời nói cay nghiệt đang làm hỏng các mối quan hệ xung quanh.",
+      "love": "Những lời chỉ trích gay gắt đang làm tổn thương đối phương. Sự thiếu thấu hiểu và cố chấp vào lý trí thái quá khiến tình cảm rạn nứt. Cần học cách nói năng dịu dàng hơn.",
+      "work": "Sự thiếu sáng suốt dẫn đến những quyết định sai lầm. Có sự mập mờ trong thông tin gây khó khăn cho việc triển khai dự án. Cẩn thận với những cuộc tranh cãi vô ích tại nơi làm việc.",
+      "action": "Hãy im lặng và suy nghĩ kỹ trước khi phát ngôn. Đừng vội vã đưa ra kết luận khi chưa có đủ bằng chứng."
     }
   },
   {
@@ -733,20 +907,26 @@
     "up": {
       "keywords": [
         "Độc lập",
-        "Lý trí",
-        "Thẳng thắn"
+        "Thẳng thắn",
+        "Công bằng",
+        "Sắc sảo"
       ],
-      "desc": "Một người từng trải, sắc sảo và độc lập. Bạn có khả năng nhìn thấu bản chất vấn đề và không bị cảm xúc chi phối.",
-      "action": "Hãy giao tiếp một cách rõ ràng, thẳng thắn nhưng đừng quên sự tinh tế. Đừng để cảm xúc làm mờ lý trí."
+      "desc": "Người phụ nữ của lý trí và sự thật. Bạn mang năng lượng của sự độc lập, mạnh mẽ và không ngại nói lên sự thật dù nó có phũ phàng. Sự công bằng của bạn là tuyệt đối.",
+      "love": "Một tình yêu dựa trên sự tôn trọng và thẳng thắn. Bạn không cần sự bảo bọc mà cần một người bạn đời có thể thấu hiểu và chia sẻ những giá trị trí tuệ cùng mình.",
+      "work": "Bạn là một chuyên gia sắc sảo, có khả năng phân tích vấn đề cực tốt. Sự trung thực và khách quan giúp bạn được đánh giá cao. Hãy tiếp tục giữ vững lập trường và nguyên tắc của mình.",
+      "action": "Hãy hành xử khách quan. Đừng để tình cảm làm mờ đi những phán đoán đúng đắn của bạn."
     },
     "rev": {
       "keywords": [
         "Lạnh lùng",
         "Cay nghiệt",
-        "Thiếu cảm thông"
+        "Phán xét",
+        "Cô độc"
       ],
-      "desc": "Sự phán xét quá khắt khe, lời nói sắc mỏng như dao lam gây tổn thương cho người khác. Sự cay đắng từ quá khứ.",
-      "action": "Bớt gay gắt lại! Sự thật thì mất lòng, nhưng cách bạn truyền đạt quyết định tất cả."
+      "desc": "Sự sắc sảo biến thành sự cay độc. Bạn đang dùng lý trí để tấn công người khác hoặc đang quá khép kín do những tổn thương trong quá khứ, khiến mọi người không dám lại gần.",
+      "love": "Sự lạnh lùng và phán xét quá khắt khe đang đẩy đối phương ra xa. Bạn có thể đang quá phòng thủ và không cho phép ai chạm vào trái tim mình. Cần phải mềm mỏng hơn.",
+      "work": "Sự gay gắt trong công việc tạo ra môi trường làm việc căng thẳng. Bạn dễ bị mọi người xa lánh vì thái độ thiếu cảm thông. Cần học cách góp ý một cách xây dựng hơn.",
+      "action": "Hãy hạ bớt cái tôi và sự gay gắt của mình xuống. Sự thật cần được truyền đạt bằng sự thấu hiểu."
     }
   },
   {
@@ -759,19 +939,25 @@
       "keywords": [
         "Uy quyền",
         "Trí tuệ",
-        "Khách quan"
+        "Khách quan",
+        "Luật pháp"
       ],
-      "desc": "Người cầm cán cân công lý với tư duy logic đỉnh cao. Đại diện cho pháp luật, quy tắc và sự minh bạch tuyệt đối.",
-      "action": "Phải công tư phân minh. Đánh giá vấn đề dựa trên bằng chứng và sự thật khách quan, không thiên vị."
+      "desc": "Đại diện cho sức mạnh của trí tuệ và đạo đức công bằng. Bạn có khả năng đưa ra những quyết định đúng đắn dựa trên các sự thật khách quan và các quy luật chuẩn mực nhất.",
+      "love": "Mối quan hệ cần sự minh bạch và những cuộc trò chuyện trí tuệ. Hai bạn gắn kết với nhau bằng sự tôn trọng và những giá trị sống tương đồng. Một tình yêu trưởng thành.",
+      "work": "Vị thế của một người cố vấn hoặc một nhà lãnh đạo công minh. Bạn có khả năng giải quyết các vấn đề phức tạp bằng logic đỉnh cao. Hãy tin vào sự phán đoán sắc bén của mình.",
+      "action": "Hãy hành xử theo đúng quy định và pháp luật. Hãy công bằng với tất cả mọi người, không thiên vị."
     },
     "rev": {
       "keywords": [
         "Tàn nhẫn",
-        "Lạm quyền",
-        "Thiếu công bằng"
+        "Thao túng lý trí",
+        "Áp đặt",
+        "Bất công"
       ],
-      "desc": "Sự thao túng bằng trí tuệ, lạm dụng quyền lực hoặc sử dụng luật lệ một cách tàn nhẫn để đạt mục đích.",
-      "action": "Đừng dùng sự thông minh của mình để chèn ép người khác. Sức mạnh trí tuệ cần đi kèm với đạo đức."
+      "desc": "Sự thao túng bằng trí tuệ cực kỳ tinh vi. Bạn có thể đang dùng logic để chèn ép người khác hoặc đang có những hành xử tàn nhẫn, thiếu nhân văn để đạt được mục đích.",
+      "love": "Sự áp đặt ý kiến cá nhân lên đối phương một cách độc tài. Mối quan hệ trở nên khô khan vì thiếu cảm xúc và quá nhiều những luật lệ khắt khe. Cần trái tim hơn là cái đầu.",
+      "work": "Sự lạm dụng quyền lực và các quy tắc để trừng phạt người khác. Cẩn thận với những âm mưu hoặc sự cạnh tranh không lành mạnh dựa trên những lỗ hổng của quy định. Tài chính bấp bênh.",
+      "action": "Đừng để trí thông minh của mình trở thành vũ khí làm hại người khác. Hãy học cách trắc ẩn."
     }
   },
   {
@@ -784,19 +970,25 @@
       "keywords": [
         "Đam mê",
         "Cảm hứng",
-        "Hành động"
+        "Hành động",
+        "Sáng tạo"
       ],
-      "desc": "Một tia sáng của cảm hứng, năng lượng dồi dào và sự nhiệt huyết. Một dự án mới đang vẫy gọi bạn.",
-      "action": "Hãy xông lên! Đây là lúc để bắt đầu một điều gì đó với toàn bộ đam mê và ngọn lửa trong bạn."
+      "desc": "Tia sáng của sự sáng tạo và nhiệt huyết. Bạn đang tràn đầy năng lượng để bắt đầu một dự án mới hoặc một chương mới đầy kịch tính trong cuộc đời.",
+      "love": "Sức hút mãnh liệt và sự chủ động. Một tình yêu mới đầy đam mê hoặc một giai đoạn nồng cháy trong mối quan hệ hiện tại. Hãy cứ cháy hết mình!",
+      "work": "Khởi đầu của một dự án đầy triển vọng. Bạn có nguồn năng lượng dồi dào để vượt qua mọi khó khăn ban đầu. Đây là lúc để hành động quyết liệt.",
+      "action": "Hãy bắt đầu ngay lập tức! Đừng để ngọn lửa cảm hứng vụt tắt vì sự chần chừ."
     },
     "rev": {
       "keywords": [
-        "Chán nản",
+        "Thiếu động lực",
         "Trì hoãn",
-        "Mất động lực"
+        "Chán nản",
+        "Bế tắc"
       ],
-      "desc": "Ngọn lửa đam mê bị vụt tắt. Các dự án bị đình trệ, hoặc bạn cảm thấy thiếu năng lượng và không có cảm hứng làm gì.",
-      "action": "Đừng cố ép bản thân. Hãy nghỉ ngơi để tìm lại ngọn lửa đam mê trước khi bắt đầu."
+      "desc": "Ngọn lửa cảm hứng đang bị dập tắt. Bạn cảm thấy thiếu năng lượng, mất phương hướng và không còn hứng thú với những gì mình đang làm.",
+      "love": "Sự nguội lạnh trong tình cảm hoặc những đam mê nhất thời chóng qua. Cảm giác thiếu lửa và sự nhàm chán đang xâm chiếm mối quan hệ. Cần tìm lại cảm hứng.",
+      "work": "Dự án bị đình trệ do thiếu nhân lực hoặc sự nhiệt huyết của đội ngũ. Bạn đang gặp khó khăn trong việc tìm ra hướng đi mới. Cần nghỉ ngơi để tái tạo.",
+      "action": "Đừng cố ép bản thân phải sáng tạo lúc này. Hãy dành thời gian để tìm lại mục tiêu thực sự của mình."
     }
   },
   {
@@ -808,20 +1000,26 @@
     "up": {
       "keywords": [
         "Tự tin",
+        "Năng động",
         "Quyến rũ",
-        "Năng động"
+        "Can đảm"
       ],
-      "desc": "Một người tỏa sáng rực rỡ ở bất cứ đâu. Đại diện cho sự tự tin, lòng can đảm và sức hút mãnh liệt từ bên trong.",
-      "action": "Hãy tự tin tỏa sáng! Bạn là ngôi sao trong cuộc đời mình, đừng sợ bị người khác phán xét."
+      "desc": "Người phụ nữ của lửa và niềm tin. Bạn tỏa ra sức hút khó cưỡng, sự tự tin và khả năng truyền cảm hứng mạnh mẽ cho mọi người xung quanh.",
+      "love": "Bạn là tâm điểm của sự chú ý. Một tình yêu đầy sự chủ động, vui vẻ và không kém phần nồng nhiệt. Bạn biết cách làm cho mình và đối phương luôn tỏa sáng.",
+      "work": "Sự tự tin giúp bạn dẫn dắt các dự án đi đến thành công. Khả năng ngoại giao và sức hút cá nhân giúp bạn nhận được nhiều sự hỗ trợ. Hãy cứ là chính mình.",
+      "action": "Hãy tự tin tỏa sáng rực rỡ nhất có thể. Đừng sợ hãi sự chú ý của mọi người."
     },
     "rev": {
       "keywords": [
-        "Ghen tị",
         "Kiêu ngạo",
-        "Bất an"
+        "Ghen tị",
+        "Nóng nảy",
+        "Bất ổn"
       ],
-      "desc": "Sự tự tin thái quá biến thành kiêu ngạo, hoặc ngược lại, sự ghen tị và bất an khiến bạn trở nên xấu tính.",
-      "action": "Đừng so sánh bản thân với người khác. Mỗi người có một ngọn lửa riêng, hãy tập trung vào ánh sáng của bạn."
+      "desc": "Sự tự tin biến thành sự kiêu ngạo hoặc sự nóng nảy thiếu kiểm soát. Bạn có thể đang quá tự mãn dẫn đến việc coi thường người khác và gây ra xung đột.",
+      "love": "Sự ghen tuông thái quá hoặc tính cách thất thường đang làm đối phương mệt mỏi. Cần học cách kiềm chế cái tôi và sự nóng nảy để giữ gìn tình cảm.",
+      "work": "Sự kiêu ngạo gây ra mâu thuẫn với đồng nghiệp. Bạn có thể đang quá áp đặt ý kiến cá nhân và không chịu lắng nghe. Cần học cách khiêm tốn hơn.",
+      "action": "Hãy hạ cái tôi của mình xuống. Đừng để sự nóng nảy làm hỏng những thành quả bạn đã xây dựng."
     }
   },
   {
@@ -832,21 +1030,27 @@
     "img": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Wands14.jpg",
     "up": {
       "keywords": [
-        "Tầm nhìn",
         "Lãnh đạo",
-        "Quyết đoán"
+        "Tầm nhìn",
+        "Quyết đoán",
+        "Truyền cảm hứng"
       ],
-      "desc": "Một nhà lãnh đạo bẩm sinh với tầm nhìn xa trông rộng. Khả năng truyền cảm hứng và dẫn dắt người khác thực hiện mục tiêu vĩ đại.",
-      "action": "Dám nghĩ lớn và dám làm lớn. Đã đến lúc bước lên nhận lấy vai trò lãnh đạo trong cuộc sống của mình."
+      "desc": "Vị vua của tầm nhìn và hành động. Bạn có khả năng nhìn xa trông rộng và sự quyết đoán để dẫn dắt mọi người thực hiện những kế hoạch vĩ đại.",
+      "love": "Một tình yêu đầy bản lĩnh và sự che chở. Bạn hoặc đối phương đóng vai trò là người dẫn dắt, mang lại sự tự tin và định hướng rõ ràng cho tương lai chung.",
+      "work": "Đỉnh cao của sự nghiệp lãnh đạo. Bạn có tầm nhìn chiến lược xuất sắc và khả năng thực thi mạnh mẽ. Mọi người đều tin tưởng và đi theo sự dẫn dắt của bạn.",
+      "action": "Hãy dám nghĩ lớn và hành động quyết liệt. Tầm nhìn của bạn là chính xác, hãy kiên định với nó."
     },
     "rev": {
       "keywords": [
+        "Áp đặt",
         "Bốc đồng",
         "Bảo thủ",
-        "Áp đặt"
+        "Thiếu kiên nhẫn"
       ],
-      "desc": "Sự kỳ vọng quá cao và thiếu thực tế, hoặc sự nóng nảy, áp đặt ý muốn của mình lên người khác một cách độc tài.",
-      "action": "Hạ cái tôi xuống. Một nhà lãnh đạo giỏi là người biết lắng nghe, chứ không phải người chỉ biết ra lệnh."
+      "desc": "Sự lãnh đạo biến thành sự độc tài và áp đặt. Bạn có thể đang quá nóng vội, đưa ra những quyết định bốc đồng mà không quan tâm đến hậu quả lâu dài.",
+      "love": "Sự áp đặt quá mức trong tình cảm gây ra sự ngột ngạt. Bạn muốn mọi thứ phải theo ý mình mà không quan tâm đến cảm xúc của đối phương. Cần linh hoạt hơn.",
+      "work": "Thất bại do sự bốc đồng và thiếu chuẩn bị kỹ lưỡng. Bạn dễ nổi nóng khi mọi việc không như ý, gây áp lực lên cấp dưới. Cần học cách kiên nhẫn và bao dung.",
+      "action": "Hãy bình tĩnh lại. Một nhà lãnh đạo giỏi cần phải biết lắng nghe và chờ đợi thời cơ thay vì chỉ biết ra lệnh."
     }
   }
 ]

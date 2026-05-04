@@ -84,11 +84,17 @@ class Tarot(commands.Cog):
         kw_str = " • ".join(data['keywords'])
         embed.add_field(name="🔑 Từ khóa", value=f"*{kw_str}*", inline=False)
         
-        # Description
-        embed.add_field(name="📜 Thông điệp", value=data['desc'], inline=False)
+        # Description (General)
+        embed.add_field(name="📜 Thông điệp chung", value=data['desc'], inline=False)
+        
+        # Love & Relationship
+        embed.add_field(name="💕 Tình duyên", value=data['love'], inline=False)
+        
+        # Career & Finance
+        embed.add_field(name="💼 Sự nghiệp & Tài chính", value=data['work'], inline=False)
         
         # Action
-        embed.add_field(name="💡 Lời khuyên", value=f">>> {data['action']}", inline=False)
+        embed.add_field(name="💡 Lời khuyên hành động", value=f">>> {data['action']}", inline=False)
 
         embed.set_thumbnail(url=card['img'])
         return embed
