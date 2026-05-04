@@ -134,16 +134,18 @@ class Utility(commands.Cog):
         else:
             await ctx.send("❌ Số thứ tự không hợp lệ.")
 
-    @commands.command(name='testweather', hidden=True)
-    async def testweather(self, ctx, city: str = "Hanoi"):
-        """Kiểm tra nhanh thông tin thời tiết"""
-        weather_data = await WeatherService.get_weather(city)
-        embed = discord.Embed(
-            title=f"🌤️ Dự báo thời tiết: {city}",
-            description=weather_data,
-            color=discord.Color.blue()
-        )
-        await ctx.send(embed=embed)
+    @commands.hybrid_command(name='weather', description='Xem dự báo thời tiết chi tiết.')
+    @app_commands.describe(city='Tên thành phố (VD: Hanoi, Saigon)')
+    async def weather(self, ctx, city: str = "Hanoi"):
+        """Xem dự báo thời tiết chi tiết"""
+        async with ctx.typing():
+            weather_data = await WeatherService.get_weather(city)
+            embed = discord.Embed(
+                description=weather_data,
+                color=discord.Color.from_str('#3498db')
+            )
+            embed.set_footer(text="Dữ liệu từ wttr.in")
+            await ctx.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Utility(bot))
