@@ -13,16 +13,23 @@ TAROT_HISTORY_FILE = 'data/tarot_history.json'
 SHUFFLE_GIF = 'https://media1.tenor.com/m/o6oJ7F-6hAMAAAAd/tarot-cards-reading.gif'
 
 class TarotCardView(discord.ui.View):
-    def __init__(self, bot, card, reversed_, affinity, personal_msg=""):
+    def __init__(self, bot, card, reversed_, affinity, personal_msg, author):
         super().__init__(timeout=600)
         self.bot = bot
         self.card = card
         self.reversed = reversed_
         self.affinity = affinity
         self.personal_msg = personal_msg
+        self.author = author
         self.show_love = False
         self.show_work = False
         self.embed = self._build_embed()
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user != self.author:
+            await interaction.response.send_message("❌ Bạn không thể xem hay tương tác với quẻ của người khác!", ephemeral=True)
+            return False
+        return True
 
     def _build_embed(self):
         data = self.card['rev'] if self.reversed else self.card['up']
@@ -31,6 +38,7 @@ class TarotCardView(discord.ui.View):
         
         color = discord.Color.from_str('#8B0000') if self.reversed else discord.Color.from_str('#6a0dad')
         embed = discord.Embed(title=f"{self.card['emoji']} {self.card['name']}", color=color)
+        embed.set_author(name=f"🔮 Trải bài của {self.author.display_name}", icon_url=self.author.display_avatar.url)
         
         affinity_text = f"✨ Nhân phẩm: **{self.affinity}%**"
         if self.reversed:
@@ -70,10 +78,34 @@ class TarotCardView(discord.ui.View):
 
     @discord.ui.button(label="✨ Khoe Nhân Phẩm", style=discord.ButtonStyle.success)
     async def share_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        button.disabled = True
+        await interaction.response.edit_message(view=self)
         share_embed = self.embed.copy()
-        await interaction.response.send_message(
-            f"🌟 **{interaction.user.display_name}** vừa rút được một quẻ Tarot cực xịn!",
+        await interaction.channel.send(
+            content=f"🌟 **{self.author.display_name}** vừa rút được một quẻ Tarot cực xịn!",
             embed=share_embed,
+            allowed_mentions=discord.AllowedMentions.none()
+        )
+
+class SpreadShareView(discord.ui.View):
+    def __init__(self, embeds, author):
+        super().__init__(timeout=600)
+        self.embeds = embeds
+        self.author = author
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user != self.author:
+            await interaction.response.send_message("❌ Bạn không thể chia sẻ quẻ của người khác!", ephemeral=True)
+            return False
+        return True
+
+    @discord.ui.button(label="✨ Khoe Nhân Phẩm", style=discord.ButtonStyle.success)
+    async def share_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        button.disabled = True
+        await interaction.response.edit_message(view=self)
+        await interaction.channel.send(
+            content=f"🌟 **{self.author.display_name}** vừa trải một quẻ 3 lá cực huyền bí!",
+            embeds=self.embeds,
             allowed_mentions=discord.AllowedMentions.none()
         )
 
@@ -141,7 +173,7 @@ class Tarot(commands.Cog):
         self.history[user_id] = {'last_draw': card['id'], 'last_rev': rev, 'timestamp': datetime.now().isoformat()}
         self._save_history()
 
-        view = TarotCardView(self.bot, card, rev, affinity, personal_msg)
+        view = TarotCardView(self.bot, card, rev, affinity, personal_msg, ctx.author)
         await msg.edit(embed=view.embed, view=view)
 
     @tarot.command(name='spread', description='Trải 3 lá — Quá Khứ / Hiện Tại / Tương Lai.')
@@ -168,10 +200,12 @@ class Tarot(commands.Cog):
             embed.add_field(name="📜 Thông điệp", value=data['desc'], inline=False)
             embed.add_field(name="💡 Lời khuyên", value=f">>> {data['action']}", inline=False)
             embed.set_thumbnail(url=card['img'])
-            if i == 2: embed.set_footer(text="Shimizu Tarot")
+            if i == 0: embed.set_author(name=f"🔮 Dòng thời gian của {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
+            if i == 2: embed.set_footer(text="Shimizu Tarot", icon_url=self.bot.user.display_avatar.url)
             embeds.append(embed)
 
-        await msg.edit(embeds=embeds)
+        view = SpreadShareView(embeds, ctx.author)
+        await msg.edit(embeds=embeds, view=view)
 
     async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
         # Respond only if the interaction hasn't been handled yet
