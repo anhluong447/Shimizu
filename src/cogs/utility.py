@@ -144,34 +144,48 @@ class Utility(commands.Cog):
                 return await ctx.send("☔ Không thể lấy dữ liệu thời tiết lúc này.")
 
             embed = discord.Embed(
-                title=f"📍 Thời tiết tại {w['city']}",
-                description=f"**{w['current']['desc']}**",
-                color=discord.Color.from_str('#3498db')
+                title=f"🌤️ Báo Cáo Thời Tiết: {w['city']}",
+                color=discord.Color.from_str('#A0C4FF') # Pastel Blue
             )
             
-            # Current details
-            embed.add_field(name="🌡️ Nhiệt độ", value=f"{w['current']['temp']}°C", inline=True)
-            embed.add_field(name="🌡️ Cảm giác", value=f"{w['current']['feels_like']}°C", inline=True)
-            embed.add_field(name="💧 Độ ẩm", value=f"{w['current']['humidity']}%", inline=True)
+            embed.set_author(name="Trung tâm Khí tượng Shimizu", icon_url=self.bot.user.display_avatar.url)
+            
+            # 1. Current Condition (Blockquote)
+            current_text = (
+                f"🌡️ **Nhiệt độ:** {w['current']['temp']}°C *(Cảm giác: {w['current']['feels_like']}°C)*\n"
+                f"💧 **Độ ẩm:** {w['current']['humidity']}%\n"
+                f"☁️ **Trạng thái:** {w['current']['desc']}"
+            )
+            embed.add_field(name="📍 TÌNH TRẠNG HIỆN TẠI", value=f">>> {current_text}", inline=False)
 
-            # Hourly Grid
+            # 2. Hourly Grid (Aligned labels + Blockquote)
             f = w['forecast']
-            embed.add_field(name="🌅 Sáng", value=f"{f['morning']['temp']}°C\n*{f['morning']['desc']}*", inline=True)
-            embed.add_field(name="☀️ Trưa", value=f"{f['noon']['temp']}°C\n*{f['noon']['desc']}*", inline=True)
-            embed.add_field(name="\u200b", value="\u200b", inline=False) # Spacer
-            embed.add_field(name="🌆 Chiều", value=f"{f['evening']['temp']}°C\n*{f['evening']['desc']}*", inline=True)
-            embed.add_field(name="🌙 Tối", value=f"{f['night']['temp']}°C\n*{f['night']['desc']}*", inline=True)
+            hourly_text = (
+                f"`🌅 Sáng ` **{f['morning']['temp']}°C** ⏤ *{f['morning']['desc']}*\n"
+                f"`☀️ Trưa ` **{f['noon']['temp']}°C** ⏤ *{f['noon']['desc']}*\n"
+                f"`🌆 Chiều` **{f['evening']['temp']}°C** ⏤ *{f['evening']['desc']}*\n"
+                f"`🌙 Tối  ` **{f['night']['temp']}°C** ⏤ *{f['night']['desc']}*"
+            )
+            embed.add_field(name="🕒 DIỄN BIẾN HÔM NAY", value=f">>> {hourly_text}", inline=False)
 
-            # Tomorrow
+            # 3. Tomorrow (Blockquote)
             t = w['tomorrow']
-            embed.add_field(name=f"📅 Ngày mai ({t['date']})", 
-                            value=f"📈 {t['max']}°C | 📉 {t['min']}°C\n☁️ {t['desc']}", 
-                            inline=False)
+            tmr_text = (
+                f"🌡️ **Nhiệt độ:** {t['min']}°C ➖ {t['max']}°C\n"
+                f"☁️ **Trạng thái:** {t['desc']}"
+            )
+            
+            # Format date: 2026-05-05 -> 05/05/2026
+            date_parts = t['date'].split('-')
+            fmt_date = f"{date_parts[2]}/{date_parts[1]}/{date_parts[0]}" if len(date_parts) == 3 else t['date']
+            
+            embed.add_field(name=f"📅 DỰ BÁO NGÀY MAI ({fmt_date})", value=f">>> {tmr_text}", inline=False)
 
+            # Thumbnail & Footer
             if w['current']['icon']:
                 embed.set_thumbnail(url=w['current']['icon'])
             
-            embed.set_footer(text="Dữ liệu thời gian thực từ wttr.in")
+            embed.set_footer(text="Dữ liệu thời gian thực từ wttr.in", icon_url="https://cdn-icons-png.flaticon.com/512/3222/3222801.png")
             embed.timestamp = datetime.datetime.now()
             
             await ctx.send(embed=embed)
