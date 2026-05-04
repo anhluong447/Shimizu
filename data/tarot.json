@@ -1,24 +1,852 @@
 [
-  {"name":"The Fool","emoji":"🃏","img":"https://upload.wikimedia.org/wikipedia/commons/9/90/RWS_Tarot_00_Fool.jpg","up":"Khởi đầu mới, sự tự do, tinh thần phiêu lưu. Hãy dũng cảm bước ra khỏi vùng an toàn!","rev":"Liều lĩnh, thiếu suy nghĩ, quyết định vội vàng. Hãy cẩn thận trước khi hành động."},
-  {"name":"The Magician","emoji":"🧙","img":"https://upload.wikimedia.org/wikipedia/commons/d/de/RWS_Tarot_01_Magician.jpg","up":"Sức mạnh ý chí, tài năng, sự sáng tạo. Bạn có đủ khả năng để biến ước mơ thành hiện thực.","rev":"Lừa dối, thiếu tự tin, lãng phí tài năng. Đừng để người khác lợi dụng bạn."},
-  {"name":"The High Priestess","emoji":"🌙","img":"https://upload.wikimedia.org/wikipedia/commons/8/88/RWS_Tarot_02_High_Priestess.jpg","up":"Trực giác mạnh mẽ, bí ẩn, sự thông thái bên trong. Hãy lắng nghe tiếng nói nội tâm.","rev":"Bí mật bị che giấu, thiếu kết nối tâm linh. Đừng phớt lờ trực giác của mình."},
-  {"name":"The Empress","emoji":"👑","img":"https://upload.wikimedia.org/wikipedia/commons/d/d2/RWS_Tarot_03_Empress.jpg","up":"Sự sung túc, tình yêu, vẻ đẹp và sáng tạo. Cuộc sống đang nở rộ quanh bạn.","rev":"Phụ thuộc, thiếu sự chăm sóc bản thân. Hãy dành thời gian yêu thương chính mình."},
-  {"name":"The Emperor","emoji":"🏛️","img":"https://upload.wikimedia.org/wikipedia/commons/c/c3/RWS_Tarot_04_Emperor.jpg","up":"Quyền lực, kỷ luật, sự ổn định. Bạn đang nắm quyền kiểm soát cuộc sống.","rev":"Độc đoán, cứng nhắc, mất kiểm soát. Hãy linh hoạt hơn trong quyết định."},
-  {"name":"The Hierophant","emoji":"📿","img":"https://upload.wikimedia.org/wikipedia/commons/8/8d/RWS_Tarot_05_Hierophant.jpg","up":"Truyền thống, sự hướng dẫn, tri thức. Hãy tìm kiếm lời khuyên từ người có kinh nghiệm.","rev":"Nổi loạn, phá vỡ quy tắc, tự do cá nhân. Đôi khi cần phá bỏ khuôn mẫu cũ."},
-  {"name":"The Lovers","emoji":"💕","img":"https://upload.wikimedia.org/wikipedia/commons/3/3a/TheLovers.jpg","up":"Tình yêu đích thực, sự hòa hợp, lựa chọn quan trọng. Trái tim đang dẫn lối cho bạn.","rev":"Mất cân bằng trong mối quan hệ, lựa chọn sai lầm. Hãy suy nghĩ kỹ trước khi quyết định."},
-  {"name":"The Chariot","emoji":"⚔️","img":"https://upload.wikimedia.org/wikipedia/commons/9/9b/RWS_Tarot_07_Chariot.jpg","up":"Chiến thắng, quyết tâm, ý chí mạnh mẽ. Bạn đang trên đường đến thành công!","rev":"Thiếu phương hướng, mất kiểm soát. Hãy xác định rõ mục tiêu của mình."},
-  {"name":"Strength","emoji":"🦁","img":"https://upload.wikimedia.org/wikipedia/commons/f/f5/RWS_Tarot_08_Strength.jpg","up":"Sức mạnh nội tâm, lòng dũng cảm, sự kiên nhẫn. Bạn mạnh mẽ hơn bạn nghĩ.","rev":"Yếu đuối, thiếu tự tin, sợ hãi. Hãy tin vào bản thân và đối mặt với thử thách."},
-  {"name":"The Hermit","emoji":"🏔️","img":"https://upload.wikimedia.org/wikipedia/commons/4/4d/RWS_Tarot_09_Hermit.jpg","up":"Sự tĩnh lặng, tìm kiếm bên trong, trí tuệ. Hãy dành thời gian cho bản thân để suy ngẫm.","rev":"Cô đơn, cô lập, tách biệt. Đừng xa lánh mọi người quá lâu."},
-  {"name":"Wheel of Fortune","emoji":"🎡","img":"https://upload.wikimedia.org/wikipedia/commons/3/3c/RWS_Tarot_10_Wheel_of_Fortune.jpg","up":"Vận may, bước ngoặt, cơ hội mới. Cuộc sống đang quay theo hướng có lợi cho bạn!","rev":"Vận xui, thay đổi bất ngờ, mất kiểm soát. Hãy kiên nhẫn, mọi thứ sẽ tốt hơn."},
-  {"name":"Justice","emoji":"⚖️","img":"https://upload.wikimedia.org/wikipedia/commons/e/e0/RWS_Tarot_11_Justice.jpg","up":"Công bằng, sự thật, trách nhiệm. Karma sẽ trả lại cho bạn những gì bạn xứng đáng.","rev":"Bất công, thiếu trung thực, trốn tránh trách nhiệm. Hãy đối mặt với sự thật."},
-  {"name":"The Hanged Man","emoji":"🙃","img":"https://upload.wikimedia.org/wikipedia/commons/2/2b/RWS_Tarot_12_Hanged_Man.jpg","up":"Buông bỏ, nhìn nhận từ góc khác, hy sinh. Đôi khi dừng lại là cách tiến lên.","rev":"Kháng cự thay đổi, bế tắc, trì hoãn. Hãy chấp nhận và thích nghi."},
-  {"name":"Death","emoji":"💀","img":"https://upload.wikimedia.org/wikipedia/commons/d/d7/RWS_Tarot_13_Death.jpg","up":"Kết thúc và khởi đầu mới, sự chuyển hóa. Hãy để quá khứ ra đi để đón nhận tương lai.","rev":"Sợ thay đổi, bám víu quá khứ, trì trệ. Hãy dũng cảm bước tiếp."},
-  {"name":"Temperance","emoji":"🕊️","img":"https://upload.wikimedia.org/wikipedia/commons/f/f8/RWS_Tarot_14_Temperance.jpg","up":"Sự cân bằng, hài hòa, kiên nhẫn. Mọi thứ đang dần ổn định trong cuộc sống bạn.","rev":"Mất cân bằng, cực đoan, thiếu kiên nhẫn. Hãy tìm lại sự điều độ."},
-  {"name":"The Devil","emoji":"😈","img":"https://upload.wikimedia.org/wikipedia/commons/5/55/RWS_Tarot_15_Devil.jpg","up":"Cám dỗ, ràng buộc, ham muốn vật chất. Hãy cẩn thận với những thú vui ngắn hạn.","rev":"Giải thoát, vượt qua nghiện ngập, tự do. Bạn đang phá vỡ xiềng xích!"},
-  {"name":"The Tower","emoji":"🌩️","img":"https://upload.wikimedia.org/wikipedia/commons/5/53/RWS_Tarot_16_Tower.jpg","up":"Sụp đổ bất ngờ, thay đổi lớn, giác ngộ. Đau đớn nhưng cần thiết để xây dựng lại.","rev":"Tránh được thảm họa, thay đổi nhẹ nhàng hơn. Bạn đã học được bài học."},
-  {"name":"The Star","emoji":"⭐","img":"https://upload.wikimedia.org/wikipedia/commons/d/db/RWS_Tarot_17_Star.jpg","up":"Hy vọng, cảm hứng, sự chữa lành. Ánh sáng đang chiếu rọi vào cuộc sống bạn!","rev":"Mất hy vọng, chán nản, thiếu niềm tin. Hãy nhớ rằng bóng tối luôn có ánh sáng."},
-  {"name":"The Moon","emoji":"🌕","img":"https://upload.wikimedia.org/wikipedia/commons/7/7f/RWS_Tarot_18_Moon.jpg","up":"Ảo tưởng, trực giác, nỗi sợ tiềm ẩn. Mọi thứ không phải lúc nào cũng như bạn thấy.","rev":"Sự thật được phơi bày, vượt qua nỗi sợ. Bạn đang thấy rõ hơn bao giờ hết."},
-  {"name":"The Sun","emoji":"☀️","img":"https://upload.wikimedia.org/wikipedia/commons/1/17/RWS_Tarot_19_Sun.jpg","up":"Niềm vui, thành công, sự lạc quan. Đây là khoảng thời gian tuyệt vời nhất!","rev":"Niềm vui bị che khuất tạm thời. Đừng lo, mặt trời sẽ sớm lại chiếu sáng."},
-  {"name":"Judgement","emoji":"📯","img":"https://upload.wikimedia.org/wikipedia/commons/d/dd/RWS_Tarot_20_Judgement.jpg","up":"Sự tái sinh, đánh giá lại, tiếng gọi cao hơn. Hãy lắng nghe sứ mệnh của bạn.","rev":"Tự phán xét quá khắt khe, sợ thay đổi. Hãy tha thứ cho bản thân."},
-  {"name":"The World","emoji":"🌍","img":"https://upload.wikimedia.org/wikipedia/commons/f/ff/RWS_Tarot_21_World.jpg","up":"Hoàn thành, viên mãn, thành tựu. Bạn đã đạt được mục tiêu, hãy tận hưởng!","rev":"Chưa hoàn thành, thiếu kết thúc, trì hoãn. Hãy nỗ lực thêm một chút nữa."}
+  {
+    "id": "major_0",
+    "name": "The Fool",
+    "type": "major",
+    "emoji": "🃏",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/9/90/RWS_Tarot_00_Fool.jpg",
+    "up": {
+      "keywords": [
+        "Khởi đầu mới",
+        "Tự do",
+        "Ngây thơ"
+      ],
+      "desc": "Một chương mới đang mở ra. Bạn đang đứng trước bờ vực của một cuộc phiêu lưu đầy hứa hẹn, đòi hỏi một bước nhảy vọt của niềm tin.",
+      "action": "Hãy dũng cảm bước ra khỏi vùng an toàn. Đừng để nỗi sợ hãi giữ chân bạn lại!"
+    },
+    "rev": {
+      "keywords": [
+        "Liều lĩnh",
+        "Thiếu suy nghĩ",
+        "Ngây ngô"
+      ],
+      "desc": "Cảnh báo về những quyết định bốc đồng hoặc việc nhảy vào một tình huống mà không xem xét kỹ hậu quả. Đang có sự tắc nghẽn trong việc bắt đầu.",
+      "action": "Hãy chậm lại! Đánh giá kỹ rủi ro trước khi hành động, đừng để sự ngây thơ làm hại bạn."
+    }
+  },
+  {
+    "id": "major_1",
+    "name": "The Magician",
+    "type": "major",
+    "emoji": "🧙",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/d/de/RWS_Tarot_01_Magician.jpg",
+    "up": {
+      "keywords": [
+        "Ý chí",
+        "Sáng tạo",
+        "Thực hành"
+      ],
+      "desc": "Bạn hiện có đủ mọi công cụ, kỹ năng và nguồn lực để biến ý tưởng thành hiện thực. Đây là lúc hành động quyết đoán.",
+      "action": "Hãy sử dụng tối đa tài năng của bạn. Sự tập trung sẽ mang lại kết quả bất ngờ."
+    },
+    "rev": {
+      "keywords": [
+        "Thao túng",
+        "Thiếu tự tin",
+        "Lãng phí tài năng"
+      ],
+      "desc": "Có dấu hiệu của sự lừa dối (từ người khác hoặc tự lừa dối mình). Tiềm năng của bạn đang bị phung phí do thiếu định hướng.",
+      "action": "Cảnh giác với những lời hứa suông xung quanh. Hãy xem lại xem bạn đang làm việc vì mục tiêu gì."
+    }
+  },
+  {
+    "id": "major_2",
+    "name": "The High Priestess",
+    "type": "major",
+    "emoji": "🌙",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/8/88/RWS_Tarot_02_High_Priestess.jpg",
+    "up": {
+      "keywords": [
+        "Trực giác",
+        "Bí ẩn",
+        "Tiềm thức"
+      ],
+      "desc": "Thời điểm để tin vào linh cảm hơn là logic. Có những bí ẩn đang dần được hé lộ nếu bạn biết lắng nghe tiếng nói nội tâm.",
+      "action": "Hãy dành thời gian thiền định, tĩnh tâm. Đừng vội vã quyết định khi chưa cảm thấy 'đúng' ở bên trong."
+    },
+    "rev": {
+      "keywords": [
+        "Bí mật bị giấu",
+        "Phớt lờ trực giác",
+        "Rối loạn cảm xúc"
+      ],
+      "desc": "Bạn đang từ chối lắng nghe tiếng nói bên trong, hoặc ai đó đang che giấu bạn một sự thật quan trọng. Mọi thứ đang mờ mịt.",
+      "action": "Ngừng chạy theo ý kiến người khác. Đã đến lúc đối mặt với sự thật mà bạn đang lẩn tránh."
+    }
+  },
+  {
+    "id": "major_3",
+    "name": "The Empress",
+    "type": "major",
+    "emoji": "👑",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/d/d2/RWS_Tarot_03_Empress.jpg",
+    "up": {
+      "keywords": [
+        "Sung túc",
+        "Chăm sóc",
+        "Sáng tạo"
+      ],
+      "desc": "Đại diện cho sự nữ tính, vẻ đẹp và sự phong phú. Mọi nỗ lực của bạn đang đâm chồi nảy lộc và mang lại trái ngọt.",
+      "action": "Hãy nuôi dưỡng bản thân và các mối quan hệ. Dành thời gian kết nối với thiên nhiên và tận hưởng cái đẹp."
+    },
+    "rev": {
+      "keywords": [
+        "Phụ thuộc",
+        "Khô cằn",
+        "Thiếu yêu thương"
+      ],
+      "desc": "Cảm giác bị vắt kiệt sức lực vì chăm sóc người khác quá mức, hoặc bạn đang gặp vấn đề về sự tự tin và thiếu yêu bản thân.",
+      "action": "Phải biết nói KHÔNG! Hãy đặt bản thân lên ưu tiên hàng đầu trước khi muốn chăm lo cho ai khác."
+    }
+  },
+  {
+    "id": "major_4",
+    "name": "The Emperor",
+    "type": "major",
+    "emoji": "🏛️",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/c/c3/RWS_Tarot_04_Emperor.jpg",
+    "up": {
+      "keywords": [
+        "Quyền lực",
+        "Cấu trúc",
+        "Ổn định"
+      ],
+      "desc": "Một giai đoạn đòi hỏi kỷ luật, trật tự và khả năng lãnh đạo. Bạn đang làm chủ được tình thế thông qua luật lệ và lý trí.",
+      "action": "Hãy thiết lập lại kế hoạch một cách logic. Logic và sự bền bỉ sẽ là chìa khóa."
+    },
+    "rev": {
+      "keywords": [
+        "Độc đoán",
+        "Cứng nhắc",
+        "Mất kiểm soát"
+      ],
+      "desc": "Sự lạm dụng quyền lực hoặc ngược lại là thiếu tính kỷ luật dẫn đến hỗn loạn. Cấu trúc hiện tại đang bị phá vỡ.",
+      "action": "Bớt kiểm soát lại! Sự linh hoạt lúc này mới cứu được ván cờ, đừng quá bảo thủ."
+    }
+  },
+  {
+    "id": "major_5",
+    "name": "The Hierophant",
+    "type": "major",
+    "emoji": "📿",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/8/8d/RWS_Tarot_05_Hierophant.jpg",
+    "up": {
+      "keywords": [
+        "Truyền thống",
+        "Niềm tin",
+        "Hướng dẫn"
+      ],
+      "desc": "Bạn cần làm theo những khuôn mẫu, quy tắc đã được thiết lập. Hãy tìm kiếm sự hướng dẫn từ một người thầy hoặc tổ chức uy tín.",
+      "action": "Tôn trọng các giá trị cốt lõi. Đây chưa phải lúc để thử nghiệm những thứ quá phá cách."
+    },
+    "rev": {
+      "keywords": [
+        "Nổi loạn",
+        "Phá vỡ quy tắc",
+        "Hạn chế"
+      ],
+      "desc": "Sự bức bối với những luật lệ cũ kỹ và bảo thủ. Đang có sự thôi thúc muốn đạp đổ những định kiến để tìm tự do.",
+      "action": "Dám nghĩ khác biệt! Đừng sợ đi ngược lại đám đông nếu bạn tin đó là con đường đúng."
+    }
+  },
+  {
+    "id": "major_6",
+    "name": "The Lovers",
+    "type": "major",
+    "emoji": "💕",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/3/3a/TheLovers.jpg",
+    "up": {
+      "keywords": [
+        "Tình yêu",
+        "Hòa hợp",
+        "Lựa chọn"
+      ],
+      "desc": "Sự kết nối sâu sắc, tình yêu đích thực và sự đồng điệu về mặt linh hồn. Nó cũng đại diện cho một ngã rẽ lựa chọn quan trọng.",
+      "action": "Hãy đưa ra quyết định dựa trên trái tim và giá trị thật sự của bạn. Trân trọng người đang ở cạnh."
+    },
+    "rev": {
+      "keywords": [
+        "Mất cân bằng",
+        "Xung đột",
+        "Lựa chọn sai"
+      ],
+      "desc": "Sự rạn nứt trong giao tiếp hoặc cảm giác không đồng điệu. Bạn có thể đang đưa ra lựa chọn vì sợ hãi thay vì tình yêu.",
+      "action": "Giao tiếp thẳng thắn! Đừng lấp liếm những vấn đề đang tồn tại trong mối quan hệ."
+    }
+  },
+  {
+    "id": "major_7",
+    "name": "The Chariot",
+    "type": "major",
+    "emoji": "⚔️",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/9/9b/RWS_Tarot_07_Chariot.jpg",
+    "up": {
+      "keywords": [
+        "Chiến thắng",
+        "Quyết tâm",
+        "Kiểm soát"
+      ],
+      "desc": "Bạn đang vượt qua những lực lượng đối lập để tiến lên phía trước. Ý chí mạnh mẽ sẽ mang lại thành công vang dội.",
+      "action": "Giữ chặt dây cương! Đừng chệch hướng khỏi mục tiêu, bạn sắp đến đích rồi."
+    },
+    "rev": {
+      "keywords": [
+        "Mất phương hướng",
+        "Hung hăng",
+        "Kháng cự"
+      ],
+      "desc": "Cảm giác bị đánh bại, mất kiểm soát tình huống hoặc đang cố gượng ép mọi việc theo ý mình một cách vô ích.",
+      "action": "Lùi lại một bước. Thay vì dùng sức mạnh mù quáng, hãy xem xét lại chiến lược của bạn."
+    }
+  },
+  {
+    "id": "major_8",
+    "name": "Strength",
+    "type": "major",
+    "emoji": "🦁",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/f/f5/RWS_Tarot_08_Strength.jpg",
+    "up": {
+      "keywords": [
+        "Sức mạnh nội tâm",
+        "Dũng cảm",
+        "Kiên nhẫn"
+      ],
+      "desc": "Không phải sức mạnh thể chất, mà là sự thuần hóa những bản năng hoang dã bằng lòng trắc ẩn và sự kiên nhẫn dịu dàng.",
+      "action": "Hãy dùng sự mềm mỏng để giải quyết vấn đề. Sự kiên nhẫn sẽ thu phục được cả những điều khó khăn nhất."
+    },
+    "rev": {
+      "keywords": [
+        "Yếu đuối",
+        "Nghi ngờ bản thân",
+        "Sợ hãi"
+      ],
+      "desc": "Cảm giác năng lượng đang cạn kiệt, tự ti và để cho sự sợ hãi hoặc cơn giận dữ lấn át lý trí.",
+      "action": "Bạn mạnh mẽ hơn bạn nghĩ. Hãy tập trung xây dựng lại sự tự tin từ những điều nhỏ nhất."
+    }
+  },
+  {
+    "id": "major_9",
+    "name": "The Hermit",
+    "type": "major",
+    "emoji": "🏔️",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/4/4d/RWS_Tarot_09_Hermit.jpg",
+    "up": {
+      "keywords": [
+        "Suy ngẫm",
+        "Cô độc",
+        "Tìm kiếm bên trong"
+      ],
+      "desc": "Thời điểm cần rút lui khỏi sự ồn ào của thế giới bên ngoài để tìm kiếm ánh sáng chân lý từ bên trong chính mình.",
+      "action": "Hãy dành thời gian ở một mình. Tắt điện thoại, đi dạo, và tự hỏi bản thân thực sự muốn gì."
+    },
+    "rev": {
+      "keywords": [
+        "Cô lập",
+        "Tách biệt quá mức",
+        "Lạc lối"
+      ],
+      "desc": "Sự xa lánh xã hội quá mức dẫn đến trầm cảm, hoặc bạn đang từ chối nhìn vào sự thật bên trong.",
+      "action": "Đừng trốn chạy nữa. Hãy mở lòng kết nối lại với một người bạn tin tưởng."
+    }
+  },
+  {
+    "id": "major_10",
+    "name": "Wheel of Fortune",
+    "type": "major",
+    "emoji": "🎡",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/3/3c/RWS_Tarot_10_Wheel_of_Fortune.jpg",
+    "up": {
+      "keywords": [
+        "Vận may",
+        "Thay đổi",
+        "Định mệnh"
+      ],
+      "desc": "Bánh xe đang quay theo hướng có lợi cho bạn. Những thay đổi bất ngờ mang theo cơ hội lớn và sự can thiệp của số phận.",
+      "action": "Chớp lấy cơ hội! Đừng chống lại dòng chảy, hãy để Vũ trụ dẫn lối."
+    },
+    "rev": {
+      "keywords": [
+        "Vận xui",
+        "Mất kiểm soát",
+        "Bám víu"
+      ],
+      "desc": "Những thay đổi không mong muốn đang đến. Có những điều nằm ngoài tầm kiểm soát khiến bạn cảm thấy bất lực.",
+      "action": "Chấp nhận rằng có những thứ bạn không thể thay đổi. Hãy học cách thích nghi."
+    }
+  },
+  {
+    "id": "major_11",
+    "name": "Justice",
+    "type": "major",
+    "emoji": "⚖️",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/e/e0/RWS_Tarot_11_Justice.jpg",
+    "up": {
+      "keywords": [
+        "Công bằng",
+        "Sự thật",
+        "Nghiệp quả (Karma)"
+      ],
+      "desc": "Mọi hành động đều có hệ quả. Sự thật sẽ được phơi bày và sự công bằng sẽ được thực thi một cách chính xác.",
+      "action": "Hãy minh bạch, trung thực và nhận trách nhiệm về hành động của mình. Karma đang theo dõi bạn."
+    },
+    "rev": {
+      "keywords": [
+        "Bất công",
+        "Thiếu trung thực",
+        "Đổ lỗi"
+      ],
+      "desc": "Bạn đang bị đối xử bất công, hoặc chính bạn đang trốn tránh trách nhiệm và lấp liếm sự thật.",
+      "action": "Đừng tự lừa dối mình nữa. Hãy đối mặt và giải quyết dứt điểm rắc rối thay vì đổ lỗi."
+    }
+  },
+  {
+    "id": "major_12",
+    "name": "The Hanged Man",
+    "type": "major",
+    "emoji": "🙃",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/2/2b/RWS_Tarot_12_Hanged_Man.jpg",
+    "up": {
+      "keywords": [
+        "Buông bỏ",
+        "Góc nhìn mới",
+        "Hy sinh"
+      ],
+      "desc": "Bạn bị đặt vào trạng thái phải tạm dừng mọi thứ. Đôi khi sự hy sinh hiện tại sẽ mang lại sự giác ngộ lớn trong tương lai.",
+      "action": "Dừng việc cố gắng kiểm soát mọi thứ. Hãy thử nhìn vấn đề theo một góc độ hoàn toàn khác."
+    },
+    "rev": {
+      "keywords": [
+        "Trì hoãn",
+        "Cố chấp",
+        "Hy sinh vô ích"
+      ],
+      "desc": "Cảm giác bế tắc, lãng phí thời gian vì bạn không chịu thay đổi góc nhìn hoặc đang bám víu vào những thứ không còn thuộc về mình.",
+      "action": "Phải biết buông tay. Sự cố chấp lúc này chỉ làm bạn thêm đau khổ."
+    }
+  },
+  {
+    "id": "major_13",
+    "name": "Death",
+    "type": "major",
+    "emoji": "💀",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/d/d7/RWS_Tarot_13_Death.jpg",
+    "up": {
+      "keywords": [
+        "Kết thúc",
+        "Chuyển hóa",
+        "Khởi đầu mới"
+      ],
+      "desc": "Không phải cái chết vật lý! Đây là sự lột xác, chấm dứt một giai đoạn để mở đường cho những điều tươi mới hơn.",
+      "action": "Đóng lại cánh cửa cũ. Hãy mạnh dạn vứt bỏ những thứ đã lỗi thời trong cuộc sống của bạn."
+    },
+    "rev": {
+      "keywords": [
+        "Kháng cự",
+        "Sợ thay đổi",
+        "Trì trệ"
+      ],
+      "desc": "Bạn đang cố chấp níu kéo một mối quan hệ/công việc đã chết. Sự trì hoãn việc kết thúc chỉ làm kéo dài sự đau đớn.",
+      "action": "Chấp nhận sự thật! Càng sợ hãi sự thay đổi, bạn càng lún sâu vào bế tắc."
+    }
+  },
+  {
+    "id": "major_14",
+    "name": "Temperance",
+    "type": "major",
+    "emoji": "🕊️",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/f/f8/RWS_Tarot_14_Temperance.jpg",
+    "up": {
+      "keywords": [
+        "Cân bằng",
+        "Hòa hợp",
+        "Điều độ"
+      ],
+      "desc": "Tìm thấy điểm trung dung (Middle Path). Mọi thứ đang dần được điều hòa lại, mang lại sự bình yên trong tâm hồn.",
+      "action": "Hành xử chừng mực. Hãy kết hợp nhiều yếu tố lại với nhau một cách hài hòa thay vì chọn một thái cực."
+    },
+    "rev": {
+      "keywords": [
+        "Mất cân bằng",
+        "Cực đoan",
+        "Vội vã"
+      ],
+      "desc": "Cuộc sống đang bị mất cân bằng trầm trọng (làm việc quá sức, ăn uống không điều độ, cảm xúc bốc đồng).",
+      "action": "Hãm phanh lại ngay! Bạn cần lập lại trật tự cho thói quen hàng ngày của mình."
+    }
+  },
+  {
+    "id": "major_15",
+    "name": "The Devil",
+    "type": "major",
+    "emoji": "😈",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/5/55/RWS_Tarot_15_Devil.jpg",
+    "up": {
+      "keywords": [
+        "Cám dỗ",
+        "Ràng buộc",
+        "Vật chất"
+      ],
+      "desc": "Bị giam cầm bởi những ham muốn tiêu cực, mối quan hệ độc hại hoặc nghiện ngập. Bạn tưởng mình không thể thoát ra, nhưng chìa khóa ở ngay trong tay bạn.",
+      "action": "Nhận thức rõ những thói quen/con người đang kéo bạn xuống. Đã đến lúc cắt đứt chuỗi xiềng xích này."
+    },
+    "rev": {
+      "keywords": [
+        "Giải thoát",
+        "Tự do",
+        "Vượt qua sợ hãi"
+      ],
+      "desc": "Bạn đang dần nhận ra và phá vỡ những trói buộc cũ. Sự thức tỉnh đang diễn ra, ánh sáng bắt đầu le lói.",
+      "action": "Tiếp tục mạnh mẽ bước đi. Bạn đang đi đúng hướng để giành lại sự tự do cho bản thân."
+    }
+  },
+  {
+    "id": "major_16",
+    "name": "The Tower",
+    "type": "major",
+    "emoji": "🌩️",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/5/53/RWS_Tarot_16_Tower.jpg",
+    "up": {
+      "keywords": [
+        "Sụp đổ",
+        "Chấn động",
+        "Đột phá"
+      ],
+      "desc": "Một sự kiện chấn động, bất ngờ làm sụp đổ những nền tảng tưởng chừng như vững chắc. Đau đớn nhưng là bài học bắt buộc của Vũ trụ.",
+      "action": "Đừng cố chống đỡ tòa tháp đang sập. Hãy để nó sập và dọn dẹp đống đổ nát để xây dựng lại từ đầu."
+    },
+    "rev": {
+      "keywords": [
+        "Né tránh thảm họa",
+        "Từ chối học hỏi",
+        "Thay đổi ngầm"
+      ],
+      "desc": "Bạn vừa thoát khỏi một kiếp nạn trong gang tấc, hoặc bạn đang cố gắng chống lại sự thay đổi bắt buộc.",
+      "action": "Sự thật vẫn ở đó. Trốn tránh không làm nó biến mất, hãy dũng cảm đối diện."
+    }
+  },
+  {
+    "id": "major_17",
+    "name": "The Star",
+    "type": "major",
+    "emoji": "⭐",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/d/db/RWS_Tarot_17_Star.jpg",
+    "up": {
+      "keywords": [
+        "Hy vọng",
+        "Chữa lành",
+        "Cảm hứng"
+      ],
+      "desc": "Sau cơn mưa trời lại sáng. Bạn đang bước vào một giai đoạn tràn đầy hy vọng, phước lành và sự chữa lành sâu sắc từ tinh thần.",
+      "action": "Hãy tin tưởng vào những điều tốt đẹp đang tới. Giữ cho tâm hồn luôn rộng mở."
+    },
+    "rev": {
+      "keywords": [
+        "Mất niềm tin",
+        "Tuyệt vọng",
+        "Thiếu cảm hứng"
+      ],
+      "desc": "Cảm thấy bế tắc, ngắt kết nối với Vũ trụ và để bóng tối của sự chán nản bao trùm lấy mình.",
+      "action": "Đừng phóng đại nỗi đau. Hãy tìm một nguồn cảm hứng nhỏ bé nào đó để kéo bản thân lên."
+    }
+  },
+  {
+    "id": "major_18",
+    "name": "The Moon",
+    "type": "major",
+    "emoji": "🌕",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/7/7f/RWS_Tarot_18_Moon.jpg",
+    "up": {
+      "keywords": [
+        "Ảo giác",
+        "Sợ hãi",
+        "Tiềm thức"
+      ],
+      "desc": "Mọi thứ không như vẻ bề ngoài. Sự lo lắng và nỗi sợ hãi từ tiềm thức đang đánh lừa bạn, tạo ra những bóng đen không có thực.",
+      "action": "Cẩn thận với những quyết định lúc này. Hãy dùng trực giác thay vì đôi mắt để cảm nhận sự thật."
+    },
+    "rev": {
+      "keywords": [
+        "Sự thật lộ diện",
+        "Hết bối rối",
+        "Vượt qua ảo ảnh"
+      ],
+      "desc": "Sương mù đang tan dần. Những bí mật đen tối hoặc sự nhầm lẫn cuối cùng cũng được làm sáng tỏ.",
+      "action": "Đối diện với sự thật dù nó có phũ phàng. Mọi thứ đã rõ ràng, hãy đưa ra quyết định."
+    }
+  },
+  {
+    "id": "major_19",
+    "name": "The Sun",
+    "type": "major",
+    "emoji": "☀️",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/1/17/RWS_Tarot_19_Sun.jpg",
+    "up": {
+      "keywords": [
+        "Niềm vui",
+        "Thành công",
+        "Tỏa sáng"
+      ],
+      "desc": "Một trong những lá bài rực rỡ nhất! Đại diện cho vinh quang, sự ấm áp, thành công rực rỡ và sức sống mãnh liệt.",
+      "action": "Tận hưởng khoảnh khắc này đi! Hãy lan tỏa năng lượng tích cực của bạn cho mọi người xung quanh."
+    },
+    "rev": {
+      "keywords": [
+        "Nỗi buồn tạm thời",
+        "Tự ti",
+        "Niềm vui bị che khuất"
+      ],
+      "desc": "Những đám mây đang che khuất mặt trời. Thành công có thể bị trì hoãn hoặc bạn đang không biết cách tận hưởng những gì mình đang có.",
+      "action": "Hãy tập trung vào những điều tích cực nhỏ bé. Mặt trời vẫn ở đó, chỉ là tạm khuất sau mây thôi."
+    }
+  },
+  {
+    "id": "major_20",
+    "name": "Judgement",
+    "type": "major",
+    "emoji": "📯",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/d/dd/RWS_Tarot_20_Judgement.jpg",
+    "up": {
+      "keywords": [
+        "Tái sinh",
+        "Thức tỉnh",
+        "Phán xét nội tâm"
+      ],
+      "desc": "Tiếng kèn gọi bạn thức tỉnh. Đã đến lúc đánh giá lại toàn bộ quá khứ, tha thứ cho bản thân và bước sang một trang hoàn toàn mới.",
+      "action": "Lắng nghe tiếng gọi từ linh hồn. Rũ bỏ những gánh nặng cũ để chuẩn bị cho sự tái sinh."
+    },
+    "rev": {
+      "keywords": [
+        "Trì hoãn",
+        "Sợ hãi",
+        "Nghi ngờ bản thân"
+      ],
+      "desc": "Bạn đang phớt lờ tiếng gọi từ bên trong vì sợ hãi sự thay đổi, hoặc đang tự phán xét bản thân quá khắt khe.",
+      "action": "Hãy ngừng dằn vặt bản thân về những lỗi lầm trong quá khứ. Đã đến lúc tha thứ và tiến lên."
+    }
+  },
+  {
+    "id": "major_21",
+    "name": "The World",
+    "type": "major",
+    "emoji": "🌍",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/f/ff/RWS_Tarot_21_World.jpg",
+    "up": {
+      "keywords": [
+        "Hoàn thành",
+        "Viên mãn",
+        "Chuyến đi mới"
+      ],
+      "desc": "Kết thúc trọn vẹn của một chu kỳ. Bạn đã hoàn thành xuất sắc mục tiêu, đạt được sự toàn vẹn và sẵn sàng cho một chương mới ở đẳng cấp cao hơn.",
+      "action": "Ăn mừng chiến thắng! Tự hào về chặng đường đã qua và mở rộng tầm nhìn cho hành trình tiếp theo."
+    },
+    "rev": {
+      "keywords": [
+        "Thiếu sót",
+        "Trì hoãn",
+        "Chưa trọn vẹn"
+      ],
+      "desc": "Chỉ còn một bước nhỏ nữa là đến đích nhưng bạn lại chùn bước. Đang có điều gì đó chưa được giải quyết triệt để.",
+      "action": "Đừng bỏ cuộc ở phút chót! Hãy nhìn lại xem mảnh ghép cuối cùng đang thiếu là gì để hoàn thiện nó."
+    }
+  },
+  {
+    "id": "cups_ace",
+    "name": "Ace of Cups",
+    "type": "cups",
+    "emoji": "🍷",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/3/36/Cups01.jpg",
+    "up": {
+      "keywords": [
+        "Tình yêu mới",
+        "Cảm xúc",
+        "Thấu cảm"
+      ],
+      "desc": "Chiếc cốc tràn đầy nước đại diện cho sự khởi đầu của một tình yêu, tình bạn hoặc sự thức tỉnh mạnh mẽ về mặt cảm xúc.",
+      "action": "Hãy mở rộng trái tim để đón nhận những cảm xúc tươi mới. Đừng ngại bày tỏ tình cảm."
+    },
+    "rev": {
+      "keywords": [
+        "Kìm nén",
+        "Tổn thương",
+        "Cạn kiệt cảm xúc"
+      ],
+      "desc": "Trái tim bạn đang đóng kín hoặc đang chịu đựng nỗi đau chưa được nguôi ngoai. Cảm xúc đang bị kìm nén quá mức.",
+      "action": "Hãy cho phép bản thân được khóc, được bộc lộ. Giữ mãi nỗi buồn chỉ làm bạn thêm độc hại."
+    }
+  },
+  {
+    "id": "cups_queen",
+    "name": "Queen of Cups",
+    "type": "cups",
+    "emoji": "👸",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/c/c9/Cups13.jpg",
+    "up": {
+      "keywords": [
+        "Trực giác",
+        "Trắc ẩn",
+        "Yêu thương"
+      ],
+      "desc": "Sự trưởng thành trong cảm xúc. Bạn mang năng lượng của một người biết lắng nghe, thấu hiểu và xoa dịu nỗi đau của người khác.",
+      "action": "Hãy dùng sự dịu dàng và lòng trắc ẩn để đối đãi với người xung quanh. Trực giác của bạn đang rất chính xác."
+    },
+    "rev": {
+      "keywords": [
+        "Đa cảm",
+        "Lụy tình",
+        "Mất kiểm soát"
+      ],
+      "desc": "Sự nhạy cảm thái quá dẫn đến suy diễn, yếu đuối, hoặc để người khác lợi dụng lòng tốt của mình.",
+      "action": "Đừng để cảm xúc lấn át lý trí. Hãy vạch ra ranh giới rõ ràng trong các mối quan hệ."
+    }
+  },
+  {
+    "id": "cups_king",
+    "name": "King of Cups",
+    "type": "cups",
+    "emoji": "🤴",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/0/04/Cups14.jpg",
+    "up": {
+      "keywords": [
+        "Điềm tĩnh",
+        "Kiểm soát cảm xúc",
+        "Ngoại giao"
+      ],
+      "desc": "Làm chủ hoàn toàn cảm xúc. Đại diện cho sự ổn định, đáng tin cậy và khả năng đưa ra lời khuyên tuyệt vời trong tình cảm.",
+      "action": "Dù trong lòng có sóng gió, hãy giữ cái đầu lạnh và trái tim ấm. Lắng nghe trước khi phản ứng."
+    },
+    "rev": {
+      "keywords": [
+        "Thao túng",
+        "Bất ổn",
+        "Lạnh lùng"
+      ],
+      "desc": "Sự thao túng cảm xúc độc hại, ghen tuông ngầm hoặc hoàn toàn đóng băng cảm xúc để bảo vệ bản thân.",
+      "action": "Đừng dùng tình cảm như một vũ khí để thao túng người khác. Cần đối diện thẳng thắn với cảm xúc thật."
+    }
+  },
+  {
+    "id": "pentacles_ace",
+    "name": "Ace of Pentacles",
+    "type": "pentacles",
+    "emoji": "🪙",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/f/fd/Pents01.jpg",
+    "up": {
+      "keywords": [
+        "Cơ hội mới",
+        "Tài chính",
+        "Thịnh vượng"
+      ],
+      "desc": "Một cơ hội cụ thể, thực tế đang xuất hiện (công việc mới, thu nhập mới). Lời hứa hẹn về sự ổn định và sung túc vật chất.",
+      "action": "Hãy nắm bắt cơ hội này và bắt tay vào hành động thực tế. Chăm chỉ sẽ mang lại tiền bạc."
+    },
+    "rev": {
+      "keywords": [
+        "Bỏ lỡ cơ hội",
+        "Mất tiền",
+        "Thiếu thực tế"
+      ],
+      "desc": "Những kế hoạch tài chính bị trì hoãn, một lời mời làm việc hụt hoặc sự quản lý tiền bạc yếu kém.",
+      "action": "Kiểm tra lại ngân sách! Tránh những khoản đầu tư rủi ro hoặc mua sắm bốc đồng lúc này."
+    }
+  },
+  {
+    "id": "pentacles_queen",
+    "name": "Queen of Pentacles",
+    "type": "pentacles",
+    "emoji": "👸",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/8/88/Pents13.jpg",
+    "up": {
+      "keywords": [
+        "Đảm đang",
+        "Thực tế",
+        "Hưởng thụ"
+      ],
+      "desc": "Năng lượng của một người biết cân bằng giữa công việc và chăm sóc gia đình. Sự ổn định, ấm áp và biết tận hưởng cuộc sống.",
+      "action": "Tự thưởng cho mình một bữa ăn ngon hoặc một món đồ yêu thích. Hãy biến không gian sống trở nên tiện nghi hơn."
+    },
+    "rev": {
+      "keywords": [
+        "Thực dụng",
+        "Ích kỷ",
+        "Ám ảnh vật chất"
+      ],
+      "desc": "Quá ám ảnh về tiền bạc, ghen tị với tài sản của người khác, hoặc bỏ bê bản thân vì công việc.",
+      "action": "Tiền không phải là tất cả. Đừng để vật chất làm mờ mắt và đánh mất đi những giá trị tinh thần."
+    }
+  },
+  {
+    "id": "pentacles_king",
+    "name": "King of Pentacles",
+    "type": "pentacles",
+    "emoji": "🤴",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/1/1c/Pents14.jpg",
+    "up": {
+      "keywords": [
+        "Kinh doanh",
+        "Quyền lực",
+        "Thành tựu"
+      ],
+      "desc": "Đỉnh cao của sự thành công về vật chất và sự nghiệp. Một người đáng tin cậy, hào phóng và có tư duy kinh doanh nhạy bén.",
+      "action": "Hãy suy nghĩ dài hạn. Đầu tư một cách khôn ngoan và bảo vệ những gì bạn đã nỗ lực xây dựng."
+    },
+    "rev": {
+      "keywords": [
+        "Độc đoán",
+        "Tham nhũng",
+        "Bất tài"
+      ],
+      "desc": "Sự bảo thủ thái quá, tham lam, hoặc quản lý tài chính tồi tệ dẫn đến nguy cơ phá sản, mất uy tín.",
+      "action": "Cảnh giác với lòng tham! Đừng vì cái lợi trước mắt mà đánh đổi cả uy tín và sự nghiệp."
+    }
+  },
+  {
+    "id": "swords_ace",
+    "name": "Ace of Swords",
+    "type": "swords",
+    "emoji": "🗡️",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/1/1a/Swords01.jpg",
+    "up": {
+      "keywords": [
+        "Đột phá",
+        "Sự thật",
+        "Rõ ràng"
+      ],
+      "desc": "Thanh kiếm chém đứt sự mờ mịt. Một ý tưởng mới lóe lên, sự thật được phơi bày và trí tuệ được khai sáng.",
+      "action": "Hãy nhìn thẳng vào sự thật. Dùng lý trí sắc bén để cắt bỏ những rắc rối đang cản đường bạn."
+    },
+    "rev": {
+      "keywords": [
+        "Mơ hồ",
+        "Tổn thương",
+        "Sai lệch"
+      ],
+      "desc": "Suy nghĩ bị đình trệ, những lời nói gây sát thương hoặc một sự thật bị bóp méo khiến bạn bối rối.",
+      "action": "Đừng vội vã đưa ra quyết định lúc này. Hãy cẩn thận với lời nói của mình để tránh gây tổn thương."
+    }
+  },
+  {
+    "id": "swords_queen",
+    "name": "Queen of Swords",
+    "type": "swords",
+    "emoji": "👸",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/d/d4/Swords13.jpg",
+    "up": {
+      "keywords": [
+        "Độc lập",
+        "Lý trí",
+        "Thẳng thắn"
+      ],
+      "desc": "Một người từng trải, sắc sảo và độc lập. Bạn có khả năng nhìn thấu bản chất vấn đề và không bị cảm xúc chi phối.",
+      "action": "Hãy giao tiếp một cách rõ ràng, thẳng thắn nhưng đừng quên sự tinh tế. Đừng để cảm xúc làm mờ lý trí."
+    },
+    "rev": {
+      "keywords": [
+        "Lạnh lùng",
+        "Cay nghiệt",
+        "Thiếu cảm thông"
+      ],
+      "desc": "Sự phán xét quá khắt khe, lời nói sắc mỏng như dao lam gây tổn thương cho người khác. Sự cay đắng từ quá khứ.",
+      "action": "Bớt gay gắt lại! Sự thật thì mất lòng, nhưng cách bạn truyền đạt quyết định tất cả."
+    }
+  },
+  {
+    "id": "swords_king",
+    "name": "King of Swords",
+    "type": "swords",
+    "emoji": "🤴",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/3/33/Swords14.jpg",
+    "up": {
+      "keywords": [
+        "Uy quyền",
+        "Trí tuệ",
+        "Khách quan"
+      ],
+      "desc": "Người cầm cán cân công lý với tư duy logic đỉnh cao. Đại diện cho pháp luật, quy tắc và sự minh bạch tuyệt đối.",
+      "action": "Phải công tư phân minh. Đánh giá vấn đề dựa trên bằng chứng và sự thật khách quan, không thiên vị."
+    },
+    "rev": {
+      "keywords": [
+        "Tàn nhẫn",
+        "Lạm quyền",
+        "Thiếu công bằng"
+      ],
+      "desc": "Sự thao túng bằng trí tuệ, lạm dụng quyền lực hoặc sử dụng luật lệ một cách tàn nhẫn để đạt mục đích.",
+      "action": "Đừng dùng sự thông minh của mình để chèn ép người khác. Sức mạnh trí tuệ cần đi kèm với đạo đức."
+    }
+  },
+  {
+    "id": "wands_ace",
+    "name": "Ace of Wands",
+    "type": "wands",
+    "emoji": "🪄",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/1/11/Wands01.jpg",
+    "up": {
+      "keywords": [
+        "Đam mê",
+        "Cảm hứng",
+        "Hành động"
+      ],
+      "desc": "Một tia sáng của cảm hứng, năng lượng dồi dào và sự nhiệt huyết. Một dự án mới đang vẫy gọi bạn.",
+      "action": "Hãy xông lên! Đây là lúc để bắt đầu một điều gì đó với toàn bộ đam mê và ngọn lửa trong bạn."
+    },
+    "rev": {
+      "keywords": [
+        "Chán nản",
+        "Trì hoãn",
+        "Mất động lực"
+      ],
+      "desc": "Ngọn lửa đam mê bị vụt tắt. Các dự án bị đình trệ, hoặc bạn cảm thấy thiếu năng lượng và không có cảm hứng làm gì.",
+      "action": "Đừng cố ép bản thân. Hãy nghỉ ngơi để tìm lại ngọn lửa đam mê trước khi bắt đầu."
+    }
+  },
+  {
+    "id": "wands_queen",
+    "name": "Queen of Wands",
+    "type": "wands",
+    "emoji": "👸",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/0/0d/Wands13.jpg",
+    "up": {
+      "keywords": [
+        "Tự tin",
+        "Quyến rũ",
+        "Năng động"
+      ],
+      "desc": "Một người tỏa sáng rực rỡ ở bất cứ đâu. Đại diện cho sự tự tin, lòng can đảm và sức hút mãnh liệt từ bên trong.",
+      "action": "Hãy tự tin tỏa sáng! Bạn là ngôi sao trong cuộc đời mình, đừng sợ bị người khác phán xét."
+    },
+    "rev": {
+      "keywords": [
+        "Ghen tị",
+        "Kiêu ngạo",
+        "Bất an"
+      ],
+      "desc": "Sự tự tin thái quá biến thành kiêu ngạo, hoặc ngược lại, sự ghen tị và bất an khiến bạn trở nên xấu tính.",
+      "action": "Đừng so sánh bản thân với người khác. Mỗi người có một ngọn lửa riêng, hãy tập trung vào ánh sáng của bạn."
+    }
+  },
+  {
+    "id": "wands_king",
+    "name": "King of Wands",
+    "type": "wands",
+    "emoji": "🤴",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Wands14.jpg",
+    "up": {
+      "keywords": [
+        "Tầm nhìn",
+        "Lãnh đạo",
+        "Quyết đoán"
+      ],
+      "desc": "Một nhà lãnh đạo bẩm sinh với tầm nhìn xa trông rộng. Khả năng truyền cảm hứng và dẫn dắt người khác thực hiện mục tiêu vĩ đại.",
+      "action": "Dám nghĩ lớn và dám làm lớn. Đã đến lúc bước lên nhận lấy vai trò lãnh đạo trong cuộc sống của mình."
+    },
+    "rev": {
+      "keywords": [
+        "Bốc đồng",
+        "Bảo thủ",
+        "Áp đặt"
+      ],
+      "desc": "Sự kỳ vọng quá cao và thiếu thực tế, hoặc sự nóng nảy, áp đặt ý muốn của mình lên người khác một cách độc tài.",
+      "action": "Hạ cái tôi xuống. Một nhà lãnh đạo giỏi là người biết lắng nghe, chứ không phải người chỉ biết ra lệnh."
+    }
+  }
 ]
