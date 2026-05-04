@@ -174,16 +174,26 @@ class Tarot(commands.Cog):
         await msg.edit(embeds=embeds)
 
     async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
-        if isinstance(error, app_commands.CommandOnCooldown):
-            hours, remainder = divmod(int(error.retry_after), 3600)
-            minutes, _ = divmod(remainder, 60)
-            msg = f"⏳ Hãy quay lại rút quẻ sau **{hours}h {minutes}m** nữa nhé!" if error.retry_after > 3600 else f"⏳ Vui lòng đợi **{minutes} phút** nữa."
-            if interaction.response.is_done():
-                await interaction.followup.send(msg, ephemeral=True)
-            else:
-                await interaction.response.send_message(msg, ephemeral=True)
-            return
-        log.error(f"[TAROT] App Command Error: {error}")
+        # Respond only if the interaction hasn't been handled yet
+        try:
+            if isinstance(error, app_commands.CommandOnCooldown):
+                hours, remainder = divmod(int(error.retry_after), 3600)
+                minutes, _ = divmod(remainder, 60)
+                msg = f"⏳ Hãy quay lại rút quẻ sau **{hours}h {minutes}m** nữa nhé!" if error.retry_after > 3600 else f"⏳ Vui lòng đợi **{minutes} phút** nữa."
+                
+                if interaction.response.is_done():
+                    await interaction.followup.send(msg, ephemeral=True)
+                else:
+                    await interaction.response.send_message(msg, ephemeral=True)
+                return
+
+            # For other errors, at least acknowledge so it doesn't time out
+            if not interaction.response.is_done():
+                await interaction.response.send_message(f"❌ Đã xảy ra lỗi: {error}", ephemeral=True)
+            
+            log.error(f"[TAROT] App Command Error: {error}")
+        except Exception as e:
+            log.error(f"[TAROT] Error in error handler: {e}")
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
