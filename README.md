@@ -33,7 +33,8 @@ Shimizu isn't just another music bot. It's designed to provide a premium, seamle
 
 ### 🏠 Utility & Couple Features
 - **Smart Weather** — Detailed forecasts including Morning/Noon/Evening/Night temperatures and 24h outlook.
-- **Reminders & Notifications** — Set daily recurring reminders for important shared tasks.
+- **Couple Trivia** — Encrypted interactive game with a 100-question pool to test how well you know each other.
+- **Dynamic Presence** — Bot status updates in real-time based on music playback and random moods.
 - **Secret Memories** — Secure, XOR-encrypted data storage for personal notes and memories.
 
 ---
@@ -58,6 +59,7 @@ Shimizu isn't just another music bot. It's designed to provide a premium, seamle
 | `/weather` | Get detailed weather forecast for any city. |
 | `/notify` | Set a recurring daily notification. |
 | `/reminders` | View your active notifications. |
+| `/trivia` | Play the Couple Trivia game (2 players). |
 | `/ping` | Check bot and API latency. |
 | `/meng` | Access the encrypted memory box. |
 
@@ -110,7 +112,9 @@ Shimizu/
 │   │   ├── music/       # Core player logic, UI, and models
 │   │   ├── general.py   # Basic commands
 │   │   ├── utility.py   # Weather & Notifications
-│   │   └── secret.py    # Encrypted memories
+│   │   ├── secret.py    # Encrypted memories
+│   │   ├── trivia.py    # Couple Trivia game
+│   │   └── presence.py  # Bot status management
 │   ├── core/            # Configuration and logging
 │   ├── services/        # External API integrations (Weather, etc.)
 │   └── utils/           # Shared helper functions
