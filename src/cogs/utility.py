@@ -134,17 +134,46 @@ class Utility(commands.Cog):
         else:
             await ctx.send("❌ Số thứ tự không hợp lệ.")
 
-    @commands.hybrid_command(name='weather', description='Xem dự báo thời tiết chi tiết.')
+    @commands.hybrid_command(name='weather', description='Xem dự báo thời tiết chuyên nghiệp.')
     @app_commands.describe(city='Tên thành phố (VD: Hanoi, Saigon)')
     async def weather(self, ctx, city: str = "Hanoi"):
-        """Xem dự báo thời tiết chi tiết"""
+        """Xem dự báo thời tiết chuyên nghiệp"""
         async with ctx.typing():
-            weather_data = await WeatherService.get_weather(city)
+            w = await WeatherService.get_weather(city)
+            if not w:
+                return await ctx.send("☔ Không thể lấy dữ liệu thời tiết lúc này.")
+
             embed = discord.Embed(
-                description=weather_data,
+                title=f"📍 Thời tiết tại {w['city']}",
+                description=f"**{w['current']['desc']}**",
                 color=discord.Color.from_str('#3498db')
             )
-            embed.set_footer(text="Dữ liệu từ wttr.in")
+            
+            # Current details
+            embed.add_field(name="🌡️ Nhiệt độ", value=f"{w['current']['temp']}°C", inline=True)
+            embed.add_field(name="🌡️ Cảm giác", value=f"{w['current']['feels_like']}°C", inline=True)
+            embed.add_field(name="💧 Độ ẩm", value=f"{w['current']['humidity']}%", inline=True)
+
+            # Hourly Grid
+            f = w['forecast']
+            embed.add_field(name="🌅 Sáng", value=f"{f['morning']['temp']}°C\n*{f['morning']['desc']}*", inline=True)
+            embed.add_field(name="☀️ Trưa", value=f"{f['noon']['temp']}°C\n*{f['noon']['desc']}*", inline=True)
+            embed.add_field(name="\u200b", value="\u200b", inline=False) # Spacer
+            embed.add_field(name="🌆 Chiều", value=f"{f['evening']['temp']}°C\n*{f['evening']['desc']}*", inline=True)
+            embed.add_field(name="🌙 Tối", value=f"{f['night']['temp']}°C\n*{f['night']['desc']}*", inline=True)
+
+            # Tomorrow
+            t = w['tomorrow']
+            embed.add_field(name=f"📅 Ngày mai ({t['date']})", 
+                            value=f"📈 {t['max']}°C | 📉 {t['min']}°C\n☁️ {t['desc']}", 
+                            inline=False)
+
+            if w['current']['icon']:
+                embed.set_thumbnail(url=w['current']['icon'])
+            
+            embed.set_footer(text="Dữ liệu thời gian thực từ wttr.in")
+            embed.timestamp = datetime.datetime.now()
+            
             await ctx.send(embed=embed)
 
 async def setup(bot):
