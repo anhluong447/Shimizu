@@ -1,125 +1,132 @@
-# 🌸 Shimizu — Discord Music Bot
+<div align="center">
 
-A premium, interactive Discord Music Bot built with Python and `discord.py`.  
-Features a rich embed UI with buttons, search selection, queue management, and audio filters.
+# 🌸 Shimizu
+
+**A Premium, All-in-One Discord Bot for Couples and Music Lovers**
+
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![Discord.py](https://img.shields.io/badge/discord.py-2.4%2B-blue.svg)](https://discordpy.readthedocs.io/en/stable/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![AWS Deployed](https://img.shields.io/badge/Deployed-AWS%20EC2-orange.svg)](https://aws.amazon.com/ec2/)
+
+[Features](#-features) • [Installation](#-installation) • [Commands](#-commands) • [Structure](#-project-structure)
+
+</div>
 
 ---
 
 ## ✨ Features
 
-- 🎵 **Interactive Now Playing** — Rich embeds with thumbnail, duration, clickable control buttons, and a **Visual Progress Bar**.
-- 🔍 **Smart Search** — Search by keywords and pick from a dropdown of top 5 results.
-- 📋 **Queue System** — Paginated queue with add, remove, clear, shuffle, **move**, and **swap** support.
-- 🗂️ **Playlist Management** — Save your current queue as a custom playlist and load it back anytime.
-- ⏩ **Seek / Jump** — Skip to any part of a song using timestamps.
-- 🎖️ **DJ Role System** — Restrict music controls to users with a "DJ" role or Administrator permissions.
-- 🔁 **Repeat Modes** — Off / Single Track / Entire Queue.
-- 🔊 **Audio Filters** — Bass Boost and Nightcore effects via FFmpeg.
-- ⚡ **Play Now** — Skip the queue and play a song immediately.
-- ✨ **Autoplay** — Automatically finds and plays "Related Tracks" from SoundCloud Stations when the queue ends.
-- 🧹 **Smart Presence** — Auto-pauses when the channel is empty, auto-resumes when members join, and auto-disconnects after 15 minutes of inactivity.
-- 🔄 **Quick Reset** — Admin-only command to reload all modules and clear bot state.
+Shimizu isn't just another music bot. It's designed to provide a premium, seamless experience with a focus on high-quality audio and personal interactions.
+
+### 🎵 High-Fidelity Music
+- **Gapless Playback** — Advanced pre-fetching logic loads the next track 10 seconds before the current one ends.
+- **Smart Autoplay** — Automatically discovers related tracks using SoundCloud Stations when the queue is empty.
+- **Interactive UI** — Beautiful embeds with real-time progress bars, dropdown search results, and button controls.
+- **Audio Engineering** — Built-in FFmpeg filters for Bass Boost and Nightcore effects.
+- **Persistent Playlists** — Save and load your favorite queues across sessions.
+
+### 🛠️ Modern Interactions
+- **Hybrid Commands** — Supports both traditional `!` prefixes and modern `/` Slash Commands.
+- **Autocomplete Support** — Intuitive parameter hints and descriptions for all commands.
+- **Guild-Specific Syncing** — Instant command updates via specific guild synchronization.
+
+### 🏠 Utility & Couple Features
+- **Smart Weather** — Detailed forecasts including Morning/Noon/Evening/Night temperatures and 24h outlook.
+- **Reminders & Notifications** — Set daily recurring reminders for important shared tasks.
+- **Secret Memories** — Secure, XOR-encrypted data storage for personal notes and memories.
 
 ---
 
 ## 🛠️ Commands
 
-### Music
-| Command | Aliases | Description |
-| --- | --- | --- |
-| `!play <query>` | `!p` | Search & play (link or keywords). |
-| `!playnow <query>` | `!pn` | Play immediately, skipping the queue. |
-| `!skip` | `!s` | Skip current song. |
-| `!seek <time>` | — | Jump to part of a song (e.g., `1:30` or `90`). |
-| `!pause` | — | Pause playback. |
-| `!resume` | — | Resume playback. |
-| `!stop` | `!leave`, `!dc` | Stop & disconnect. |
-| `!np` | `!now` | Show Now Playing with controls & progress. |
-
-### Queue
-| Command | Aliases | Description |
-| --- | --- | --- |
-| `!queue [page]` | `!q` | View queue (paginated). |
-| `!remove <index>` | `!rm` | Remove a song by index. |
-| `!move <from> <to>` | — | Move a song in the queue. |
-| `!swap <p1> <p2>` | — | Swap two songs in the queue. |
-| `!history` | — | View recently played tracks. |
-| `!clear` | — | Clear the entire queue. |
-| `!shuffle` | — | Shuffle the queue randomly. |
-
-### Settings
-| Command | Aliases | Description |
-| --- | --- | --- |
-| `!repeat [off/one/all]` | `!loop` | Toggle repeat mode. |
-| `!volume <0-200>` | `!vol`, `!v` | Get or set playback volume. |
-| `!filter <name>` | `!fx` | Audio filter: `normal`, `bass`, `nightcore`. |
-| `!autoplay` | `!ap` | Toggle automatic related track playback. |
-
-### Playlist
-| Command | Aliases | Description |
-| --- | --- | --- |
-| `!save_playlist <name>` | `!sp` | Save current queue to a playlist. |
-| `!load_playlist <name>` | `!lp` | Load a saved playlist. |
-| `!list_playlists` | `!lps` | View all saved playlists. |
-
-### General
+### 🎵 Music (Slash & Prefix)
 | Command | Description |
 | --- | --- |
-| `!ping` | Check bot latency. |
-| `!hello` | Say hi to Shimizu! |
-| `!reset` | Reload all modules (Admin only). |
+| `/play` | Search and play music (Keywords or URL). |
+| `/playnow` | Insert a song at the front and skip to it immediately. |
+| `/skip` | Skip the current track. |
+| `/seek` | Jump to a specific time (e.g., `1:30` or `90`). |
+| `/queue` | View the paginated queue. |
+| `/history` | View the 10 most recently played tracks. |
+| `/filter` | Apply audio filters: `normal`, `bass`, `nightcore`. |
+| `/autoplay` | Toggle automatic discovery of related tracks. |
+
+### 📋 Management & Utility
+| Command | Description |
+| --- | --- |
+| `/weather` | Get detailed weather forecast for any city. |
+| `/notify` | Set a recurring daily notification. |
+| `/reminders` | View your active notifications. |
+| `/ping` | Check bot and API latency. |
+| `/meng` | Access the encrypted memory box. |
 
 ---
 
 ## 🚀 Installation
 
 ### Prerequisites
-- Python 3.10+
-- [FFmpeg](https://ffmpeg.org/download.html)
+- **Python 3.10+**
+- **FFmpeg** (Required for audio processing)
+- **Discord Bot Token** (From [Discord Developer Portal](https://discord.com/developers/applications))
 
 ### Setup
-```bash
-git clone https://github.com/anhluong447/Shimizu.git
-cd Shimizu
-python -m venv venv
-.\venv\Scripts\activate        # Windows
-pip install -r requirements.txt
-pip install davey               # Required for Discord voice (DAVE protocol)
-```
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/anhluong447/Shimizu.git
+   cd Shimizu
+   ```
 
-### Configure
-Create a `.env` file:
-```env
-DISCORD_TOKEN=your_token_here
-```
+2. **Environment Setup:**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Linux/macOS
+   # OR
+   .\venv\Scripts\activate   # Windows
+   pip install -r requirements.txt
+   ```
 
-### Run
-```bash
-python main.py
-```
+3. **Configuration:**
+   Create a `.env` file in the root directory:
+   ```env
+   DISCORD_TOKEN=your_bot_token_here
+   GUILD_ID=your_server_id_here
+   SECRET_KEY=your_encryption_key_here
+   ```
+
+4. **Running the bot:**
+   ```bash
+   python main.py
+   ```
 
 ---
 
 ## 📂 Project Structure
 
-```
+```text
 Shimizu/
-├── cogs/
-│   ├── music.py          # 🎵 Music player, queue, filters, UI
-│   └── general.py        # 💬 Basic & System commands
-├── utils/                # 🔧 Helpers
-├── main.py               # 🚀 Entry point
-├── playlists.json        # 📂 User saved playlists
-├── .env                  # 🔒 Bot token (private)
-├── .gitignore
-├── requirements.txt
-└── README.md
+├── src/
+│   ├── cogs/            # Functional modules
+│   │   ├── music/       # Core player logic, UI, and models
+│   │   ├── general.py   # Basic commands
+│   │   ├── utility.py   # Weather & Notifications
+│   │   └── secret.py    # Encrypted memories
+│   ├── core/            # Configuration and logging
+│   ├── services/        # External API integrations (Weather, etc.)
+│   └── utils/           # Shared helper functions
+├── data/                # Persistent storage (JSON, TXT)
+├── main.py              # Application entry point
+├── .env                 # Environment variables
+└── requirements.txt     # Python dependencies
 ```
 
 ---
 
 ## 🤝 Contributing
-Feel free to fork and submit pull requests!
+Contributions are welcome! If you have ideas for new features or improvements, feel free to open an issue or submit a pull request.
 
 ---
-*Built with ❤️ by Shimizu Team*
+
+<div align="center">
+  <i>Built with ❤️ for couples and music enthusiasts everywhere.</i>
+</div>
