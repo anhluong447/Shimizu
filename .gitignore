@@ -16,7 +16,7 @@ __pycache__/
 ffmpeg-8.1-essentials_build/
 
 # Dev Logs
-DEV_LOG.md
+!DEV_LOG.md
 
 # VS Code
 .vscode/
