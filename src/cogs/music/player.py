@@ -57,6 +57,9 @@ class MusicPlayer:
                 data = await loop.run_in_executor(None, lambda: ydl.extract_info(station_url, download=False))
 
             if data and 'entries' in data:
+                # SoundCloud Station always starts with the seed track, so we skip it
+                # Or at least we verify IDs/URLs carefully
+                current_id = song._data.get('id')
                 played_urls = [s.url for s in self.history]
                 queue_urls = [s.url for s in self.queue]
                 if self.current:
@@ -64,10 +67,20 @@ class MusicPlayer:
 
                 for entry in data['entries']:
                     entry_url = entry.get('url')
+                    entry_id = entry.get('id')
+                    
                     if not entry_url:
                         continue
-                    if entry_url in played_urls or entry_url in queue_urls:
+                        
+                    # Skip if ID matches current song
+                    if current_id and entry_id and str(current_id) == str(entry_id):
                         continue
+                        
+                    # Skip if URL matches (with basic normalization)
+                    normalized_entry = entry_url.replace('api-v2.soundcloud.com/tracks/', 'soundcloud.com/')
+                    if any(normalized_entry in url or url in normalized_entry for url in played_urls + queue_urls):
+                        continue
+                        
                     return await SongInfo.from_url(entry_url, requester=self.bot.user, loop=self.bot.loop)
 
         except Exception as e:

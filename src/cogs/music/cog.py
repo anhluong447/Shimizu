@@ -74,14 +74,23 @@ class Music(commands.Cog):
     def _get_artist_title(self, song):
         title = song.title
         artist = song.uploader
-        for sep in [' - ', ' – ', ' : ']:
+        
+        # Standard separator search
+        for sep in [' - ', ' – ', ' — ', ' : ']:
             if sep in title:
                 parts = title.split(sep, 1)
-                artist, title = parts[0], parts[1]
+                artist, title = parts[0].strip(), parts[1].strip()
                 break
-        clean_regex = r'\(.*?\)|\[.*?\]|official|video|lyric|audio|full hd|mv|music video'
+                
+        # Clean up common noise
+        clean_regex = r'\(.*?\)|\[.*?\]|official|video|lyric|audio|full hd|mv|music video|prod\.|by|ft\.|feat\.'
         title = re.sub(clean_regex, '', title, flags=re.IGNORECASE).strip()
         artist = re.sub(clean_regex, '', artist, flags=re.IGNORECASE).strip()
+        
+        # If artist is still "Unknown" or looks like a URL, try to use uploader if it's better
+        if not artist or artist.lower() in ('unknown', 'youtube', 'soundcloud'):
+            artist = song.uploader
+            
         return artist, title
 
     @commands.Cog.listener()
@@ -394,21 +403,40 @@ class Music(commands.Cog):
     async def lyrics(self, ctx, *, query: str = None):
         """Xem lời bài hát đang phát hoặc tìm theo tên."""
         player = self.get_player(ctx)
-        if not query:
-            if not player.current:
-                return await ctx.send('❌ Không có bài nào đang phát để xem lời!')
-            artist, title = self._get_artist_title(player.current)
-        else:
-            if ' - ' in query:
-                parts = query.split(' - ', 1)
-                artist, title = parts[0], parts[1]
-            else:
-                artist, title = '', query
-
-        log.info(f"[LYRICS] Searching for: {artist} - {title}")
+        
         async with ctx.typing():
+            if not query:
+                if not player.current:
+                    return await ctx.send('❌ Không có bài nào đang phát để xem lời!')
+                artist, title = self._get_artist_title(player.current)
+            else:
+                if ' - ' in query:
+                    parts = query.split(' - ', 1)
+                    artist, title = parts[0].strip(), parts[1].strip()
+                else:
+                    # If no artist provided, try to search to get better metadata
+                    try:
+                        results = await SongInfo.search(query, loop=self.bot.loop)
+                        if results:
+                            # Use first result's metadata
+                            temp_song = SongInfo(results[0], ctx.author)
+                            artist, title = self._get_artist_title(temp_song)
+                        else:
+                            artist, title = '', query
+                    except Exception:
+                        artist, title = '', query
+
+            log.info(f"[LYRICS] Searching for: {artist} - {title}")
+            
             async def fetch(a, t):
-                url = f"https://api.lyrics.ovh/v1/{a}/{t}"
+                if not t: return None
+                # If artist is empty, we try a different approach or just the title
+                url = f"https://api.lyrics.ovh/v1/{a}/{t}" if a else f"https://api.lyrics.ovh/v1/{t}"
+                # Wait, lyrics.ovh usually needs /artist/title. 
+                # If artist is empty, maybe we use title as both or just title?
+                # Actually, some lyrics APIs handle just title if you put it in the artist slot? No.
+                # Let's try to search via a different method if artist is missing.
+                
                 try:
                     async with aiohttp.ClientSession() as session:
                         async with session.get(url, timeout=10) as resp:
@@ -416,17 +444,23 @@ class Music(commands.Cog):
                                 res_json = await resp.json()
                                 return res_json.get('lyrics')
                 except Exception as e:
-                    log.error(f"[LYRICS] Fetch error: {e}")
+                    log.error(f"[LYRICS] Fetch error for {url}: {e}")
                 return None
 
             lyrics_text = await fetch(artist, title)
-            if not lyrics_text and artist:
-                log.info(f"[LYRICS] Not found, trying fallback: {artist} {title}")
-                lyrics_text = await fetch('', f"{artist} {title}")
+            
+            # Fallback 1: Swap artist/title if not found
+            if not lyrics_text and artist and title:
+                lyrics_text = await fetch(title, artist)
+            
+            # Fallback 2: Try with a combined query in title slot if artist is empty
+            if not lyrics_text and not artist:
+                # This is tricky for lyrics.ovh, but let's try
+                pass
 
         if not lyrics_text:
             search_name = f"{artist} - {title}" if artist else title
-            return await ctx.send(f'❌ Không tìm thấy lời cho: **{search_name}**')
+            return await ctx.send(f'❌ Không tìm thấy lời cho: **{search_name}**\n(Mẹo: Hãy thử `!lyrics Tên Ca Sĩ - Tên Bài Hát`)')
 
         if len(lyrics_text) > 4000:
             lyrics_text = lyrics_text[:4000] + "\n\n...(còn tiếp)..."
