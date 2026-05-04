@@ -30,5 +30,6 @@ logs/
 *.txt
 !requirements.txt
 !cookies.txt
+!data/tarot.json
 scratch/
 meng.txt
