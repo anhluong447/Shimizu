@@ -115,7 +115,7 @@ class Trivia(commands.Cog):
             
             players.append(interaction.user)
             player_interactions[interaction.user] = interaction
-            await interaction.response.send_message(f"✅ {interaction.user.display_name} đã tham gia!", ephemeral=False)
+            await interaction.response.send_message(f"✅ {interaction.user.display_name} đã tham gia!", delete_after=5)
             
             if len(players) == 2:
                 await start_game()
@@ -147,6 +147,12 @@ class Trivia(commands.Cog):
             await i2.followup.send(embed=v2.create_embed(), view=v2, ephemeral=True)
 
             await asyncio.gather(v1.wait(), v2.wait())
+            
+            # Xóa tin nhắn ẩn "Đã xong" của Giai đoạn 1
+            try:
+                await v1.last_interaction.delete_original_response()
+                await v2.last_interaction.delete_original_response()
+            except: pass
 
             # Phase 2: Guessing
             v1_guess = TriviaGameView(self.bot, game_questions, p1, p2, mode='guess')
@@ -161,6 +167,12 @@ class Trivia(commands.Cog):
             await v2.last_interaction.followup.send(embed=v2_guess.create_embed(), view=v2_guess, ephemeral=True)
 
             await asyncio.gather(v1_guess.wait(), v2_guess.wait())
+
+            # Xóa tin nhắn ẩn "Đã xong" của Giai đoạn 2
+            try:
+                await v1_guess.last_interaction.delete_original_response()
+                await v2_guess.last_interaction.delete_original_response()
+            except: pass
 
             # Final Result
             score1 = 0 # P1 guesses for P2
@@ -197,6 +209,10 @@ class Trivia(commands.Cog):
             
             result_embed.add_field(name="💬 Nhận xét của Shimizu", value=comment)
             await ctx.channel.send(embed=result_embed)
+            
+            # Dọn dẹp nốt tin nhắn gốc ban đầu
+            try: await msg.delete()
+            except: pass
             
             if ctx.guild.id in self.active_sessions:
                 del self.active_sessions[ctx.guild.id]
