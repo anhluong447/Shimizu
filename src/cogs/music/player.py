@@ -100,16 +100,6 @@ class MusicPlayer:
         query = f"{song.title} {song.uploader} related"
         try:
             results = await SongInfo.search(query, loop=self.bot.loop)
-            played_urls = [s.url for s in self.history]
-            queue_urls = [s.url for s in self.queue]
-            if self.current:
-                queue_urls.append(self.current.url)
-
-    async def fetch_related_fallback(self, song):
-        """Dùng tìm kiếm từ khóa làm phương án dự phòng"""
-        query = f"{song.title} {song.uploader} related"
-        try:
-            results = await SongInfo.search(query, loop=self.bot.loop)
             played_ids = [str(s._data.get('id')) for s in self.history if s._data.get('id')]
             played_urls = [s.url for s in self.history]
             queue_ids = [str(s._data.get('id')) for s in self.queue if s._data.get('id')]
