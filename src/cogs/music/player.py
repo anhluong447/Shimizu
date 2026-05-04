@@ -25,6 +25,8 @@ class MusicPlayer:
         self.idle_task = None
         self.filter_name = 'Normal'
         self.volume = 0.5
+        self.prefetched_song = None
+        self._prefetch_task = None
 
         # Time tracking
         self.start_time = 0
@@ -128,6 +130,20 @@ class MusicPlayer:
             print(f'[DEBUG] Fetch related fallback error: {e}')
         return None
 
+    async def _run_prefetch(self, delay):
+        """Tải trước bài hát khi sắp kết thúc bài hiện tại"""
+        try:
+            await asyncio.sleep(delay)
+            if self.autoplay and not self.queue and not self.prefetched_song:
+                # log.info(f"[PREFETCH] Fetching next song for {self.guild.name}")
+                self.prefetched_song = await self.fetch_related(self.current)
+                if self.prefetched_song:
+                    await self.channel.send(f"✨ **Autoplay:** Đã tải sẵn bài tiếp theo: **{self.prefetched_song.title}**", delete_after=10)
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            print(f"[ERROR] Prefetch error: {e}")
+
     async def _player_loop(self):
         await self.bot.wait_until_ready()
         while not self.bot.is_closed():
@@ -137,6 +153,10 @@ class MusicPlayer:
                 song = self.current
             elif self.queue:
                 song = self.queue.popleft()
+                self.prefetched_song = None # Hủy bài tải sẵn nếu có bài trong hàng đợi
+            elif self.prefetched_song:
+                song = self.prefetched_song
+                self.prefetched_song = None
             elif self.autoplay and self.current:
                 try:
                     msg = await self.channel.send("✨ **Autoplay:** Đang tìm bài hát liên quan...")
@@ -174,6 +194,13 @@ class MusicPlayer:
             self.total_paused = 0
 
             vc.play(source, after=lambda e: self.bot.loop.call_soon_threadsafe(self.next.set))
+
+            # Start prefetch task (10s before end)
+            if self._prefetch_task:
+                self._prefetch_task.cancel()
+            
+            prefetch_delay = max(0, song.duration - 10)
+            self._prefetch_task = self.bot.loop.create_task(self._run_prefetch(prefetch_delay))
 
             # Delete old NP message
             if self.np_message:
