@@ -40,7 +40,7 @@ class Presence(commands.Cog):
             
             if active_song:
                 # Set "Listening to"
-                activity_name = f"{'⏸️ ' if is_paused else ''}{active_song}"
+                activity_name = f"{'⏸️ ' if is_paused else 'Đang nghe:'}{active_song}"
                 activity = discord.Activity(
                     type=discord.ActivityType.listening,
                     name=activity_name
