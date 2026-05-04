@@ -21,7 +21,7 @@ class TriviaGameView(discord.ui.View):
         self.mode = mode # 'self' or 'guess'
         self.current_idx = 0
         self.answers = []
-        self.message = None
+        self.last_interaction = None
 
     def create_embed(self):
         q_data = self.questions[self.current_idx]
@@ -56,6 +56,7 @@ class TriviaGameView(discord.ui.View):
             self.add_buttons()
             await interaction.response.edit_message(embed=self.create_embed(), view=self)
         else:
+            self.last_interaction = interaction
             await interaction.response.edit_message(content="✅ Đã xong phần này! Đang chờ đối phương...", embed=None, view=None)
             self.stop()
 
@@ -104,6 +105,7 @@ class Trivia(commands.Cog):
 
         view = discord.ui.View()
         players = []
+        player_interactions = {}
 
         async def join_callback(interaction: discord.Interaction):
             if interaction.user in players:
@@ -112,10 +114,11 @@ class Trivia(commands.Cog):
                 return await interaction.response.send_message("Đã đủ 2 người chơi!", ephemeral=True)
             
             players.append(interaction.user)
+            player_interactions[interaction.user] = interaction
             await interaction.response.send_message(f"✅ {interaction.user.display_name} đã tham gia!", ephemeral=False)
             
             if len(players) == 2:
-                await start_game(interaction)
+                await start_game()
 
         join_btn = discord.ui.Button(label="Tham gia", style=discord.ButtonStyle.primary)
         join_btn.callback = join_callback
@@ -123,11 +126,13 @@ class Trivia(commands.Cog):
 
         msg = await ctx.send(embed=embed, view=view)
 
-        async def start_game(interaction):
+        async def start_game():
             join_btn.disabled = True
             await msg.edit(content="🚀 Trò chơi bắt đầu! Hãy kiểm tra tin nhắn ẩn bên dưới.", embed=None, view=None)
             
             p1, p2 = players
+            i1 = player_interactions[p1]
+            i2 = player_interactions[p2]
             
             # Phase 1: Self Answers
             v1 = TriviaGameView(self.bot, game_questions, p1, p2, mode='self')
@@ -135,13 +140,11 @@ class Trivia(commands.Cog):
             v2 = TriviaGameView(self.bot, game_questions, p2, p1, mode='self')
             v2.add_buttons()
 
-            await interaction.channel.send(f"➡️ **Giai đoạn 1:** {p1.mention} và {p2.mention} hãy trả lời về chính mình!", delete_after=10)
+            await ctx.channel.send(f"➡️ **Giai đoạn 1:** {p1.mention} và {p2.mention} hãy trả lời về chính mình!", delete_after=10)
             
-            # Send ephemeral messages to both
-            # Note: We need a new interaction to send ephemeral or use ctx.send if it was a slash
-            # Since this is a button callback, we can use interaction.followup
-            m1 = await interaction.followup.send(embed=v1.create_embed(), view=v1, ephemeral=True)
-            m2 = await interaction.followup.send(embed=v2.create_embed(), view=v2, ephemeral=True)
+            # Gửi tin nhắn ẩn riêng biệt cho từng người thông qua interaction của họ
+            await i1.followup.send(embed=v1.create_embed(), view=v1, ephemeral=True)
+            await i2.followup.send(embed=v2.create_embed(), view=v2, ephemeral=True)
 
             await asyncio.gather(v1.wait(), v2.wait())
 
@@ -151,10 +154,11 @@ class Trivia(commands.Cog):
             v2_guess = TriviaGameView(self.bot, game_questions, p2, p1, mode='guess')
             v2_guess.add_buttons()
 
-            await interaction.channel.send(f"➡️ **Giai đoạn 2:** Bây giờ hãy thử đoán xem đối phương đã chọn gì!", delete_after=10)
+            await ctx.channel.send(f"➡️ **Giai đoạn 2:** Bây giờ hãy thử đoán xem đối phương đã chọn gì!", delete_after=10)
             
-            await interaction.followup.send(embed=v1_guess.create_embed(), view=v1_guess, ephemeral=True)
-            await interaction.followup.send(embed=v2_guess.create_embed(), view=v2_guess, ephemeral=True)
+            # Sử dụng interaction cuối cùng của Phase 1 để gửi tiếp tin nhắn ẩn cho Phase 2
+            await v1.last_interaction.followup.send(embed=v1_guess.create_embed(), view=v1_guess, ephemeral=True)
+            await v2.last_interaction.followup.send(embed=v2_guess.create_embed(), view=v2_guess, ephemeral=True)
 
             await asyncio.gather(v1_guess.wait(), v2_guess.wait())
 
@@ -192,7 +196,7 @@ class Trivia(commands.Cog):
                 comment = "🍵 Có vẻ hai bạn cần phải 'update' thông tin về nhau nhiều hơn rồi!"
             
             result_embed.add_field(name="💬 Nhận xét của Shimizu", value=comment)
-            await interaction.channel.send(embed=result_embed)
+            await ctx.channel.send(embed=result_embed)
             
             if ctx.guild.id in self.active_sessions:
                 del self.active_sessions[ctx.guild.id]
