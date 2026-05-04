@@ -152,8 +152,9 @@ class Music(commands.Cog):
                     player.next.set()
                 await ctx.send(f'✅ Đã thêm: **{song.title}** `[{song.duration_str}]`', delete_after=10)
             except Exception as e:
-                log.error(f'Play error: {e}')
-                await ctx.send(f'❌ Lỗi khi tải bài hát: `{e}`')
+                log.error(f"Command Error ({ctx.command}): {e}")
+                log.error(traceback.format_exc())
+                await ctx.send(f"❌ Đã có lỗi xảy ra: `{e}`")
         else:
             try:
                 async with ctx.typing():
@@ -525,7 +526,10 @@ class Music(commands.Cog):
         player = self.get_player(ctx)
         async with ctx.typing():
             for s_data in songs_data:
-                song = await SongInfo.from_url(s_data, requester=ctx.author, loop=self.bot.loop)
+                # Force re-extraction by passing webpage_url if available
+                # This ensures we get fresh stream links for saved playlists
+                query = s_data.get('webpage_url') or s_data
+                song = await SongInfo.from_url(query, requester=ctx.author, loop=self.bot.loop)
                 player.queue.append(song)
         vc = ctx.voice_client
         if vc and not (vc.is_playing() or vc.is_paused()):

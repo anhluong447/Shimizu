@@ -4,6 +4,7 @@ import asyncio
 import re
 from src.core.config import YTDL_OPTS, FFMPEG_EXE, FFMPEG_OPTIONS
 from src.utils.formatters import format_duration
+from src.core.logger import log
 
 ytdl = yt_dlp.YoutubeDL(YTDL_OPTS)
 ytdl_search = yt_dlp.YoutubeDL({**YTDL_OPTS, 'default_search': 'scsearch5', 'noplaylist': True})
@@ -49,7 +50,7 @@ class SongInfo:
             try:
                 return await loop.run_in_executor(None, lambda: ytdl_search.extract_info(search_query, download=False))
             except Exception as e:
-                print(f'[DEBUG] SoundCloud Search error for "{q}": {e}')
+                log.error(f'SoundCloud Search error for "{q}": {e}')
                 return None
 
         # Step 1: Direct search
@@ -57,7 +58,7 @@ class SongInfo:
 
         # Step 2: Query Refinement
         if not data or 'entries' not in data or not data['entries']:
-            print(f'[DEBUG] No results for "{query}", refining query...')
+            log.debug(f'No results for "{query}", refining query...')
             clean_query = re.sub(r'\(.*?\)|\[.*?\]|official|video|lyric|audio|mv|music video|full hd|[^a-zA-Z0-9\sàáạảãâầấnậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]', ' ', query, flags=re.IGNORECASE)
             clean_query = ' '.join(clean_query.split())
             if clean_query and clean_query.lower() != query.lower():
@@ -66,7 +67,7 @@ class SongInfo:
         # Step 3: Broad Match
         if (not data or 'entries' not in data or not data['entries']) and ' - ' in query:
             parts = query.split(' - ')
-            print(f'[DEBUG] Still no results, trying broad match with "{parts[-1]}"...')
+            log.debug(f'Still no results, trying broad match with "{parts[-1]}"...')
             data = await perform_search(parts[-1])
 
         if not data or 'entries' not in data:

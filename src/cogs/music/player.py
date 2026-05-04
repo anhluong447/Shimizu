@@ -93,7 +93,7 @@ class MusicPlayer:
                     return await SongInfo.from_url(entry_url, requester=self.bot.user, loop=self.bot.loop)
 
         except Exception as e:
-            print(f'[DEBUG] Fetch related station error: {e}')
+            log.error(f'Fetch related station error: {e}')
 
         return await self.fetch_related_fallback(song)
 
@@ -127,7 +127,7 @@ class MusicPlayer:
                     
                 return await SongInfo.from_url(r, requester=self.bot.user, loop=self.bot.loop)
         except Exception as e:
-            print(f'[DEBUG] Fetch related fallback error: {e}')
+            log.error(f'Fetch related fallback error: {e}')
         return None
 
     async def _run_prefetch(self, delay):
@@ -142,7 +142,7 @@ class MusicPlayer:
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            print(f"[ERROR] Prefetch error: {e}")
+            log.error(f"Prefetch error: {e}")
 
     async def _player_loop(self):
         await self.bot.wait_until_ready()
@@ -168,7 +168,7 @@ class MusicPlayer:
                         await self.next.wait()
                         continue
                 except Exception as e:
-                    print(f'[ERROR] Autoplay loop: {e}')
+                    log.error(f'Autoplay loop error: {e}')
                     await self.next.wait()
                     continue
             else:
@@ -227,6 +227,11 @@ class MusicPlayer:
             source.cleanup()
 
     async def _cleanup(self):
+        if self._prefetch_task:
+            self._prefetch_task.cancel()
+        if self.idle_task:
+            self.idle_task.cancel()
+            
         try:
             await self.guild.voice_client.disconnect()
         except Exception:
