@@ -153,7 +153,9 @@ class AICog(commands.Cog):
     async def reset_ai(self, ctx):
         """Xóa sạch lịch sử chat của người dùng."""
         user_id = ctx.author.id
-        if user_id in self.histories:
+        history = self.histories.get(user_id)
+        
+        if history and (history["messages"] or history["summary"]):
             self.histories[user_id] = {"messages": [], "summary": ""}
             await ctx.send("🧹 Đã dọn dẹp sạch sẽ trí nhớ của tớ về cậu rồi đó! Bắt đầu lại nhé? ✨")
         else:
