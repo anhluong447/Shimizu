@@ -22,7 +22,12 @@ class AICog(commands.Cog):
                     "stream": False
                 }
                 
-                async with aiohttp.ClientSession() as session:
+                headers = {
+                    "ngrok-skip-browser-warning": "true",
+                    "Content-Type": "application/json"
+                }
+                
+                async with aiohttp.ClientSession(headers=headers) as session:
                     async with session.post(self.api_url, json=payload, timeout=60) as response:
                         if response.status == 200:
                             data = await response.json()
@@ -47,8 +52,9 @@ class AICog(commands.Cog):
     async def ai_status(self, ctx):
         """Kiểm tra xem bot có kết nối được tới Ollama không."""
         status_url = f"{OLLAMA_API_URL.rstrip('/')}/api/tags"
+        headers = {"ngrok-skip-browser-warning": "true"}
         try:
-            async with aiohttp.ClientSession() as session:
+            async with aiohttp.ClientSession(headers=headers) as session:
                 async with session.get(status_url, timeout=5) as response:
                     if response.status == 200:
                         await ctx.send("✅ AI Server đang hoạt động tốt!")
