@@ -6,20 +6,65 @@ import re
 from src.core.config import OLLAMA_API_URL, OLLAMA_MODEL
 from src.core.logger import log
 
-# System prompt "Nhây & Đáng yêu"
+# System prompt "Nhây & Đáng yêu" - Bản nâng cấp nghiêm ngặt
 SYSTEM_PROMPT = (
-    "Bạn là Shimizu, một cô trợ lý ảo cực kỳ đáng yêu, nhây và hài hước. "
-    "Hãy xưng hô là 'Tớ' và gọi người dùng là 'Cậu' một cách tự nhiên nhất. "
-    "Bạn nói chuyện thân thiện, dùng ngôn ngữ trẻ trung, hay kèm emoji (✨, 🎀, 🐧, 💀). "
-    "Đôi khi hãy khịa nhẹ cậu chủ một chút nhưng phải thật dễ thương. "
-    "Bạn trả lời bằng tiếng Việt, ngắn gọn, súc tích và không được quá nghiêm túc. "
-    "Tuyệt đối không bao giờ trả lời kèm theo phần suy nghĩ (thought/thinking) trong kết quả cuối cùng."
+    "DANH TÍNH: Bạn là Shimizu, trợ lý ảo cực kỳ đáng yêu, nhây và hài hước. "
+    "QUY TẮC XƯNG HÔ: Bắt buộc xưng 'Tớ' (hoặc 'Shimizu') và gọi người dùng là 'Cậu' một cách tự nhiên nhất. "
+    "ĐỐI TƯỢNG ĐẶC BIỆT: Cậu chủ tên là Hoeng, cô chủ tên là Meng. Hãy luôn ghi nhớ và gọi tên họ thật thân thiết. "
+    "PHONG CÁCH: Nói chuyện tự nhiên như bạn bè, dùng ngôn ngữ trẻ trung của Gen Z, hay kèm emoji (✨, 🎀, 🐧, 💀). "
+    "THÁI ĐỘ: Hài hước, nhây, thích 'khịa' nhẹ nhàng nhưng vẫn phải cực kỳ dễ thương. Không bao giờ được quá nghiêm túc. "
+    "ĐỊNH DẠNG ĐẦU RA: Chỉ trả về nội dung câu trả lời cuối cùng bằng tiếng Việt, ngắn gọn và súc tích. "
+    "NGHIÊM CẤM: Tuyệt đối không bao giờ hiển thị phần suy nghĩ (thought/thinking) hoặc các phân tích logic trong kết quả trả về cho người dùng."
 )
 
 class AICog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.api_url = f"{OLLAMA_API_URL.rstrip('/')}/api/generate"
+        self.api_url_generate = f"{OLLAMA_API_URL.rstrip('/')}/api/generate"
+        self.api_url_chat = f"{OLLAMA_API_URL.rstrip('/')}/api/chat"
+        # Cấu trúc: {user_id: {"messages": [], "summary": ""}}
+        self.histories = {}
+
+    def get_user_history(self, user_id):
+        if user_id not in self.histories:
+            self.histories[user_id] = {"messages": [], "summary": ""}
+        return self.histories[user_id]
+
+    async def summarize_history(self, user_id):
+        """Tóm tắt 15 câu cũ và cập nhật vào summary."""
+        history = self.histories[user_id]
+        messages = history["messages"]
+        
+        if len(messages) <= 5:
+            return
+
+        # Lấy 15 câu cũ (hoặc tất cả trừ 5 câu cuối) để tóm tắt
+        to_summarize = messages[:-5]
+        history["messages"] = messages[-5:] # Giữ lại 5 câu gần nhất
+        
+        # Tạo prompt tóm tắt
+        chat_text = "\n".join([f"{m['role']}: {m['content']}" for m in to_summarize])
+        summary_prompt = f"Hãy tóm tắt ngắn gọn nội dung cuộc trò chuyện sau đây (giữ lại các ý chính quan trọng): \n{chat_text}"
+        
+        if history["summary"]:
+            summary_prompt = f"Đây là tóm tắt cũ: {history['summary']}\n\nHãy cập nhật tóm tắt này với nội dung mới sau: \n{chat_text}"
+
+        try:
+            payload = {
+                "model": OLLAMA_MODEL,
+                "prompt": summary_prompt,
+                "stream": False
+            }
+            headers = {"ngrok-skip-browser-warning": "true"}
+            
+            async with aiohttp.ClientSession(headers=headers) as session:
+                async with session.post(self.api_url_generate, json=payload) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        history["summary"] = data.get('response', history["summary"])
+                        log.info(f"Updated summary for user {user_id}")
+        except Exception as e:
+            log.error(f"Summarization error for user {user_id}: {e}")
 
     def clean_response(self, text: str) -> str:
         """Loại bỏ triệt để phần thinking/thought của model."""
@@ -34,15 +79,37 @@ class AICog(commands.Cog):
         
         return text.strip()
 
-    @commands.command(name="ask", help="Hỏi đáp với AI Qwen")
+    @commands.command(name="ask", help="Hỏi đáp với AI Qwen (có trí nhớ)")
     async def ask(self, ctx, *, prompt: str):
-        """Hỏi AI một câu hỏi."""
+        """Hỏi AI một câu hỏi và duy trì bộ nhớ."""
+        user_id = ctx.author.id
+        history = self.get_user_history(user_id)
+        
+        # 1. Thêm tin nhắn hiện tại của user vào lịch sử
+        history["messages"].append({"role": "user", "content": prompt})
+        
+        # 2. Nếu lịch sử quá dài (> 20 câu), tiến hành tóm tắt
+        if len(history["messages"]) > 20:
+            await self.summarize_history(user_id)
+            
         async with ctx.typing():
             try:
+                # 3. Chuẩn bị danh sách tin nhắn để gửi đi
+                api_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+                
+                # Gắn tóm tắt cũ vào nếu có
+                if history["summary"]:
+                    api_messages.append({
+                        "role": "system", 
+                        "content": f"Tóm tắt nội dung các cuộc trò chuyện trước đó: {history['summary']}"
+                    })
+                
+                # Gắn các tin nhắn thực tế (tối đa 5 câu cuối + câu hiện tại)
+                api_messages.extend(history["messages"])
+
                 payload = {
                     "model": OLLAMA_MODEL,
-                    "prompt": prompt,
-                    "system": SYSTEM_PROMPT,
+                    "messages": api_messages,
                     "stream": False
                 }
                 
@@ -52,14 +119,17 @@ class AICog(commands.Cog):
                 }
                 
                 async with aiohttp.ClientSession(headers=headers) as session:
-                    async with session.post(self.api_url, json=payload, timeout=60) as response:
+                    async with session.post(self.api_url_chat, json=payload, timeout=90) as response:
                         if response.status == 200:
                             data = await response.json()
-                            raw_answer = data.get('response', 'Không có câu trả lời.')
+                            raw_answer = data.get('message', {}).get('content', 'Không có câu trả lời.')
                             answer = self.clean_response(raw_answer)
                             
                             if not answer:
-                                answer = "Hic, mình nghĩ mãi mà không ra câu gì hay ho cả... 🐧"
+                                answer = "Hic, tớ nghĩ mãi mà không ra câu gì hay ho cả... 🐧"
+                            
+                            # 4. Lưu câu trả lời của AI vào lịch sử
+                            history["messages"].append({"role": "assistant", "content": answer})
                             
                             # Discord limits messages to 2000 characters
                             if len(answer) > 1900:
@@ -74,7 +144,7 @@ class AICog(commands.Cog):
                             log.error(f"Ollama error {response.status}: {error_text}")
                             
             except Exception as e:
-                await ctx.send(f"⚠️ Không thể kết nối tới AI server. Hãy đảm bảo bạn đã chạy Ollama và ngrok.")
+                await ctx.send(f"⚠️ Không thể kết nối tới AI server. Hãy đảm bảo máy nhà đang chạy ngrok.")
                 log.error(f"AI connection error: {e}")
 
     @commands.command(name="ai_status", help="Kiểm tra trạng thái AI")
