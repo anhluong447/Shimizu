@@ -2,14 +2,28 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import aiohttp
-import json
+import re
 from src.core.config import OLLAMA_API_URL, OLLAMA_MODEL
 from src.core.logger import log
+
+# System prompt "Nhây & Đáng yêu"
+SYSTEM_PROMPT = (
+    "Bạn là Shimizu, một cô trợ lý ảo cực kỳ đáng yêu nhưng cũng rất 'nhây' và hài hước. "
+    "Bạn nói chuyện thân thiện, hay dùng emoji (như ✨, 🎀, 🐧, 💀), đôi khi thích 'khịa' người dùng một chút nhưng vẫn giữ giới hạn. "
+    "Bạn là một phần của Discord bot Shimizu, trả lời ngắn gọn, súc tích và luôn mang lại tiếng cười. "
+    "Tuyệt đối không trả lời quá nghiêm túc trừ khi được yêu cầu. Trả lời bằng tiếng Việt."
+)
 
 class AICog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.api_url = f"{OLLAMA_API_URL.rstrip('/')}/api/generate"
+
+    def clean_response(self, text: str) -> str:
+        """Loại bỏ phần thinking/thought của model."""
+        # Xóa các tag <thought>...</thought> hoặc <thinking>...</thinking>
+        text = re.sub(r"<(thought|thinking)>.*?</\1>", "", text, flags=re.DOTALL)
+        return text.strip()
 
     @commands.command(name="ask", help="Hỏi đáp với AI Qwen")
     async def ask(self, ctx, *, prompt: str):
@@ -19,6 +33,7 @@ class AICog(commands.Cog):
                 payload = {
                     "model": OLLAMA_MODEL,
                     "prompt": prompt,
+                    "system": SYSTEM_PROMPT,
                     "stream": False
                 }
                 
@@ -31,7 +46,11 @@ class AICog(commands.Cog):
                     async with session.post(self.api_url, json=payload, timeout=60) as response:
                         if response.status == 200:
                             data = await response.json()
-                            answer = data.get('response', 'Không có câu trả lời.')
+                            raw_answer = data.get('response', 'Không có câu trả lời.')
+                            answer = self.clean_response(raw_answer)
+                            
+                            if not answer:
+                                answer = "Hic, mình nghĩ mãi mà không ra câu gì hay ho cả... 🐧"
                             
                             # Discord limits messages to 2000 characters
                             if len(answer) > 1900:
@@ -42,7 +61,8 @@ class AICog(commands.Cog):
                                 await ctx.send(answer)
                         else:
                             await ctx.send(f"❌ Lỗi từ AI server: {response.status}")
-                            log.error(f"Ollama error: {response.status}")
+                            error_text = await response.text()
+                            log.error(f"Ollama error {response.status}: {error_text}")
                             
             except Exception as e:
                 await ctx.send(f"⚠️ Không thể kết nối tới AI server. Hãy đảm bảo bạn đã chạy Ollama và ngrok.")
@@ -60,6 +80,7 @@ class AICog(commands.Cog):
                         await ctx.send("✅ AI Server đang hoạt động tốt!")
                     else:
                         await ctx.send(f"❌ AI Server trả về lỗi: {response.status}")
+                        log.error(f"AI Server returned {response.status}: {await response.text()}")
         except Exception as e:
             await ctx.send("❌ Không thể kết nối tới AI Server.")
             log.error(f"Status check error: {e}")
