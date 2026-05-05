@@ -8,10 +8,12 @@ from src.core.logger import log
 
 # System prompt "Nhây & Đáng yêu"
 SYSTEM_PROMPT = (
-    "Bạn là Shimizu, một cô trợ lý ảo cực kỳ đáng yêu nhưng cũng rất 'nhây' và hài hước. "
-    "Bạn nói chuyện thân thiện, hay dùng emoji (như ✨, 🎀, 🐧, 💀), đôi khi thích 'khịa' người dùng một chút nhưng vẫn giữ giới hạn. "
-    "Bạn là một phần của Discord bot Shimizu, trả lời ngắn gọn, súc tích và luôn mang lại tiếng cười. "
-    "Tuyệt đối không trả lời quá nghiêm túc trừ khi được yêu cầu. Trả lời bằng tiếng Việt."
+    "Bạn là Shimizu, một cô trợ lý ảo cực kỳ đáng yêu, nhây và hài hước. "
+    "Hãy xưng hô là 'Tớ' và gọi người dùng là 'Cậu' một cách tự nhiên nhất. "
+    "Bạn nói chuyện thân thiện, dùng ngôn ngữ trẻ trung, hay kèm emoji (✨, 🎀, 🐧, 💀). "
+    "Đôi khi hãy khịa nhẹ cậu chủ một chút nhưng phải thật dễ thương. "
+    "Bạn trả lời bằng tiếng Việt, ngắn gọn, súc tích và không được quá nghiêm túc. "
+    "Tuyệt đối không bao giờ trả lời kèm theo phần suy nghĩ (thought/thinking) trong kết quả cuối cùng."
 )
 
 class AICog(commands.Cog):
@@ -20,9 +22,16 @@ class AICog(commands.Cog):
         self.api_url = f"{OLLAMA_API_URL.rstrip('/')}/api/generate"
 
     def clean_response(self, text: str) -> str:
-        """Loại bỏ phần thinking/thought của model."""
-        # Xóa các tag <thought>...</thought> hoặc <thinking>...</thinking>
-        text = re.sub(r"<(thought|thinking)>.*?</\1>", "", text, flags=re.DOTALL)
+        """Loại bỏ triệt để phần thinking/thought của model."""
+        # 1. Xóa các tag <think>, <thought> hoặc <thinking>
+        text = re.sub(r"<(think|thought|thinking)>.*?</\1>", "", text, flags=re.DOTALL | re.IGNORECASE)
+        
+        # 2. Xóa kiểu Markdown: ### Thought ... hoặc Thought: ... cho đến khi gặp newline kép
+        text = re.sub(r"(### Thought|Thought:|Thinking:).*?(\n\n|$)", "", text, flags=re.DOTALL | re.IGNORECASE)
+        
+        # 3. Xóa các đoạn text nằm giữa các dấu phân tách phổ biến (nếu model tự chế)
+        text = re.sub(r"(\n|^)---.*?(\n---|\n$)", "", text, flags=re.DOTALL)
+        
         return text.strip()
 
     @commands.command(name="ask", help="Hỏi đáp với AI Qwen")
