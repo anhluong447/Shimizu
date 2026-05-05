@@ -88,23 +88,20 @@ class AICog(commands.Cog):
         # 1. Thêm tin nhắn hiện tại của user vào lịch sử
         history["messages"].append({"role": "user", "content": prompt})
         
-        # 2. Nếu lịch sử quá dài (> 20 câu), tiến hành tóm tắt
-        if len(history["messages"]) > 20:
+        # 2. Nếu lịch sử quá dài (> 12 câu), tiến hành tóm tắt để giữ bộ nhớ gọn gàng
+        if len(history["messages"]) > 12:
             await self.summarize_history(user_id)
             
         async with ctx.typing():
             try:
-                # 3. Chuẩn bị danh sách tin nhắn để gửi đi
-                api_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-                
-                # Gắn tóm tắt cũ vào nếu có
+                # 3. Gộp System Prompt và Summary vào một tin nhắn duy nhất
+                full_system_content = SYSTEM_PROMPT
                 if history["summary"]:
-                    api_messages.append({
-                        "role": "system", 
-                        "content": f"Tóm tắt nội dung các cuộc trò chuyện trước đó: {history['summary']}"
-                    })
+                    full_system_content += f"\n\nBỐI CẢNH QUÁ KHỨ (Cậu cần nhớ): {history['summary']}"
                 
-                # Gắn các tin nhắn thực tế (tối đa 5 câu cuối + câu hiện tại)
+                api_messages = [{"role": "system", "content": full_system_content}]
+                
+                # Gắn 5-7 câu hội thoại gần nhất để giữ mạch văn tự nhiên
                 api_messages.extend(history["messages"])
 
                 payload = {
@@ -113,9 +110,7 @@ class AICog(commands.Cog):
                     "stream": False,
                     "options": {
                         "temperature": 0.8,
-                        "repeat_penalty": 1.2,
-                        "top_k": 40,
-                        "top_p": 0.9,
+                        "repeat_penalty": 1.15,
                         "num_ctx": 4096
                     }
                 }
