@@ -110,7 +110,14 @@ class AICog(commands.Cog):
                 payload = {
                     "model": OLLAMA_MODEL,
                     "messages": api_messages,
-                    "stream": False
+                    "stream": False,
+                    "options": {
+                        "temperature": 0.8,
+                        "repeat_penalty": 1.2,
+                        "top_k": 40,
+                        "top_p": 0.9,
+                        "num_ctx": 4096
+                    }
                 }
                 
                 headers = {
@@ -146,6 +153,16 @@ class AICog(commands.Cog):
             except Exception as e:
                 await ctx.send(f"⚠️ Không thể kết nối tới AI server. Hãy đảm bảo máy nhà đang chạy ngrok.")
                 log.error(f"AI connection error: {e}")
+
+    @commands.command(name="reset_ai", help="Xóa trí nhớ của AI với bạn")
+    async def reset_ai(self, ctx):
+        """Xóa sạch lịch sử chat của người dùng."""
+        user_id = ctx.author.id
+        if user_id in self.histories:
+            self.histories[user_id] = {"messages": [], "summary": ""}
+            await ctx.send("🧹 Đã dọn dẹp sạch sẽ trí nhớ của tớ về cậu rồi đó! Bắt đầu lại nhé? ✨")
+        else:
+            await ctx.send("Ơ, tớ đã có tí kỷ niệm nào với cậu đâu mà xóa? 🐧")
 
     @commands.command(name="ai_status", help="Kiểm tra trạng thái AI")
     async def ai_status(self, ctx):
