@@ -12,6 +12,10 @@ GUILD_ID = os.getenv('GUILD_ID')
 PREFIX = '!'
 TIMEZONE = pytz.timezone('Asia/Ho_Chi_Minh')
 
+# --- Ollama Config ---
+OLLAMA_API_URL = os.getenv('OLLAMA_API_URL', 'http://localhost:11434')
+OLLAMA_MODEL = os.getenv('OLLAMA_MODEL', 'shimizu-qwen')
+
 # --- Paths ---
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA_DIR = os.path.join(BASE_DIR, 'data')

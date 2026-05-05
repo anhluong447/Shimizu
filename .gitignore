@@ -18,6 +18,13 @@ ffmpeg-8.1-essentials_build/
 # Dev Logs
 !DEV_LOG.md
 
+# Models
+qwen
+Modelfile
+
+# Tools
+ngrok.exe
+
 # VS Code
 .vscode/
 
@@ -28,8 +35,12 @@ shimizu-key.pem
 logs/
 *.json
 *.txt
+*.log
 !requirements.txt
 !cookies.txt
 !data/tarot.json
 scratch/
 meng.txt
+meng.ann
+*.bak
+backup/
