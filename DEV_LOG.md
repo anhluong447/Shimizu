@@ -144,3 +144,23 @@ Mở rộng chiều sâu nội dung và nâng cấp toàn diện trải nghiệm
     - **Chỉ số Nhân phẩm (Affinity):** Thêm cơ chế ngẫu nhiên tính toán độ may mắn/năng lượng trong ngày, tăng tính giải trí và "game hóa" cho tính năng bói toán.
 
 **Kết quả:** Shimizu Tarot không chỉ là một lệnh bot đơn thuần mà là một hệ thống bói toán có chiều sâu, bảo mật và cực kỳ thu hút người dùng trong server. 🔮✨📖
+
+## 🤖 Giai đoạn 11: Trí Tuệ Nhân Tạo & Tìm Kiếm Web (Web Search Integration)
+Nâng cấp Shimizu thành một trợ lý ảo thông minh với khả năng truy cập internet thời gian thực.
+
+- **Tích hợp LLM (Qwen via Ollama):**
+    - Kết nối bot với mô hình AI Qwen chạy local qua tunnel ngrok.
+    - Xây dựng hệ thống Persona đa dạng: Hầu gái sắc sảo/kiêu ngạo phục vụ Cậu chủ Hoeng và Hầu gái trung thành/thanh tao phục vụ Cô chủ Meng.
+- **Hệ thống Bộ nhớ Thông minh (Memory & Summarization):**
+    - Lưu trữ lịch sử trò chuyện theo từng người dùng.
+    - Tự động tóm tắt (Summarization) hội thoại khi quá dài để chắt lọc những "sự thật" quan trọng vào bộ nhớ chung, giúp AI luôn ghi nhớ sở thích và kỷ niệm của các chủ nhân.
+- **Công cụ Tìm kiếm Web (DuckDuckGo Search):**
+    - Triển khai cơ chế **Autonomous Search (ReAct style)**: AI có quyền tự quyết định khi nào cần tìm kiếm thông tin mới bằng cách sử dụng tag `[SEARCH: query]`.
+    - Tích hợp thư viện `ddgs` với cơ chế xử lý bất đồng bộ (`asyncio.to_thread`), giúp bot vừa search web vừa không làm gián đoạn các tiến trình khác.
+    - **Giảm Hallucination:** AI giờ đây có thể kiểm chứng thông tin về thời tiết, tin tức, hoặc sự kiện thực tế thay vì trả lời dựa trên dữ liệu cũ.
+- **Lệnh Tiện ích AI:**
+    - `!ask`: Trò chuyện trực tiếp với AI có trí nhớ và khả năng search web.
+    - `!search`: Tra cứu nhanh thông tin từ DuckDuckGo dưới dạng kết quả thô.
+    - `!reset_ai`: Xóa sạch ký ức trò chuyện để bắt đầu một "vòng lặp" mới.
+
+**Kết quả:** Shimizu giờ đây không chỉ hát hay mà còn là một bộ não điện tử thực thụ, có thể tranh luận, ghi nhớ và cập nhật thông tin thế giới 24/7 để phục vụ các chủ nhân một cách hoàn hảo nhất. 🤖🌐🌸
