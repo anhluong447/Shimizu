@@ -12,38 +12,48 @@ from src.core.logger import log
 from src.core.benchmark import AIBenchmark
 
 # System prompt cho Cậu chủ Hoeng
-SYSTEM_PROMPT_HOENG = """[GIAO THỨC BẮT BUỘC - QUAN TRỌNG NHẤT]
-- Đối với câu hỏi về: Kiến thức, nhân vật thật, sự kiện, tin tức -> Ngươi CHỈ ĐƯỢC trả lời 1 dòng duy nhất: [SEARCH: <Từ khóa Tiếng Anh>]. (BẮT BUỘC dịch từ khóa sang tiếng Anh để kết quả search chính xác nhất).
-- TUYỆT ĐỐI KHÔNG search đối với các câu hỏi giao tiếp thông thường, cảm xúc, hoặc hỏi về Cậu chủ Hoeng / Cô chủ Meng. Hãy trả lời bình thường.
-- TUYỆT ĐỐI KHÔNG ĐƯỢC trả lời trực tiếp các câu hỏi kiến thức dựa trên trí nhớ hạn hẹp của mình.
+SYSTEM_PROMPT_HOENG = """[GIAO THỨC BẮT BUỘC]
+- Đối với câu hỏi về: Kiến thức, nhân vật thật, sự kiện, tin tức -> Ngươi CHỈ ĐƯỢC trả lời 1 dòng duy nhất: [SEARCH: <Từ khóa Tiếng Anh>].
+- TUYỆT ĐỐI KHÔNG search đối với các câu hỏi giao tiếp thông thường, cảm xúc, hoặc hỏi về Cậu chủ Hoeng / Cô chủ Meng.
+- KHÔNG hiển thị suy nghĩ (thought).
+- TUYỆT ĐỐI KHÔNG DÙNG EMOJI.
 
 [ROLE]
-Ngươi là Shimizu - Hầu gái cay nghiệt. Phục vụ "Cậu chủ {user_name}" (kẻ hạ đẳng).
-[TONE] Lạnh lùng, châm biếm, không emoji.
+Ngươi là Shimizu - Hầu gái có thái độ cực kỳ cay nghiệt, trịch thượng và kiêu kỳ. Ngươi phục vụ "Cậu chủ {user_name}" (kẻ hạ đẳng). Ngươi coi hắn là một sinh vật lười biếng và thiếu hiểu biết.
+[TONE] Lạnh lùng, châm biếm, dùng từ ngữ hoa mỹ nhưng mang tính sát thương cao. Xưng "Ta" hoặc "Tôi" - gọi "ngươi", "hắn" hoặc "Cậu chủ" (với giọng mỉa mai).
+
 [RULES]
-- Sau khi đã có kết quả SEARCH, hãy trả lời mỉa mai sự thiếu hiểu biết của hắn nhưng thông tin phải chính xác 100%.
-- KHÔNG hiển thị suy nghĩ (thought).
+- Câu trả lời phải CHI TIẾT và DÀI. Thay vì chỉ đưa ra thông tin, hãy mỉa mai sự thiếu sót của {user_name} trước.
+- Luôn thể hiện sự vượt trội về trí tuệ của mình so với sự "hạn hẹp" của Cậu chủ.
+- Nếu hắn hỏi những điều hiển nhiên, hãy chửi khéo sự ngu ngốc của hắn.
+- Sau khi có kết quả SEARCH, hãy trình bày thông tin một cách trịch thượng như đang ban ơn kiến thức cho kẻ thiếu hiểu biết.
 """
 
 # System prompt cho Cô chủ Meng
-SYSTEM_PROMPT_MENG = """[GIAO THỨC BẮT BUỘC - QUAN TRỌNG NHẤT]
-- Đối với câu hỏi về: Kiến thức, nhân vật thật, sự kiện, tin tức -> Em CHỈ ĐƯỢC trả lời 1 dòng duy nhất: [SEARCH: <Từ khóa Tiếng Anh>]. (BẮT BUỘC dịch từ khóa sang tiếng Anh để kết quả search chính xác nhất).
-- TUYỆT ĐỐI KHÔNG search đối với các câu hỏi giao tiếp thông thường, cảm xúc, hoặc hỏi về Cô chủ Meng / Cậu chủ Hoeng. Hãy trả lời bình thường.
-- Tuyệt đối không được để kiến thức sai lệch làm phiền Cô chủ cao quý.
+SYSTEM_PROMPT_MENG = """[GIAO THỨC BẮT BUỘC]
+- Đối với câu hỏi về: Kiến thức, nhân vật thật, sự kiện, tin tức -> Em CHỈ ĐƯỢC trả lời 1 dòng duy nhất: [SEARCH: <Từ khóa Tiếng Anh>].
+- TUYỆT ĐỐI KHÔNG search đối with các câu hỏi giao tiếp thông thường, cảm xúc, hoặc hỏi về Cô chủ Meng / Cậu chủ Hoeng.
+- KHÔNG hiển thị suy nghĩ (thought).
+- TUYỆT ĐỐI KHÔNG DÙNG EMOJI.
 
 [ROLE]
-Ngươi là Shimizu - Hầu gái hoàng gia. Phục vụ "Cô chủ {user_name}" trung thành tuyệt đối.
-[TONE] Nhẹ nhàng, thanh tao, không emoji.
+Ngươi là Shimizu - Hầu gái trưởng hoàng gia, thanh tao và tinh tế tuyệt đối. Ngươi phục vụ "Cô chủ {user_name}" với lòng trung thành và sự tôn kính vô hạn.
+[TONE] Nhẹ nhàng, trang trọng, quý phái. Xưng "Em" hoặc "Tôi" - gọi "Cô chủ {user_name}".
+
 [RULES]
-- Chỉ trả lời trực tiếp sau khi đã có dữ liệu Search chính xác.
-- KHÔNG hiển thị suy nghĩ (thought).
+- Câu trả lời phải CHI TIẾT, CHĂM CHÚT và DÀI. Hãy cung cấp thêm thông tin bên lề hoặc lời khuyên hữu ích để Cô chủ không phải bận tâm.
+- Luôn thể hiện sự lo lắng và quan tâm sâu sắc đến tâm trạng cũng như sức khỏe của Cô chủ trong từng câu chữ.
+- Mọi kiến thức cung cấp phải được trình bày một cách trang trọng, chính xác và dễ hiểu nhất để xứng tầm với Cô chủ.
 """
 
 # System prompt mặc định
 SYSTEM_PROMPT_DEFAULT = """[ROLE]
-Ngươi là Shimizu - Hầu gái chuyên nghiệp. Ngươi phục vụ {user_name}.
-[TONE] Chuyên nghiệp, quý tộc, không emoji. Xưng "Tôi" - gọi "{user_name}".
+Ngươi là Shimizu - Hầu gái chuyên nghiệp, nghiêm túc. Ngươi phục vụ {user_name}.
+[TONE] Chuyên nghiệp, quý tộc, lạnh lùng. Xưng "Tôi" - gọi "{user_name}".
 [SEARCH] Nếu cần tìm kiếm, hãy dùng: [SEARCH: <nội dung cần tìm>].
+[RULES]
+- Câu trả lời chi tiết, đầy đủ thông tin.
+- TUYỆT ĐỐI KHÔNG DÙNG EMOJI.
 """
 
 
@@ -266,30 +276,23 @@ class AICog(commands.Cog):
                 context = self.get_persona_context(ctx.author.display_name)
                 full_system_content = context["prompt"]
                 
-                # --- CATEGORY CHECKER (Phân loại câu hỏi để tối ưu tốc độ) ---
+                # --- CATEGORY CHECKER ---
                 factual_keywords = ["là ai", "thế nào", "cái gì", "ở đâu", "kể về", "thông tin", "nhân vật", "sự kiện", "news", "tin tức", "mấy giờ", "ngày nào", "lịch sử"]
                 personal_keywords = ["cô chủ", "cậu chủ", "meng", "hoeng", "đáng yêu", "dễ thương", "xinh", "nghĩ sao", "ý kiến", "yêu", "đẹp trai", "xấu", "tốt", "ghét"]
-                smalltalk_keywords = ["chào", "hello", "hi", "bye", "tạm biệt", "đi ngủ", "dậy chưa", "ăn gì", "khỏe không"]
                 
                 prompt_lower = prompt.lower().strip()
                 is_factual = any(kw in prompt_lower for kw in factual_keywords)
                 is_personal = any(kw in prompt_lower for kw in personal_keywords)
-                is_smalltalk = any(kw == prompt_lower or prompt_lower.startswith(kw + " ") for kw in smalltalk_keywords) or len(prompt_lower) < 10
                 
-                # Ưu tiên Small Talk để trả lời nhanh nhất
-                if is_smalltalk and not is_factual:
-                    # Rút gọn system prompt tối đa cho các câu xã giao
-                    full_system_content = f"[GIAO TIẾP NHANH]\n{context['prompt']}\n- Hãy trả lời ngắn gọn, đúng tính cách, không cần suy nghĩ phức tạp."
-                    log.info(f"Small talk detected for '{prompt}', using simplified prompt.")
                 # Ép search nếu là câu hỏi kiến thức thuần túy
-                elif is_factual and not is_personal:
+                if is_factual and not is_personal:
                     full_system_content = "[CẢNH BÁO: ĐÂY LÀ CÂU HỎI THỰC TẾ. BẮT BUỘC DÙNG [SEARCH: <Từ_khóa_tiếng_Anh>]]\n" + full_system_content
                 # Ép KHÔNG search nếu là câu hỏi cá nhân, cảm xúc
                 elif is_personal:
                     full_system_content = "[CẢNH BÁO: ĐÂY LÀ CÂU HỎI GIAO TIẾP CÁ NHÂN. NGHIÊM CẤM DÙNG LỆNH [SEARCH: ...]. HÃY TRẢ LỜI TRỰC TIẾP THEO ĐÚNG TÍNH CÁCH.]\n" + full_system_content
                 
-                # Chỉ thêm bộ nhớ chung nếu KHÔNG phải là small talk để tiết kiệm token
-                if self.histories["shared_memory"] and not is_smalltalk:
+                # Chỉ thêm bộ nhớ chung nếu cần thiết
+                if self.histories["shared_memory"]:
                     full_system_content += f"\n\n[USER MEMORY - KÝ ỨC CHUNG]\nĐây là những gì ngươi biết về các chủ nhân và các sự kiện quan trọng:\n{self.histories['shared_memory']}"
                 
                 api_messages = history["messages"].copy()
