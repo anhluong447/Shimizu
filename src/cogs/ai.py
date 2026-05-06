@@ -88,7 +88,7 @@ class AICog(commands.Cog):
             log.error(f"Failed to save AI memory: {e}")
 
     def get_persona_context(self, user_name):
-        if "Hoeng" in user_name:
+        if "hoeng" in user_name:
             return {
                 "prompt": SYSTEM_PROMPT_HOENG.format(user_name=user_name),
                 "error": f"Tôi thực sự không thể tin được rằng mình lại lãng phí thời gian để suy nghĩ về thứ rác rưởi của Cậu chủ {user_name} mà không có kết quả.",
@@ -98,7 +98,7 @@ class AICog(commands.Cog):
                 "status_fail": "AI Server đang gặp trục trặc. Thật là một sự phiền phức.",
                 "status_conn": f"Kết nối thất bại. Có vẻ như ngay cả máy móc cũng từ chối phục vụ Cậu chủ {user_name} lúc này."
             }
-        elif "Meng" in user_name:
+        elif "meng" in user_name:
             return {
                 "prompt": SYSTEM_PROMPT_MENG.format(user_name=user_name),
                 "error": f"Thật vô cùng xin lỗi Cô chủ {user_name}, em chưa thể tìm ra câu trả lời xứng tầm với sự mong đợi của người.",
