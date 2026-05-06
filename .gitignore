@@ -44,3 +44,5 @@ meng.txt
 meng.ann
 *.bak
 backup/
+data/benchmarks/
+*.png

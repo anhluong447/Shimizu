@@ -9,6 +9,7 @@ import asyncio
 from ddgs import DDGS
 from src.core.config import OLLAMA_API_URL, OLLAMA_MODEL, AI_MEMORY_FILE
 from src.core.logger import log
+from src.core.benchmark import AIBenchmark
 
 # System prompt cho Cậu chủ Hoeng
 SYSTEM_PROMPT_HOENG = """[GIAO THỨC BẮT BUỘC - QUAN TRỌNG NHẤT]
@@ -50,8 +51,9 @@ class AICog(commands.Cog):
         self.bot = bot
         self.api_url_generate = f"{OLLAMA_API_URL.rstrip('/')}/api/generate"
         self.api_url_chat = f"{OLLAMA_API_URL.rstrip('/')}/api/chat"
-        # Cấu trúc: {user_id: {"messages": [], "summary": ""}}
+        # Cấu trúc: {user_id: {"messages": [], "summary": ""}, "settings": {}}
         self.histories = self.load_memory()
+        self.benchmark_enabled = self.histories.get("settings", {}).get("benchmark_enabled", True)
         self.save_memory() # Đảm bảo file tồn tại ngay khi khởi tạo
 
     async def fetch_page_content(self, url: str) -> str:
@@ -129,9 +131,11 @@ class AICog(commands.Cog):
         try:
             with open(AI_MEMORY_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                # Chuyển đổi từ cấu trúc cũ sang cấu trúc mới có shared_memory
+                # Chuyển đổi từ cấu trúc cũ sang cấu trúc mới
                 if "shared_memory" not in data:
-                    data = {"shared_memory": "", "user_histories": data}
+                    data = {"shared_memory": "", "user_histories": data, "settings": {"benchmark_enabled": True}}
+                if "settings" not in data:
+                    data["settings"] = {"benchmark_enabled": True}
                 return data
         except Exception as e:
             log.error(f"Failed to load AI memory: {e}")
@@ -247,6 +251,12 @@ class AICog(commands.Cog):
         history["messages"].append({"role": "user", "content": prompt})
         self.save_memory() # Lưu tin nhắn mới
         
+        # --- BENCHMARK START ---
+        benchmark = None
+        if self.benchmark_enabled:
+            benchmark = AIBenchmark()
+            benchmark.start()
+        
         # 2. Nếu lịch sử quá dài (> 20 câu), tiến hành tóm tắt
         if len(history["messages"]) > 20:
             await self.summarize_history(user_id, ctx.author.display_name)
@@ -357,13 +367,47 @@ class AICog(commands.Cog):
                             history["messages"].append({"role": "assistant", "content": answer})
                             self.save_memory() # Lưu câu trả lời của AI
                             
-                            # Discord limits messages to 2000 characters
-                            if len(answer) > 1900:
-                                chunks = [answer[i:i+1900] for i in range(0, len(answer), 1900)]
-                                for chunk in chunks:
-                                    await ctx.send(chunk)
+                            # --- BENCHMARK STOP & REPORT ---
+                            if self.benchmark_enabled and benchmark:
+                                metrics = benchmark.stop()
+                                chart_path = benchmark.generate_chart(f"data/benchmarks/run_{ctx.message.id}.png")
+                                
+                                # Trích xuất thêm metrics từ Ollama nếu có
+                                ollama_stats = ""
+                                if 'eval_count' in data and data.get('eval_duration', 0) > 0:
+                                    tps = data['eval_count'] / (data['eval_duration'] / 1e9)
+                                    ollama_stats = f" | ⚡ **Tốc độ:** `{tps:.1f} tk/s`"
+
+                                bench_summary = (
+                                    f"\n\n---\n"
+                                    f"📊 **Benchmark:** `{metrics['duration']:.1f}s` | "
+                                    f"🔥 **GPU Avg:** `{metrics['avg_gpu']:.1f}%`"
+                                    f"{ollama_stats}\n"
+                                    f"📟 **Device:** `{metrics['gpu_name']}`"
+                                )
+                                
+                                # Discord limits messages to 2000 characters
+                                full_response = answer + bench_summary
+                                
+                                file = discord.File(chart_path) if chart_path else None
+                                
+                                if len(full_response) > 1900:
+                                    chunks = [full_response[i:i+1900] for i in range(0, len(full_response), 1900)]
+                                    for i, chunk in enumerate(chunks):
+                                        if i == len(chunks) - 1:
+                                            await ctx.send(chunk, file=file)
+                                        else:
+                                            await ctx.send(chunk)
+                                else:
+                                    await ctx.send(full_response, file=file)
                             else:
-                                await ctx.send(answer)
+                                # Nếu tắt benchmark, chỉ gửi câu trả lời bình thường
+                                if len(answer) > 1900:
+                                    chunks = [answer[i:i+1900] for i in range(0, len(answer), 1900)]
+                                    for chunk in chunks:
+                                        await ctx.send(chunk)
+                                else:
+                                    await ctx.send(answer)
                         else:
                             await ctx.send(f"❌ Lỗi từ AI server: {response.status}")
                             log.error(f"Ollama error {response.status}: {await response.text()}")
@@ -418,6 +462,19 @@ class AICog(commands.Cog):
         except Exception as e:
             await ctx.send(context["status_conn"])
             log.error(f"Status check error: {e}")
+
+    @commands.command(name="bench", help="Bật/Tắt tính năng benchmark GPU")
+    async def toggle_bench(self, ctx):
+        """Bật hoặc tắt hiển thị benchmark sau mỗi câu trả lời."""
+        self.benchmark_enabled = not self.benchmark_enabled
+        if "settings" not in self.histories:
+            self.histories["settings"] = {}
+        self.histories["settings"]["benchmark_enabled"] = self.benchmark_enabled
+        self.save_memory()
+        
+        status = "BẬT" if self.benchmark_enabled else "TẮT"
+        emoji = "📈" if self.benchmark_enabled else "📉"
+        await ctx.send(f"{emoji} Đã {status} tính năng hiển thị Benchmark.")
 
 async def setup(bot):
     await bot.add_cog(AICog(bot))

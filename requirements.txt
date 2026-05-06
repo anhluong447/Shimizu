@@ -4,3 +4,5 @@ pytz
 aiohttp
 yt-dlp
 ddgs
+matplotlib
+pynvml
