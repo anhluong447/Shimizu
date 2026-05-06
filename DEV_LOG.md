@@ -164,3 +164,23 @@ Nâng cấp Shimizu thành một trợ lý ảo thông minh với khả năng tr
     - `!reset_ai`: Xóa sạch ký ức trò chuyện để bắt đầu một "vòng lặp" mới.
 
 **Kết quả:** Shimizu giờ đây không chỉ hát hay mà còn là một bộ não điện tử thực thụ, có thể tranh luận, ghi nhớ và cập nhật thông tin thế giới 24/7 để phục vụ các chủ nhân một cách hoàn hảo nhất. 🤖🌐🌸
+
+## 📊 Giai đoạn 12: Tối Ưu Hóa Tìm Kiếm & Benchmark Hiệu Năng
+Nâng cấp khả năng "nghĩ sâu" của AI và bổ sung công cụ đo đạc tài nguyên chuyên nghiệp.
+
+- **Nâng cấp Tìm kiếm với Jina AI:** 
+    - Thay vì chỉ đọc tóm tắt (snippet) từ DuckDuckGo, bot giờ đây sử dụng **Jina Reader API** để cào toàn bộ nội dung bài báo (lên đến 2500 ký tự).
+    - AI có cái nhìn sâu sắc hơn, dẫn chứng chính xác và giảm thiểu tối đa hiện tượng "nói sảng".
+- **Tối ưu hóa Truy vấn Đa ngôn ngữ:**
+    - AI tự động dịch từ khóa tìm kiếm sang **Tiếng Anh** trước khi search để tiếp cận nguồn dữ liệu khổng lồ của thế giới.
+    - Kết quả trả về sau đó được AI tổng hợp và phản hồi lại bằng Tiếng Việt một cách mượt mà.
+- **Hệ thống Benchmark Tài nguyên:**
+    - Tích hợp `pynvml` và `matplotlib` để theo dõi hiệu năng hệ thống trong thời gian thực.
+    - Tự động vẽ biểu đồ biến thiên GPU và tính toán tốc độ sinh token (`tokens/s`) sau mỗi câu trả lời.
+    - Hỗ trợ cơ chế dự phòng (fallback) qua `nvidia-smi` để đảm bảo đo đạc chính xác trên mọi môi trường Windows/Linux.
+- **Vá lỗi Logic Search (False Positive):**
+    - Triển khai bộ lọc từ khóa cá nhân (`personal_keywords`) để ngăn bot tự ý gọi web search khi người dùng chỉ đang trêu ghẹo hoặc tâm sự bình thường.
+    - Thêm cơ chế chặn đứng lệnh search từ cấp độ Python nếu phát hiện ngữ cảnh không phù hợp.
+
+**Kết quả:** Shimizu giờ đây không chỉ là một bot nhạc mà còn là một trợ lý AI "có kiến thức, có chiều sâu" và cực kỳ minh bạch về hiệu năng phần cứng. 🌸🤖📈
+

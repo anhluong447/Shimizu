@@ -15,9 +15,14 @@
 
 ---
 
-## ✨ Features
+Shimizu isn't just a music bot—she's a highly intelligent virtual maid. She combines high-fidelity audio with a sophisticated AI brain capable of internet-grounded reasoning, memory retention, and performance monitoring.
 
-Shimizu isn't just another music bot. It's designed to provide a premium, seamless experience with a focus on high-quality audio and personal interactions.
+### 🤖 Advanced AI Intelligence
+- **Grounded Reasoning** — Integrates with Ollama (Qwen/Llama) and DuckDuckGo to provide factual, real-time answers.
+- **Deep Web Search** — Uses **Jina Reader API** to scrape and understand full article contents, not just snippets.
+- **Multilingual Search** — Automatically translates queries to English for superior information gathering.
+- **Persona Memory** — Maintains distinct personalities for different users and remembers past interactions/preferences.
+- **Performance Benchmarking** — Real-time GPU/CPU monitoring during AI generation with beautiful visual charts.
 
 ### 🎵 High-Fidelity Music
 - **Gapless Playback** — Advanced pre-fetching logic loads the next track 10 seconds before the current one ends.
@@ -53,6 +58,15 @@ Shimizu isn't just another music bot. It's designed to provide a premium, seamle
 | `/history` | View the 10 most recently played tracks. |
 | `/filter` | Apply audio filters: `normal`, `bass`, `nightcore`. |
 | `/autoplay` | Toggle automatic discovery of related tracks. |
+
+### 🤖 AI & Intelligence (Prefix)
+| Command | Description |
+| --- | --- |
+| `!ask` | Ask Shimizu anything (Includes web search & memory). |
+| `!bench` | Toggle performance benchmarking (GPU/Time charts). |
+| `!bench_debug` | Debug GPU detection and NVML status. |
+| `!ai_status` | Check connection to the local Ollama server. |
+| `!reset_ai` | Clear your current conversation history. |
 
 ### 📋 Management & Utility
 | Command | Description |
