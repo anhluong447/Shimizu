@@ -25,6 +25,7 @@ LOGS_DIR = os.path.join(BASE_DIR, 'logs')
 PLAYLISTS_FILE = os.path.join(DATA_DIR, 'playlists.json')
 NOTIFICATIONS_FILE = os.path.join(DATA_DIR, 'notifications.json')
 MENG_ENC_FILE = os.path.join(DATA_DIR, 'meng.ann')
+AI_MEMORY_FILE = os.path.join(DATA_DIR, 'ai_memory.json')
 
 # --- Music Config ---
 if platform.system() == 'Windows':

@@ -3,7 +3,9 @@ from discord.ext import commands
 from discord import app_commands
 import aiohttp
 import re
-from src.core.config import OLLAMA_API_URL, OLLAMA_MODEL
+import json
+import os
+from src.core.config import OLLAMA_API_URL, OLLAMA_MODEL, AI_MEMORY_FILE
 from src.core.logger import log
 
 # System prompt: Hầu gái xảo quyệt (Functional Evil Maid)
@@ -66,7 +68,24 @@ class AICog(commands.Cog):
         self.api_url_generate = f"{OLLAMA_API_URL.rstrip('/')}/api/generate"
         self.api_url_chat = f"{OLLAMA_API_URL.rstrip('/')}/api/chat"
         # Cấu trúc: {user_id: {"messages": [], "summary": ""}}
-        self.histories = {}
+        self.histories = self.load_memory()
+
+    def load_memory(self):
+        if not os.path.exists(AI_MEMORY_FILE):
+            return {}
+        try:
+            with open(AI_MEMORY_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            log.error(f"Failed to load AI memory: {e}")
+            return {}
+
+    def save_memory(self):
+        try:
+            with open(AI_MEMORY_FILE, 'w', encoding='utf-8') as f:
+                json.dump(self.histories, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            log.error(f"Failed to save AI memory: {e}")
 
     def get_persona_context(self, user_name):
         if "Hoeng" in user_name:
@@ -82,12 +101,12 @@ class AICog(commands.Cog):
         elif "Meng" in user_name:
             return {
                 "prompt": SYSTEM_PROMPT_MENG.format(user_name=user_name),
-                "error": f"Thật vô cùng xin lỗi Cô chủ {user_name}, tôi chưa thể tìm ra câu trả lời xứng tầm với sự mong đợi của người.",
-                "reset": f"Ký ức đã được thanh tẩy theo ý muốn của Cô chủ {user_name}. Tôi luôn sẵn sàng bắt đầu hành trình mới cùng người.",
-                "reset_none": f"Tôi vẫn luôn ghi nhớ mọi điều về Cô chủ {user_name}, nhưng hiện tại chưa có dữ liệu hội thoại nào cần xóa bỏ.",
+                "error": f"Thật vô cùng xin lỗi Cô chủ {user_name}, em chưa thể tìm ra câu trả lời xứng tầm với sự mong đợi của người.",
+                "reset": f"Ký ức đã được thanh tẩy theo ý muốn của Cô chủ {user_name}. Em luôn sẵn sàng bắt đầu hành trình mới cùng người.",
+                "reset_none": f"Em vẫn luôn ghi nhớ mọi điều về Cô chủ {user_name}, nhưng hiện tại chưa có dữ liệu hội thoại nào cần xóa bỏ.",
                 "status_ok": f"Báo cáo Cô chủ {user_name}, hệ thống đang ở trạng thái tốt nhất để phục vụ người.",
-                "status_fail": f"Thưa Cô chủ {user_name}, máy chủ đang gặp sự cố nhỏ, xin người hãy kiên nhẫn đợi tôi xử lý.",
-                "status_conn": f"Thật đáng tiếc, tôi tạm thời chưa thể kết nối được với máy chủ để phục vụ Cô chủ {user_name}."
+                "status_fail": f"Thưa Cô chủ {user_name}, máy chủ đang gặp sự cố nhỏ, xin người hãy kiên nhẫn đợi em xử lý.",
+                "status_conn": f"Thật đáng tiếc, em tạm thời chưa thể kết nối được với máy chủ để phục vụ Cô chủ {user_name}."
             }
         else:
             return {
@@ -106,23 +125,30 @@ class AICog(commands.Cog):
         return self.histories[user_id]
 
     async def summarize_history(self, user_id):
-        """Tóm tắt 15 câu cũ và cập nhật vào summary."""
+        """Trích xuất các sự thật quan trọng từ hội thoại cũ."""
         history = self.histories[user_id]
         messages = history["messages"]
         
-        if len(messages) <= 5:
+        if len(messages) <= 10:
             return
 
-        # Lấy 15 câu cũ (hoặc tất cả trừ 5 câu cuối) để tóm tắt
-        to_summarize = messages[:-5]
-        history["messages"] = messages[-5:] # Giữ lại 5 câu gần nhất
+        # Giữ lại 10 câu gần nhất, tóm tắt phần còn lại
+        to_summarize = messages[:-10]
+        history["messages"] = messages[-10:]
         
-        # Tạo prompt tóm tắt
         chat_text = "\n".join([f"{m['role']}: {m['content']}" for m in to_summarize])
-        summary_prompt = f"Hãy tóm tắt ngắn gọn nội dung cuộc trò chuyện sau đây (giữ lại các ý chính quan trọng): \n{chat_text}"
+        
+        summary_prompt = (
+            "Dựa trên nội dung cuộc trò chuyện dưới đây, hãy cập nhật danh sách các 'Sự kiện chính' và 'Thông tin về người dùng'.\n"
+            "Chỉ giữ lại những thông tin thực sự quan trọng (sở thích, tên, sự kiện đã hứa, tâm trạng).\n"
+            "Định dạng: Các gạch đầu dòng ngắn gọn, súc tích.\n"
+            "Tuyệt đối không tóm tắt lan man hoặc lặp lại thông tin cũ.\n\n"
+        )
         
         if history["summary"]:
-            summary_prompt = f"Đây là tóm tắt cũ: {history['summary']}\n\nHãy cập nhật tóm tắt này với nội dung mới sau: \n{chat_text}"
+            summary_prompt += f"Dữ liệu hiện tại:\n{history['summary']}\n\n"
+        
+        summary_prompt += f"Nội dung mới cần trích xuất:\n{chat_text}"
 
         try:
             payload = {
@@ -137,7 +163,8 @@ class AICog(commands.Cog):
                     if response.status == 200:
                         data = await response.json()
                         history["summary"] = data.get('response', history["summary"])
-                        log.info(f"Updated summary for user {user_id}")
+                        self.save_memory() # Lưu lại sau khi tóm tắt
+                        log.info(f"Updated and saved memory for user {user_id}")
         except Exception as e:
             log.error(f"Summarization error for user {user_id}: {e}")
 
@@ -162,9 +189,10 @@ class AICog(commands.Cog):
         
         # 1. Thêm tin nhắn hiện tại của user vào lịch sử
         history["messages"].append({"role": "user", "content": prompt})
+        self.save_memory() # Lưu tin nhắn mới
         
-        # 2. Nếu lịch sử quá dài (> 12 câu), tiến hành tóm tắt để giữ bộ nhớ gọn gàng
-        if len(history["messages"]) > 12:
+        # 2. Nếu lịch sử quá dài (> 20 câu), tiến hành tóm tắt
+        if len(history["messages"]) > 20:
             await self.summarize_history(user_id)
             
         async with ctx.typing():
@@ -174,7 +202,7 @@ class AICog(commands.Cog):
                 full_system_content = context["prompt"]
                 
                 if history["summary"]:
-                    full_system_content += f"\n\nBỐI CẢNH QUÁ KHỨ (Ngươi cần nhớ): {history['summary']}"
+                    full_system_content += f"\n\n[USER MEMORY]\nĐây là những gì ngươi biết về {ctx.author.display_name} và các sự kiện quan trọng đã xảy ra (Chỉ sử dụng khi thực sự cần thiết):\n{history['summary']}"
                 
                 api_messages = [{"role": "system", "content": full_system_content}]
                 
@@ -209,6 +237,7 @@ class AICog(commands.Cog):
                             
                             # 4. Lưu câu trả lời của AI vào lịch sử
                             history["messages"].append({"role": "assistant", "content": answer})
+                            self.save_memory() # Lưu câu trả lời của AI
                             
                             # Discord limits messages to 2000 characters
                             if len(answer) > 1900:
@@ -234,6 +263,7 @@ class AICog(commands.Cog):
         history = self.histories.get(user_id)
         if history and (history["messages"] or history["summary"]):
             self.histories[user_id] = {"messages": [], "summary": ""}
+            self.save_memory() # Cập nhật file sau khi xóa
             await ctx.send(context["reset"])
         else:
             await ctx.send(context["reset_none"])
