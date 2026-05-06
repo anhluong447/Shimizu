@@ -309,10 +309,14 @@ class AICog(commands.Cog):
                                 await ctx.send(answer)
                         else:
                             await ctx.send(f"❌ Lỗi từ AI server: {response.status}")
+                            log.error(f"Ollama error {response.status}: {await response.text()}")
                             
+            except asyncio.TimeoutError:
+                await ctx.send("⌛ AI phản hồi quá lâu, tôi đã ngắt kết nối để bảo vệ server.")
+                log.error("AI request timed out")
             except Exception as e:
-                await ctx.send(f"⚠️ Không thể kết nối tới AI server. Hãy đảm bảo máy nhà đang chạy ngrok.")
-                log.error(f"AI connection error: {e}")
+                await ctx.send(f"⚠️ Đã xảy ra lỗi hệ thống: `{type(e).__name__}`. Cậu chủ hãy kiểm tra log.")
+                log.error(f"AI command error: {e}", exc_info=True)
 
     @commands.command(name="search", help="Tìm kiếm web trực tiếp")
     async def search(self, ctx, *, query: str):
