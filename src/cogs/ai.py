@@ -69,18 +69,19 @@ class AICog(commands.Cog):
                 return "Không tìm thấy kết quả nào."
             
             results_text = ""
-            # Lấy 5 kết quả chất lượng nhất (tổng cộng 5 từ cả 2 nguồn)
-            final_results = (results_vn[:3] + results_en[:2])[:5]
+            # Kết quả trả về là list gộp [VN..., EN...]
+            # Ta lấy 5 kết quả đầu tiên (thường là sự kết hợp của cả hai)
+            final_results = results[:5]
             
             for i, r in enumerate(final_results, 1):
                 # Làm sạch snippet: Xóa ngày tháng, từ khóa SEO rác
-                body = r['body']
+                body = r.get('body', '')
                 body = re.sub(r'\d{1,2} [A-Z][a-z]+ \d{4} — ', '', body) # Xóa ngày tháng
                 body = re.sub(r'Share your videos with friends, family, and the world', '', body)
                 body = re.sub(r'Bạn đang xem:.*', '', body)
                 
                 snippet = body[:600] + "..." if len(body) > 600 else body
-                results_text += f"[{i}] {r['title']}\nNội dung: {snippet}\n\n"
+                results_text += f"[{i}] {r.get('title', 'Không tiêu đề')}\nNội dung: {snippet}\n\n"
             
             log.info(f"Search successful for '{query}': Found {len(final_results)} cleaned results.")
             log.debug(f"SEARCH RESULTS CONTENT:\n{results_text}")
