@@ -247,7 +247,7 @@ class AICog(commands.Cog):
         # Chém bay dòng suy nghĩ lảm nhảm
         text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL)
         # Chém bay cái tag gọi tool bị rớt ra ngoài
-        text = re.sub(r'\[SEARCH:.*?\]', '', text)
+        text = re.sub(r'\[?SEARCH:[^\n]*\]?', '', text, flags=re.IGNORECASE)
         return text.strip()
 
     @commands.command(name="ask", help="Hỏi đáp với AI Qwen (có trí nhớ & search web)")
@@ -311,7 +311,7 @@ class AICog(commands.Cog):
                 # --- KIỂM TRA TRIGGER SEARCH ---
                 # 1. Bỏ qua think block khi quét lệnh search để tránh bắt nhầm text trong suy nghĩ
                 text_without_think = re.sub(r'<think>.*?</think>', '', raw_answer, flags=re.DOTALL)
-                search_match = re.search(r"\[SEARCH:\s*(.*?)\]", text_without_think, re.IGNORECASE)
+                search_match = re.search(r"\[?SEARCH:\s*([^\]\n]+)\]?", text_without_think, re.IGNORECASE)
                 
                 # Chặn đứng web search hoàn toàn nếu câu hỏi mang tính cá nhân
                 if search_match and is_personal:
