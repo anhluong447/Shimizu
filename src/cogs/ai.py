@@ -261,14 +261,15 @@ class AICog(commands.Cog):
                             answer = self.clean_response(raw_answer)
                             
                             # --- KIỂM TRA TRIGGER SEARCH ---
-                            # 1. Quét lệnh search (ưu tiên ngoài think)
-                            search_match = re.search(r"\[SEARCH:\s*(.*?)\]", raw_answer, re.IGNORECASE)
+                            # 1. Bỏ qua think block khi quét lệnh search để tránh bắt nhầm text trong suy nghĩ
+                            text_without_think = re.sub(r'<think>.*?</think>', '', raw_answer, flags=re.DOTALL)
+                            search_match = re.search(r"\[SEARCH:\s*(.*?)\]", text_without_think, re.IGNORECASE)
                             search_query = None
                             
                             if search_match:
                                 search_query = search_match.group(1).strip()
-                                # TINH CHỈNH QUERY: Thêm từ khóa để kết quả chuẩn hơn
-                                refined_query = f"{search_query} wiki story plot character"
+                                # TINH CHỈNH QUERY: Sử dụng trực tiếp search_query, loại bỏ hậu tố hardcode gây nhiễu
+                                refined_query = search_query
                                 log.info(f"AI requested search for: '{search_query}' -> Refined to: '{refined_query}'")
                                 
                                 # Thực hiện search với query đã tinh chỉnh
@@ -277,13 +278,13 @@ class AICog(commands.Cog):
                                 # Ghi đè chỉ thị Round 2 theo công thức BÁO ĐỘNG ĐỎ
                                 search_prompt = (
                                     f"🚨 [DỮ LIỆU CÀO ĐƯỢC TỪ INTERNET] 🚨\n"
-                                    f"Dựa vào mớ dữ liệu tào lao này về '{search_query}':\n"
+                                    f"Dựa vào dữ liệu tìm kiếm được về '{search_query}':\n"
                                     f"----------------------------------------\n"
                                     f"{search_results}\n"
                                     f"----------------------------------------\n"
                                     f"[YÊU CẦU TỐI THƯỢNG]\n"
-                                    f"1. Ngươi PHẢI giữ đúng nhân cách hầu gái Shimizu xảo quyệt. Đừng có trả lời ngoan ngoãn như học sinh lớp 1.\n"
-                                    f"2. CẤM TUYỆT ĐỐI tự chế thêm tình tiết. Chỉ được tổng hợp từ dữ liệu trên.\n"
+                                    f"1. Ngươi PHẢI giữ đúng nhân cách theo quy định ban đầu (Shimizu cay nghiệt hoặc thanh tao tùy chủ nhân).\n"
+                                    f"2. CẤM TUYỆT ĐỐI tự chế thêm tình tiết. Chỉ được tổng hợp câu trả lời từ dữ liệu trên.\n"
                                     f"3. Nếu dữ liệu rác hoặc không có thông tin, hãy chửi thẳng vào mặt User là tool search bị ngu hoặc câu hỏi của hắn quá rác.\n"
                                     f"4. Hãy trả lời câu hỏi: '{prompt}'"
                                 )
