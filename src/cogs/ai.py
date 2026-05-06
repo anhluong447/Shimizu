@@ -69,6 +69,7 @@ class AICog(commands.Cog):
         self.api_url_chat = f"{OLLAMA_API_URL.rstrip('/')}/api/chat"
         # Cấu trúc: {user_id: {"messages": [], "summary": ""}}
         self.histories = self.load_memory()
+        self.save_memory() # Đảm bảo file tồn tại ngay khi khởi tạo
 
     def load_memory(self):
         if not os.path.exists(AI_MEMORY_FILE):
@@ -82,13 +83,16 @@ class AICog(commands.Cog):
 
     def save_memory(self):
         try:
+            # Đảm bảo thư mục tồn tại
+            os.makedirs(os.path.dirname(AI_MEMORY_FILE), exist_ok=True)
             with open(AI_MEMORY_FILE, 'w', encoding='utf-8') as f:
                 json.dump(self.histories, f, ensure_ascii=False, indent=2)
         except Exception as e:
             log.error(f"Failed to save AI memory: {e}")
 
     def get_persona_context(self, user_name):
-        if "hoeng" in user_name:
+        user_name_lower = user_name.lower()
+        if "hoeng" in user_name_lower:
             return {
                 "prompt": SYSTEM_PROMPT_HOENG.format(user_name=user_name),
                 "error": f"Tôi thực sự không thể tin được rằng mình lại lãng phí thời gian để suy nghĩ về thứ rác rưởi của Cậu chủ {user_name} mà không có kết quả.",
@@ -98,7 +102,7 @@ class AICog(commands.Cog):
                 "status_fail": "AI Server đang gặp trục trặc. Thật là một sự phiền phức.",
                 "status_conn": f"Kết nối thất bại. Có vẻ như ngay cả máy móc cũng từ chối phục vụ Cậu chủ {user_name} lúc này."
             }
-        elif "meng" in user_name:
+        elif "meng" in user_name_lower:
             return {
                 "prompt": SYSTEM_PROMPT_MENG.format(user_name=user_name),
                 "error": f"Thật vô cùng xin lỗi Cô chủ {user_name}, em chưa thể tìm ra câu trả lời xứng tầm với sự mong đợi của người.",
