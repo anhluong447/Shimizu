@@ -73,8 +73,11 @@ class AICog(commands.Cog):
             
             formatted_results = []
             for i, r in enumerate(results, 1):
-                formatted_results.append(f"{i}. {r['title']}\nLink: {r['href']}\nSnippet: {r['body']}")
+                # Giới hạn snippet để tránh quá tải context
+                snippet = r['body'][:500] + "..." if len(r['body']) > 500 else r['body']
+                formatted_results.append(f"{i}. {r['title']}\nLink: {r['href']}\nSnippet: {snippet}")
             
+            log.info(f"Search successful for '{query}': Found {len(results)} results.")
             return "\n\n".join(formatted_results)
         except Exception as e:
             log.error(f"Search error: {e}")
@@ -232,7 +235,7 @@ class AICog(commands.Cog):
                     "options": {
                         "temperature": 0.8,
                         "repeat_penalty": 1.15,
-                        "num_ctx": 8192 # Tăng context window cho kết quả search
+                        "num_ctx": 8192
                     }
                 }
                 
@@ -252,29 +255,43 @@ class AICog(commands.Cog):
                             search_match = re.search(r"\[SEARCH:\s*(.*?)\]", answer)
                             if search_match:
                                 search_query = search_match.group(1).strip()
-                                log.info(f"AI requested search for: {search_query}")
-                                
-                                # Thông báo đang tìm kiếm (tùy chọn)
-                                # await ctx.send(f"🔍 *Đang tìm kiếm thông tin về: {search_query}...*")
+                                log.info(f"AI requested search for: '{search_query}'")
                                 
                                 # Thực hiện search
                                 search_results = await self.search_web(search_query)
                                 
-                                # Gửi kết quả lại cho AI
-                                search_prompt = f"[KẾT QUẢ TÌM KIẾM CHO '{search_query}']\n\n{search_results}\n\n[INSTRUCTION]\nDựa trên kết quả tìm kiếm trên, hãy trả lời người dùng một cách chính xác và giữ đúng Persona của ngươi. Nếu không tìm thấy thông tin hữu ích, hãy thừa nhận."
+                                # Gửi kết quả lại cho AI với chỉ thị nghiêm ngặt
+                                search_prompt = (
+                                    f"⚠️ [DỮ LIỆU THỰC TẾ TỪ INTERNET CHO TRUY VẤN: '{search_query}'] ⚠️\n"
+                                    f"----------------------------------------\n"
+                                    f"{search_results}\n"
+                                    f"----------------------------------------\n"
+                                    f"[YÊU CẦU BẮT BUỘC]\n"
+                                    f"1. Ngươi PHẢI sử dụng dữ liệu trên để trả lời. Nếu dữ liệu nói A, ngươi không được nói B.\n"
+                                    f"2. Giữ nguyên Persona: Vẫn mỉa mai, kiêu ngạo (nếu là Hoeng) hoặc lễ phép (nếu là Meng), nhưng tuyệt đối không được sai sự thật.\n"
+                                    f"3. Nếu dữ liệu không có thông tin, hãy mỉa mai sự vô tri của Cậu chủ/Cô chủ khi hỏi những thứ không tồn tại.\n"
+                                    f"4. Trả lời ngắn gọn, súc tích, đi thẳng vào vấn đề."
+                                )
                                 
-                                api_messages.append({"role": "assistant", "content": f"[SEARCH: {search_query}]"})
+                                # Xóa bớt các tin nhắn cũ nếu cần để tập trung vào dữ liệu mới
+                                # Ở đây ta giữ nguyên nhưng gắn thêm chỉ thị mạnh
+                                api_messages.append({"role": "assistant", "content": raw_answer})
                                 api_messages.append({"role": "user", "content": search_prompt})
                                 
                                 payload["messages"] = api_messages
+                                payload["options"]["temperature"] = 0.4 # Giảm nhiệt độ để AI bớt "sáng tạo" lung tung
                                 
-                                async with session.post(self.api_url_chat, json=payload, timeout=90) as second_response:
+                                log.info(f"Sending second request to Ollama. Query: {search_query}")
+                                
+                                async with session.post(self.api_url_chat, json=payload, timeout=120) as second_response:
                                     if second_response.status == 200:
                                         second_data = await second_response.json()
                                         raw_answer = second_data.get('message', {}).get('content', 'Không có câu trả lời.')
                                         answer = self.clean_response(raw_answer)
+                                        log.info("AI successfully processed search results.")
                                     else:
-                                        answer = f"⚠️ Lỗi khi lấy phản hồi sau khi search: {second_response.status}"
+                                        log.error(f"Ollama second request failed: {second_response.status}")
+                                        answer = f"⚠️ Lỗi khi lấy phản hồi sau khi search (Status: {second_response.status})"
                             
                             if not answer:
                                 answer = context["error"]
