@@ -68,14 +68,21 @@ class AICog(commands.Cog):
             if not results:
                 return "Không tìm thấy kết quả nào."
             
-            formatted_results = []
-            for i, r in enumerate(results, 1):
-                # Tăng giới hạn snippet để AI có nhiều dữ liệu hơn
-                snippet = r['body'][:800] + "..." if len(r['body']) > 800 else r['body']
-                formatted_results.append(f"{i}. {r['title']}\nLink: {r['href']}\nSnippet: {snippet}")
+            results_text = ""
+            # Lấy 5 kết quả chất lượng nhất (tổng cộng 5 từ cả 2 nguồn)
+            final_results = (results_vn[:3] + results_en[:2])[:5]
             
-            results_text = "\n\n".join(formatted_results)
-            log.info(f"Search successful for '{query}': Found {len(results)} results.")
+            for i, r in enumerate(final_results, 1):
+                # Làm sạch snippet: Xóa ngày tháng, từ khóa SEO rác
+                body = r['body']
+                body = re.sub(r'\d{1,2} [A-Z][a-z]+ \d{4} — ', '', body) # Xóa ngày tháng
+                body = re.sub(r'Share your videos with friends, family, and the world', '', body)
+                body = re.sub(r'Bạn đang xem:.*', '', body)
+                
+                snippet = body[:600] + "..." if len(body) > 600 else body
+                results_text += f"[{i}] {r['title']}\nNội dung: {snippet}\n\n"
+            
+            log.info(f"Search successful for '{query}': Found {len(final_results)} cleaned results.")
             log.debug(f"SEARCH RESULTS CONTENT:\n{results_text}")
             return results_text
         except Exception as e:
@@ -188,17 +195,12 @@ class AICog(commands.Cog):
         except Exception as e:
             log.error(f"Summarization error for user {user_id}: {e}")
 
-    def clean_response(self, text: str) -> str:
-        """Loại bỏ triệt để phần thinking/thought của model."""
-        # 1. Xóa các tag <think>, <thought> hoặc <thinking>
-        text = re.sub(r"<(think|thought|thinking)>.*?</\1>", "", text, flags=re.DOTALL | re.IGNORECASE)
-        
-        # 2. Xóa kiểu Markdown: ### Thought ... hoặc Thought: ... cho đến khi gặp newline kép
-        text = re.sub(r"(### Thought|Thought:|Thinking:).*?(\n\n|$)", "", text, flags=re.DOTALL | re.IGNORECASE)
-        
-        # 3. Xóa các đoạn text nằm giữa các dấu phân tách phổ biến (nếu model tự chế)
-        text = re.sub(r"(\n|^)---.*?(\n---|\n$)", "", text, flags=re.DOTALL)
-        
+    def clean_response(self, text: str):
+        """Xóa bỏ phần suy nghĩ và các tag kỹ thuật trước khi gửi lên Discord."""
+        # Chém bay dòng suy nghĩ lảm nhảm
+        text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL)
+        # Chém bay cái tag gọi tool bị rớt ra ngoài
+        text = re.sub(r'\[SEARCH:.*?\]', '', text)
         return text.strip()
 
     @commands.command(name="ask", help="Hỏi đáp với AI Qwen (có trí nhớ & search web)")
@@ -259,17 +261,10 @@ class AICog(commands.Cog):
                             
                             # --- KIỂM TRA TRIGGER SEARCH ---
                             # 1. Thử tìm bên ngoài phần <think> trước (ưu tiên hàng đầu)
-                            search_match = re.search(r"\[SEARCH:\s*(.*?)\]", answer)
+                            search_match = re.search(r"\[SEARCH:\s*(.*?)\]", raw_answer, re.IGNORECASE)
                             search_query = None
                             
-                            # 2. Nếu không thấy, mới thử tìm trong văn bản thô nhưng bỏ qua các placeholder
-                            if not search_match:
-                                all_matches = re.findall(r"\[SEARCH:\s*(.*?)\]", raw_answer)
-                                for m in all_matches:
-                                    if m.strip() not in ["...", "<nội dung>", "query"]:
-                                        search_query = m.strip()
-                                        break
-                            else:
+                            if search_match:
                                 search_query = search_match.group(1).strip()
 
                             if search_query:
@@ -278,9 +273,8 @@ class AICog(commands.Cog):
                                 # Thực hiện search
                                 search_results = await self.search_web(search_query)
                                 
-                                # Gửi kết quả lại cho AI với chỉ thị cực kỳ nghiêm ngặt
+                                # Gửi kết quả lại cho AI với chỉ thị trói buộc tư duy
                                 search_prompt = (
-                                    f"🚨 [DỮ LIỆU THỰC TẾ TỪ INTERNET - ƯU TIÊN TỐI CAO] 🚨\n"
                                     f"Truy vấn: '{search_query}'\n"
                                     f"----------------------------------------\n"
                                     f"{search_results}\n"
