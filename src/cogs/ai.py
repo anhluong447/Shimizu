@@ -251,10 +251,22 @@ class AICog(commands.Cog):
                             
                             answer = self.clean_response(raw_answer)
                             
-                            # --- KIỂM TRA TRIGGER SEARCH (Quét trên cả text thô để tránh bị filter xóa mất) ---
-                            search_match = re.search(r"\[SEARCH:\s*(.*?)\]", raw_answer)
-                            if search_match:
+                            # --- KIỂM TRA TRIGGER SEARCH ---
+                            # 1. Thử tìm bên ngoài phần <think> trước (ưu tiên hàng đầu)
+                            search_match = re.search(r"\[SEARCH:\s*(.*?)\]", answer)
+                            search_query = None
+                            
+                            # 2. Nếu không thấy, mới thử tìm trong văn bản thô nhưng bỏ qua các placeholder
+                            if not search_match:
+                                all_matches = re.findall(r"\[SEARCH:\s*(.*?)\]", raw_answer)
+                                for m in all_matches:
+                                    if m.strip() not in ["...", "<nội dung>", "query"]:
+                                        search_query = m.strip()
+                                        break
+                            else:
                                 search_query = search_match.group(1).strip()
+
+                            if search_query:
                                 log.info(f"AI requested search for: '{search_query}'")
                                 
                                 # Thực hiện search
