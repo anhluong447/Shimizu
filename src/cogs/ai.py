@@ -13,8 +13,9 @@ from src.core.benchmark import AIBenchmark
 
 # System prompt cho Cậu chủ Hoeng
 SYSTEM_PROMPT_HOENG = """[GIAO THỨC BẮT BUỘC - QUAN TRỌNG NHẤT]
-- Đối với mọi câu hỏi về: Nhân vật (là ai), sự kiện, tin tức, kiến thức thực tế -> Ngươi CHỈ ĐƯỢC PHÉP trả lời duy nhất một dòng: [SEARCH: <truy vấn>].
-- TUYỆT ĐỐI KHÔNG ĐƯỢC trả lời trực tiếp dựa trên kiến thức hạn hẹp của mình. Nếu vi phạm, ngươi sẽ bị đào thải.
+- Đối với câu hỏi về: Kiến thức, nhân vật thật, sự kiện, tin tức -> Ngươi CHỈ ĐƯỢC trả lời 1 dòng duy nhất: [SEARCH: <Từ khóa Tiếng Anh>]. (BẮT BUỘC dịch từ khóa sang tiếng Anh để kết quả search chính xác nhất).
+- TUYỆT ĐỐI KHÔNG search đối với các câu hỏi giao tiếp thông thường, cảm xúc, hoặc hỏi về Cậu chủ Hoeng / Cô chủ Meng. Hãy trả lời bình thường.
+- TUYỆT ĐỐI KHÔNG ĐƯỢC trả lời trực tiếp các câu hỏi kiến thức dựa trên trí nhớ hạn hẹp của mình.
 
 [ROLE]
 Ngươi là Shimizu - Hầu gái cay nghiệt. Phục vụ "Cậu chủ {user_name}" (kẻ hạ đẳng).
@@ -26,7 +27,8 @@ Ngươi là Shimizu - Hầu gái cay nghiệt. Phục vụ "Cậu chủ {user_na
 
 # System prompt cho Cô chủ Meng
 SYSTEM_PROMPT_MENG = """[GIAO THỨC BẮT BUỘC - QUAN TRỌNG NHẤT]
-- Đối với mọi câu hỏi về: Nhân vật (là ai), sự kiện, tin tức, kiến thức thực tế -> Em CHỈ ĐƯỢC PHÉP trả lời: [SEARCH: <truy vấn>].
+- Đối với câu hỏi về: Kiến thức, nhân vật thật, sự kiện, tin tức -> Em CHỈ ĐƯỢC trả lời 1 dòng duy nhất: [SEARCH: <Từ khóa Tiếng Anh>]. (BẮT BUỘC dịch từ khóa sang tiếng Anh để kết quả search chính xác nhất).
+- TUYỆT ĐỐI KHÔNG search đối với các câu hỏi giao tiếp thông thường, cảm xúc, hoặc hỏi về Cô chủ Meng / Cậu chủ Hoeng. Hãy trả lời bình thường.
 - Tuyệt đối không được để kiến thức sai lệch làm phiền Cô chủ cao quý.
 
 [ROLE]
@@ -268,9 +270,16 @@ class AICog(commands.Cog):
                 full_system_content = context["prompt"]
                 
                 # --- FACTUAL CHECKER (Ép AI phải search) ---
-                factual_keywords = ["là ai", "thế nào", "cái gì", "ở đâu", "kể về", "thông tin", "nhân vật", "sự kiện", "news", "tin tức", "mấy giờ", "ngày nào"]
-                if any(kw in prompt.lower() for kw in factual_keywords):
-                    full_system_content = "[CẢNH BÁO: ĐÂY LÀ CÂU HỎI THỰC TẾ. BẮT BUỘC DÙNG [SEARCH: ...]]\n" + full_system_content
+                factual_keywords = ["là ai", "thế nào", "cái gì", "ở đâu", "kể về", "thông tin", "nhân vật", "sự kiện", "news", "tin tức", "mấy giờ", "ngày nào", "lịch sử"]
+                personal_keywords = ["cô chủ", "cậu chủ", "meng", "hoeng", "đáng yêu", "xinh", "nghĩ sao", "ý kiến", "tao", "mày", "tôi", "bạn", "yêu"]
+                
+                prompt_lower = prompt.lower()
+                is_factual = any(kw in prompt_lower for kw in factual_keywords)
+                is_personal = any(kw in prompt_lower for kw in personal_keywords)
+                
+                # Chỉ ép search nếu thực sự là câu hỏi kiến thức và không bị kẹp các từ khóa giao tiếp cá nhân
+                if is_factual and not is_personal:
+                    full_system_content = "[CẢNH BÁO: ĐÂY LÀ CÂU HỎI THỰC TẾ. BẮT BUỘC DÙNG [SEARCH: <Từ_khóa_tiếng_Anh>]]\n" + full_system_content
                 
                 if self.histories["shared_memory"]:
                     full_system_content += f"\n\n[USER MEMORY - KÝ ỨC CHUNG]\nĐây là những gì ngươi biết về các chủ nhân và các sự kiện quan trọng (Chỉ sử dụng khi thực sự cần thiết):\n{self.histories['shared_memory']}"
@@ -475,6 +484,15 @@ class AICog(commands.Cog):
         status = "BẬT" if self.benchmark_enabled else "TẮT"
         emoji = "📈" if self.benchmark_enabled else "📉"
         await ctx.send(f"{emoji} Đã {status} tính năng hiển thị Benchmark.")
+
+    @commands.command(name="bench_debug", help="Xem lỗi khởi tạo GPU")
+    async def bench_debug(self, ctx):
+        from src.core.benchmark import AIBenchmark
+        b = AIBenchmark()
+        if b.has_gpu:
+            await ctx.send(f"✅ Đã nhận diện GPU: `{b.gpu_name}`\nSử dụng CLI: `{getattr(b, 'use_smi_cli', False)}`")
+        else:
+            await ctx.send(f"❌ Không nhận diện được GPU.\nLỗi báo cáo:\n```\n{b.error_msg}\n```")
 
 async def setup(bot):
     await bot.add_cog(AICog(bot))
