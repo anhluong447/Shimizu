@@ -269,23 +269,31 @@ class AICog(commands.Cog):
                 context = self.get_persona_context(ctx.author.display_name)
                 full_system_content = context["prompt"]
                 
-                # --- FACTUAL CHECKER (Ép AI phải search) ---
+                # --- CATEGORY CHECKER (Phân loại câu hỏi để tối ưu tốc độ) ---
                 factual_keywords = ["là ai", "thế nào", "cái gì", "ở đâu", "kể về", "thông tin", "nhân vật", "sự kiện", "news", "tin tức", "mấy giờ", "ngày nào", "lịch sử"]
                 personal_keywords = ["cô chủ", "cậu chủ", "meng", "hoeng", "đáng yêu", "dễ thương", "xinh", "nghĩ sao", "ý kiến", "yêu", "đẹp trai", "xấu", "tốt", "ghét"]
+                smalltalk_keywords = ["chào", "hello", "hi", "bye", "tạm biệt", "đi ngủ", "dậy chưa", "ăn gì", "khỏe không"]
                 
-                prompt_lower = prompt.lower()
+                prompt_lower = prompt.lower().strip()
                 is_factual = any(kw in prompt_lower for kw in factual_keywords)
                 is_personal = any(kw in prompt_lower for kw in personal_keywords)
+                is_smalltalk = any(kw == prompt_lower or prompt_lower.startswith(kw + " ") for kw in smalltalk_keywords) or len(prompt_lower) < 10
                 
+                # Ưu tiên Small Talk để trả lời nhanh nhất
+                if is_smalltalk and not is_factual:
+                    # Rút gọn system prompt tối đa cho các câu xã giao
+                    full_system_content = f"[GIAO TIẾP NHANH]\n{context['prompt']}\n- Hãy trả lời ngắn gọn, đúng tính cách, không cần suy nghĩ phức tạp."
+                    log.info(f"Small talk detected for '{prompt}', using simplified prompt.")
                 # Ép search nếu là câu hỏi kiến thức thuần túy
-                if is_factual and not is_personal:
+                elif is_factual and not is_personal:
                     full_system_content = "[CẢNH BÁO: ĐÂY LÀ CÂU HỎI THỰC TẾ. BẮT BUỘC DÙNG [SEARCH: <Từ_khóa_tiếng_Anh>]]\n" + full_system_content
                 # Ép KHÔNG search nếu là câu hỏi cá nhân, cảm xúc
                 elif is_personal:
                     full_system_content = "[CẢNH BÁO: ĐÂY LÀ CÂU HỎI GIAO TIẾP CÁ NHÂN. NGHIÊM CẤM DÙNG LỆNH [SEARCH: ...]. HÃY TRẢ LỜI TRỰC TIẾP THEO ĐÚNG TÍNH CÁCH.]\n" + full_system_content
                 
-                if self.histories["shared_memory"]:
-                    full_system_content += f"\n\n[USER MEMORY - KÝ ỨC CHUNG]\nĐây là những gì ngươi biết về các chủ nhân và các sự kiện quan trọng (Chỉ sử dụng khi thực sự cần thiết):\n{self.histories['shared_memory']}"
+                # Chỉ thêm bộ nhớ chung nếu KHÔNG phải là small talk để tiết kiệm token
+                if self.histories["shared_memory"] and not is_smalltalk:
+                    full_system_content += f"\n\n[USER MEMORY - KÝ ỨC CHUNG]\nĐây là những gì ngươi biết về các chủ nhân và các sự kiện quan trọng:\n{self.histories['shared_memory']}"
                 
                 api_messages = [{"role": "system", "content": full_system_content}]
                 api_messages.extend(history["messages"])
