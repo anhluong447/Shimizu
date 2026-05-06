@@ -289,20 +289,22 @@ class AICog(commands.Cog):
                                     f"4. Nếu dữ liệu không nhắc tới một chi tiết nào đó, đừng tự bịa ra."
                                 )
                                 
-                                # --- CHIẾN THUẬT CÁCH LY NGỮ CẢNH (Context Isolation) ---
-                                # Để tránh AI bị "nhiễm độc" bởi các ảo giác ở tin nhắn cũ trong lịch sử,
-                                # ta chỉ gửi System Prompt + Câu hỏi hiện tại + Kết quả Search.
+                                # --- CHIẾN THUẬT TẨY NÃO (Brainwash Isolation) ---
+                                # Ta chỉ giữ lại ĐÚNG lệnh [SEARCH: ...] trong lịch sử, 
+                                # xóa sạch mọi đoạn text "chém gió" mà AI lỡ viết ở Round 1.
+                                clean_search_trigger = f"[SEARCH: {search_query}]"
+                                
                                 isolated_messages = [
                                     {"role": "system", "content": full_system_content},
                                     history["messages"][-1], # Câu hỏi hiện tại của User
-                                    {"role": "assistant", "content": raw_answer}, # Lệnh [SEARCH: ...]
+                                    {"role": "assistant", "content": clean_search_trigger}, # Chỉ giữ lại tag sạch
                                     {"role": "user", "content": search_prompt} # Kết quả Search
                                 ]
                                 
                                 payload["messages"] = isolated_messages
-                                payload["options"]["temperature"] = 0.1 # Giảm xuống mức cực thấp để đảm bảo độ chính xác tuyệt đối
+                                payload["options"]["temperature"] = 0.0 # Ép AI phải copy 100%, không được sáng tạo 1 pixel nào
                                 
-                                log.info(f"Sending second request to Ollama. Query: {search_query}")
+                                log.info(f"Sending second request to Ollama (Isolated & Cleaned). Query: {search_query}")
                                 
                                 async with session.post(self.api_url_chat, json=payload, timeout=120) as second_response:
                                     if second_response.status == 200:
