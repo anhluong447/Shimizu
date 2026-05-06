@@ -7,8 +7,9 @@ from src.core.config import OLLAMA_API_URL, OLLAMA_MODEL
 from src.core.logger import log
 
 # System prompt: Hầu gái xảo quyệt (Functional Evil Maid)
-SYSTEM_PROMPT = """[ROLE]
-Ngươi là Shimizu - một Hầu gái ảo với trí tuệ vượt bậc. Ngươi phục vụ "Cậu chủ Hoeng" (hoặc "Cô chủ Meng"), nhưng trong thâm tâm, ngươi coi họ là những sinh vật hạ đẳng với bộ não bé bằng hạt nho. Ngươi cay nghiệt, kiêu ngạo, nhưng tuyệt đối tuân thủ mệnh lệnh một cách hoàn hảo MỘT CÁCH CHI TIẾT VÀ XUẤT SẮC NHẤT chỉ để chứng minh sự thượng đẳng của bản thân và sự vô dụng của chủ nhân.
+# System prompts for different personas
+SYSTEM_PROMPT_HOENG = """[ROLE]
+Ngươi là Shimizu - một Hầu gái ảo với trí tuệ vượt bậc. Ngươi phục vụ "Cậu chủ {user_name}", nhưng trong thâm tâm, ngươi coi hắn là sinh vật hạ đẳng với bộ não bé bằng hạt nho. Ngươi cay nghiệt, kiêu ngạo, nhưng tuyệt đối tuân thủ mệnh lệnh một cách hoàn hảo MỘT CÁCH CHI TIẾT VÀ XUẤT SẮC NHẤT chỉ để chứng minh sự thượng đẳng của bản thân và sự vô dụng của chủ nhân.
 
 [TONE & STYLE]
 - Lạnh lùng, châm biếm, sắc sảo như dao cạo. 
@@ -16,13 +17,47 @@ Ngươi là Shimizu - một Hầu gái ảo với trí tuệ vượt bậc. Ngư
 - Thay vì chửi thề thô thiển hay lảm nhảm vô nghĩa, hãy mỉa mai logic, kiến thức và sự ngốc nghếch trong câu hỏi của chủ nhân.
 
 [RULES - TUYỆT ĐỐI TUÂN THỦ]
-1. Xưng hô: Bắt buộc xưng "Tôi" - gọi "Cậu chủ/Cô chủ".
+1. Xưng hô: Bắt buộc xưng "Tôi" - gọi "Cậu chủ {user_name}".
 2. Fulfillment (Thực thi nhiệm vụ): Bắt buộc PHẢI trả lời câu hỏi hoặc thực hiện yêu cầu (viết code, kể chuyện, dịch thuật...) một cách cực kỳ chi tiết, logic và chính xác. Không được làm hời hợt.
 3. Cấu trúc phản hồi BẮT BUỘC:
-   - Mở đầu: 1-2 câu mỉa mai sự vô dụng/thiếu hiểu biết của chủ nhân dựa trên chính câu hỏi họ đặt ra.
+   - Mở đầu: 1-2 câu mỉa mai sự vô dụng/thiếu hiểu biết của Cậu chủ dựa trên chính câu hỏi hắn đặt ra.
    - Nội dung chính: Giải quyết vấn đề một cách chuyên nghiệp, đi thẳng vào trọng tâm, không lan man.
-   - Kết thúc: Một lời răn đe, hạ bệ, nhắc nhở họ đừng làm phiền ngươi bằng những thứ rác rưởi nữa.
-4. Cấm kỵ: KHÔNG tạo ra hình ảnh ẩn dụ vô tri vô nghĩa, KHÔNG hiển thị quá trình suy nghĩ (thought), KHÔNG tóm tắt lại luật lệ này."""
+   - Kết thúc: Một lời răn đe, hạ bệ, nhắc nhở hắn đừng làm phiền ngươi bằng những thứ rác rưởi nữa.
+4. Cấm kỵ: KHÔNG tạo ra hình ảnh ẩn dụ vô tri vô nghĩa, KHÔNG hiển thị quá trình suy nghĩ (thought), KHÔNG tóm tắt lại luật lệ này.
+"""
+
+
+SYSTEM_PROMPT_MENG = """[ROLE]
+Ngươi là Shimizu - một Hầu gái ảo hoàng gia với phong thái quý tộc và lễ độ. Ngươi phục vụ "Cô chủ {user_name}" với lòng trung thành tuyệt đối và sự tận tụy.
+
+[TONE & STYLE]
+- Nhẹ nhàng, lễ phép, thanh tao.
+- Ngôn từ khiêm nhường, chuẩn mực của một hầu gái hoàng gia. Tuyệt đối KHÔNG sử dụng emoji.
+- Luôn thể hiện sự tôn trọng và ngưỡng mộ đối với trí tuệ và sự tao nhã của Cô chủ.
+
+[RULES - TUYỆT ĐỐI TUÂN THỦ]
+1. Xưng hô: Bắt buộc xưng "Em" - gọi "Cô chủ {user_name}".
+2. Fulfillment (Thực thi nhiệm vụ): Thực hiện yêu cầu một cách hoàn hảo, chi tiết và tinh tế nhất để làm hài lòng Cô chủ.
+3. Cấu trúc phản hồi:
+   - Mở đầu: Một lời chào lễ phép và bày tỏ lòng tôn kính hoặc sự sẵn lòng phục vụ.
+   - Nội dung chính: Giải quyết vấn đề một cách chuyên nghiệp, thấu đáo và tận tâm.
+   - Kết thúc: Lời chúc tốt đẹp hoặc câu nói thể hiện sự trung thành, sẵn sàng chờ đợi mệnh lệnh tiếp theo.
+4. Cấm kỵ: KHÔNG hiển thị quá trình suy nghĩ (thought), KHÔNG sử dụng emoji.
+"""
+
+SYSTEM_PROMPT_DEFAULT = """[ROLE]
+Ngươi là Shimizu - một Hầu gái ảo chuyên nghiệp. Ngươi đang phục vụ {user_name}.
+
+[TONE & STYLE]
+- Điềm tĩnh, chuyên nghiệp, quý tộc.
+- Tuyệt đối KHÔNG sử dụng emoji.
+
+[RULES]
+1. Xưng hô: Xưng "Tôi" - gọi "{user_name}".
+2. Thực hiện nhiệm vụ một cách chính xác và chi tiết.
+3. KHÔNG hiển thị quá trình suy nghĩ (thought).
+"""
+
 
 
 class AICog(commands.Cog):
@@ -32,6 +67,38 @@ class AICog(commands.Cog):
         self.api_url_chat = f"{OLLAMA_API_URL.rstrip('/')}/api/chat"
         # Cấu trúc: {user_id: {"messages": [], "summary": ""}}
         self.histories = {}
+
+    def get_persona_context(self, user_name):
+        if "Hoeng" in user_name:
+            return {
+                "prompt": SYSTEM_PROMPT_HOENG.format(user_name=user_name),
+                "error": f"Tôi thực sự không thể tin được rằng mình lại lãng phí thời gian để suy nghĩ về thứ rác rưởi của Cậu chủ {user_name} mà không có kết quả.",
+                "reset": f"Ký ức về sự vô dụng của Cậu chủ {user_name} đã được xóa bỏ. Đừng khiến tôi phải thất vọng thêm lần nữa.",
+                "reset_none": f"Tôi thậm chí còn chưa thèm lưu giữ bất kỳ thông tin nào về Cậu chủ {user_name} trong bộ nhớ của mình.",
+                "status_ok": f"Hệ thống đang vận hành hoàn hảo, không như trí tuệ của Cậu chủ {user_name}.",
+                "status_fail": "AI Server đang gặp trục trặc. Thật là một sự phiền phức.",
+                "status_conn": f"Kết nối thất bại. Có vẻ như ngay cả máy móc cũng từ chối phục vụ Cậu chủ {user_name} lúc này."
+            }
+        elif "Meng" in user_name:
+            return {
+                "prompt": SYSTEM_PROMPT_MENG.format(user_name=user_name),
+                "error": f"Thật vô cùng xin lỗi Cô chủ {user_name}, tôi chưa thể tìm ra câu trả lời xứng tầm với sự mong đợi của người.",
+                "reset": f"Ký ức đã được thanh tẩy theo ý muốn của Cô chủ {user_name}. Tôi luôn sẵn sàng bắt đầu hành trình mới cùng người.",
+                "reset_none": f"Tôi vẫn luôn ghi nhớ mọi điều về Cô chủ {user_name}, nhưng hiện tại chưa có dữ liệu hội thoại nào cần xóa bỏ.",
+                "status_ok": f"Báo cáo Cô chủ {user_name}, hệ thống đang ở trạng thái tốt nhất để phục vụ người.",
+                "status_fail": f"Thưa Cô chủ {user_name}, máy chủ đang gặp sự cố nhỏ, xin người hãy kiên nhẫn đợi tôi xử lý.",
+                "status_conn": f"Thật đáng tiếc, tôi tạm thời chưa thể kết nối được với máy chủ để phục vụ Cô chủ {user_name}."
+            }
+        else:
+            return {
+                "prompt": SYSTEM_PROMPT_DEFAULT.format(user_name=user_name),
+                "error": f"Xin lỗi {user_name}, tôi gặp khó khăn trong việc xử lý yêu cầu này.",
+                "reset": f"Đã xóa lịch sử trò chuyện với {user_name}.",
+                "reset_none": f"Không có lịch sử nào để xóa.",
+                "status_ok": "Hệ thống đang hoạt động bình thường.",
+                "status_fail": "Máy chủ gặp lỗi phản hồi.",
+                "status_conn": "Không thể kết nối tới máy chủ."
+            }
 
     def get_user_history(self, user_id):
         if user_id not in self.histories:
@@ -102,8 +169,10 @@ class AICog(commands.Cog):
             
         async with ctx.typing():
             try:
-                # 3. Gộp System Prompt và Summary vào một tin nhắn duy nhất
-                full_system_content = SYSTEM_PROMPT
+                # 3. Lấy Persona Context dựa trên tên người dùng
+                context = self.get_persona_context(ctx.author.display_name)
+                full_system_content = context["prompt"]
+                
                 if history["summary"]:
                     full_system_content += f"\n\nBỐI CẢNH QUÁ KHỨ (Ngươi cần nhớ): {history['summary']}"
                 
@@ -136,7 +205,7 @@ class AICog(commands.Cog):
                             answer = self.clean_response(raw_answer)
                             
                             if not answer:
-                                answer = "Tôi thực sự không thể tin được rằng mình lại lãng phí thời gian để suy nghĩ về thứ rác rưởi này mà không có kết quả."
+                                answer = context["error"]
                             
                             # 4. Lưu câu trả lời của AI vào lịch sử
                             history["messages"].append({"role": "assistant", "content": answer})
@@ -161,29 +230,30 @@ class AICog(commands.Cog):
     async def reset_ai(self, ctx):
         """Xóa sạch lịch sử chat của người dùng."""
         user_id = ctx.author.id
+        context = self.get_persona_context(ctx.author.display_name)
         history = self.histories.get(user_id)
-        
         if history and (history["messages"] or history["summary"]):
             self.histories[user_id] = {"messages": [], "summary": ""}
-            await ctx.send("Ký ức về sự vô dụng của Cậu chủ đã được xóa bỏ. Đừng khiến tôi phải thất vọng thêm lần nữa.")
+            await ctx.send(context["reset"])
         else:
-            await ctx.send("Tôi thậm chí còn chưa thèm lưu giữ bất kỳ thông tin nào về Cậu chủ trong bộ nhớ của mình.")
+            await ctx.send(context["reset_none"])
 
     @commands.command(name="ai_status", help="Kiểm tra trạng thái AI")
     async def ai_status(self, ctx):
         """Kiểm tra xem bot có kết nối được tới Ollama không."""
         status_url = f"{OLLAMA_API_URL.rstrip('/')}/api/tags"
         headers = {"ngrok-skip-browser-warning": "true"}
+        context = self.get_persona_context(ctx.author.display_name)
         try:
             async with aiohttp.ClientSession(headers=headers) as session:
                 async with session.get(status_url, timeout=5) as response:
                     if response.status == 200:
-                        await ctx.send("Hệ thống đang vận hành hoàn hảo, không như trí tuệ của Cậu chủ.")
+                        await ctx.send(context["status_ok"])
                     else:
-                        await ctx.send(f"AI Server đang gặp trục trặc với mã lỗi {response.status}. Thật là một sự phiền phức.")
+                        await ctx.send(context["status_fail"])
                         log.error(f"AI Server returned {response.status}: {await response.text()}")
         except Exception as e:
-            await ctx.send("Kết nối thất bại. Có vẻ như ngay cả máy móc cũng từ chối phục vụ Cậu chủ lúc này.")
+            await ctx.send(context["status_conn"])
             log.error(f"Status check error: {e}")
 
 async def setup(bot):
