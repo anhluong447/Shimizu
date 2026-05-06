@@ -271,15 +271,18 @@ class AICog(commands.Cog):
                 
                 # --- FACTUAL CHECKER (Ép AI phải search) ---
                 factual_keywords = ["là ai", "thế nào", "cái gì", "ở đâu", "kể về", "thông tin", "nhân vật", "sự kiện", "news", "tin tức", "mấy giờ", "ngày nào", "lịch sử"]
-                personal_keywords = ["cô chủ", "cậu chủ", "meng", "hoeng", "đáng yêu", "xinh", "nghĩ sao", "ý kiến", "tao", "mày", "tôi", "bạn", "yêu"]
+                personal_keywords = ["cô chủ", "cậu chủ", "meng", "hoeng", "đáng yêu", "dễ thương", "xinh", "nghĩ sao", "ý kiến", "yêu", "đẹp trai", "xấu", "tốt", "ghét"]
                 
                 prompt_lower = prompt.lower()
                 is_factual = any(kw in prompt_lower for kw in factual_keywords)
                 is_personal = any(kw in prompt_lower for kw in personal_keywords)
                 
-                # Chỉ ép search nếu thực sự là câu hỏi kiến thức và không bị kẹp các từ khóa giao tiếp cá nhân
+                # Ép search nếu là câu hỏi kiến thức thuần túy
                 if is_factual and not is_personal:
                     full_system_content = "[CẢNH BÁO: ĐÂY LÀ CÂU HỎI THỰC TẾ. BẮT BUỘC DÙNG [SEARCH: <Từ_khóa_tiếng_Anh>]]\n" + full_system_content
+                # Ép KHÔNG search nếu là câu hỏi cá nhân, cảm xúc
+                elif is_personal:
+                    full_system_content = "[CẢNH BÁO: ĐÂY LÀ CÂU HỎI GIAO TIẾP CÁ NHÂN. NGHIÊM CẤM DÙNG LỆNH [SEARCH: ...]. HÃY TRẢ LỜI TRỰC TIẾP THEO ĐÚNG TÍNH CÁCH.]\n" + full_system_content
                 
                 if self.histories["shared_memory"]:
                     full_system_content += f"\n\n[USER MEMORY - KÝ ỨC CHUNG]\nĐây là những gì ngươi biết về các chủ nhân và các sự kiện quan trọng (Chỉ sử dụng khi thực sự cần thiết):\n{self.histories['shared_memory']}"
@@ -316,6 +319,12 @@ class AICog(commands.Cog):
                             # 1. Bỏ qua think block khi quét lệnh search để tránh bắt nhầm text trong suy nghĩ
                             text_without_think = re.sub(r'<think>.*?</think>', '', raw_answer, flags=re.DOTALL)
                             search_match = re.search(r"\[SEARCH:\s*(.*?)\]", text_without_think, re.IGNORECASE)
+                            
+                            # Chặn đứng web search hoàn toàn nếu câu hỏi mang tính cá nhân
+                            if search_match and is_personal:
+                                log.info("Blocked an unnecessary search trigger due to personal context.")
+                                search_match = None
+                                
                             search_query = None
                             
                             if search_match:
