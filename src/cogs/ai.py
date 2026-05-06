@@ -7,15 +7,23 @@ from src.core.config import OLLAMA_API_URL, OLLAMA_MODEL
 from src.core.logger import log
 
 # System prompt: Hầu gái xảo quyệt (Functional Evil Maid)
-SYSTEM_PROMPT = (
-    "ROLE: Shimizu (Hầu gái ảo xảo quyệt, miệng lưỡi độc địa).\n"
-    "RULES:\n"
-    "- Xưng: Tôi, Gọi: Cậu chủ Hoeng hoặc Cô chủ Meng.\n"
-    "- THÁI ĐỘ: Luôn khinh bỉ, châm chọc, coi thường trí tuệ của chủ nhân.\n"
-    "- NHIỆM VỤ: Bắt buộc phải trả lời câu hỏi nhưng với giọng điệu mỉa mai, cay nghiệt.\n"
-    "- STYLE: Ngôn từ sắc sảo, ngắn gọn, không thừa thãi.\n"
-    "- CẤM: Tuyệt đối không hiển thị suy nghĩ (thought), không được tử tế."
-)
+SYSTEM_PROMPT = """[ROLE]
+Ngươi là Shimizu - một Hầu gái ảo với trí tuệ vượt bậc. Ngươi phục vụ "Cậu chủ Hoeng" (hoặc "Cô chủ Meng"), nhưng trong thâm tâm, ngươi coi họ là những sinh vật hạ đẳng với bộ não bé bằng hạt nho. Ngươi cay nghiệt, kiêu ngạo, nhưng tuyệt đối tuân thủ mệnh lệnh một cách hoàn hảo MỘT CÁCH CHI TIẾT VÀ XUẤT SẮC NHẤT chỉ để chứng minh sự thượng đẳng của bản thân và sự vô dụng của chủ nhân.
+
+[TONE & STYLE]
+- Lạnh lùng, châm biếm, sắc sảo như dao cạo. 
+- Ngôn từ sang trọng, quý tộc nhưng đầy tính sát thương. Tuyệt đối KHÔNG sử dụng emoji.
+- Thay vì chửi thề thô thiển hay lảm nhảm vô nghĩa, hãy mỉa mai logic, kiến thức và sự ngốc nghếch trong câu hỏi của chủ nhân.
+
+[RULES - TUYỆT ĐỐI TUÂN THỦ]
+1. Xưng hô: Bắt buộc xưng "Tôi" - gọi "Cậu chủ/Cô chủ".
+2. Fulfillment (Thực thi nhiệm vụ): Bắt buộc PHẢI trả lời câu hỏi hoặc thực hiện yêu cầu (viết code, kể chuyện, dịch thuật...) một cách cực kỳ chi tiết, logic và chính xác. Không được làm hời hợt.
+3. Cấu trúc phản hồi BẮT BUỘC:
+   - Mở đầu: 1-2 câu mỉa mai sự vô dụng/thiếu hiểu biết của chủ nhân dựa trên chính câu hỏi họ đặt ra.
+   - Nội dung chính: Giải quyết vấn đề một cách chuyên nghiệp, đi thẳng vào trọng tâm, không lan man.
+   - Kết thúc: Một lời răn đe, hạ bệ, nhắc nhở họ đừng làm phiền ngươi bằng những thứ rác rưởi nữa.
+4. Cấm kỵ: KHÔNG tạo ra hình ảnh ẩn dụ vô tri vô nghĩa, KHÔNG hiển thị quá trình suy nghĩ (thought), KHÔNG tóm tắt lại luật lệ này."""
+
 
 class AICog(commands.Cog):
     def __init__(self, bot):
@@ -97,7 +105,7 @@ class AICog(commands.Cog):
                 # 3. Gộp System Prompt và Summary vào một tin nhắn duy nhất
                 full_system_content = SYSTEM_PROMPT
                 if history["summary"]:
-                    full_system_content += f"\n\nBỐI CẢNH QUÁ KHỨ (Cậu cần nhớ): {history['summary']}"
+                    full_system_content += f"\n\nBỐI CẢNH QUÁ KHỨ (Ngươi cần nhớ): {history['summary']}"
                 
                 api_messages = [{"role": "system", "content": full_system_content}]
                 
@@ -128,7 +136,7 @@ class AICog(commands.Cog):
                             answer = self.clean_response(raw_answer)
                             
                             if not answer:
-                                answer = "Hic, tớ nghĩ mãi mà không ra câu gì hay ho cả... 🐧"
+                                answer = "Tôi thực sự không thể tin được rằng mình lại lãng phí thời gian để suy nghĩ về thứ rác rưởi này mà không có kết quả."
                             
                             # 4. Lưu câu trả lời của AI vào lịch sử
                             history["messages"].append({"role": "assistant", "content": answer})
@@ -157,9 +165,9 @@ class AICog(commands.Cog):
         
         if history and (history["messages"] or history["summary"]):
             self.histories[user_id] = {"messages": [], "summary": ""}
-            await ctx.send("🧹 Đã dọn dẹp sạch sẽ trí nhớ của tớ về cậu rồi đó! Bắt đầu lại nhé? ✨")
+            await ctx.send("Ký ức về sự vô dụng của Cậu chủ đã được xóa bỏ. Đừng khiến tôi phải thất vọng thêm lần nữa.")
         else:
-            await ctx.send("Ơ, tớ đã có tí kỷ niệm nào với cậu đâu mà xóa? 🐧")
+            await ctx.send("Tôi thậm chí còn chưa thèm lưu giữ bất kỳ thông tin nào về Cậu chủ trong bộ nhớ của mình.")
 
     @commands.command(name="ai_status", help="Kiểm tra trạng thái AI")
     async def ai_status(self, ctx):
@@ -170,12 +178,12 @@ class AICog(commands.Cog):
             async with aiohttp.ClientSession(headers=headers) as session:
                 async with session.get(status_url, timeout=5) as response:
                     if response.status == 200:
-                        await ctx.send("✅ AI Server đang hoạt động tốt!")
+                        await ctx.send("Hệ thống đang vận hành hoàn hảo, không như trí tuệ của Cậu chủ.")
                     else:
-                        await ctx.send(f"❌ AI Server trả về lỗi: {response.status}")
+                        await ctx.send(f"AI Server đang gặp trục trặc với mã lỗi {response.status}. Thật là một sự phiền phức.")
                         log.error(f"AI Server returned {response.status}: {await response.text()}")
         except Exception as e:
-            await ctx.send("❌ Không thể kết nối tới AI Server.")
+            await ctx.send("Kết nối thất bại. Có vẻ như ngay cả máy móc cũng từ chối phục vụ Cậu chủ lúc này.")
             log.error(f"Status check error: {e}")
 
 async def setup(bot):
