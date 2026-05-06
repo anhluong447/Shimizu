@@ -16,6 +16,10 @@ TIMEZONE = pytz.timezone('Asia/Ho_Chi_Minh')
 OLLAMA_API_URL = os.getenv('OLLAMA_API_URL', 'http://localhost:11434')
 OLLAMA_MODEL = os.getenv('OLLAMA_MODEL', 'shimizu-qwen')
 
+# --- Gemini Config ---
+_gemini_keys_str = os.getenv('GEMINI_API_KEYS', '')
+GEMINI_API_KEYS = [k.strip() for k in _gemini_keys_str.split(',')] if _gemini_keys_str else []
+
 # --- Paths ---
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA_DIR = os.path.join(BASE_DIR, 'data')
@@ -27,6 +31,7 @@ NOTIFICATIONS_FILE = os.path.join(DATA_DIR, 'notifications.json')
 MENG_ENC_FILE = os.path.join(DATA_DIR, 'meng.ann')
 AI_MEMORY_FILE = os.path.join(DATA_DIR, 'ai_memory.json')
 RPG_DATA_FILE = os.path.join(DATA_DIR, 'rpg_data.json')
+GEMINI_ROTATION_LOG = os.path.join(LOGS_DIR, 'gemini_rotation.log')
 
 # --- Music Config ---
 if platform.system() == 'Windows':

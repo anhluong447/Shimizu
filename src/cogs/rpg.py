@@ -157,6 +157,19 @@ class RPGGameView(discord.ui.View):
     async def btn_custom(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(RPGActionModal(self.handle_action))
 
+    @discord.ui.button(label="Thoát game", style=discord.ButtonStyle.secondary, emoji="⏹️")
+    async def btn_end(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user.id not in self.cog.sessions.get(self.session_id, {}).get("players", []):
+            await interaction.response.send_message("❌ Bạn không thể kết thúc session này.", ephemeral=True)
+            return
+            
+        if self.session_id in self.cog.sessions:
+            del self.cog.sessions[self.session_id]
+            await interaction.response.send_message("⏹️ Chuyến phiêu lưu Neo-Life 2026 đã kết thúc theo yêu cầu.")
+            await interaction.message.edit(view=None) # Xóa các nút bấm
+        else:
+            await interaction.response.send_message("⚠️ Session này đã kết thúc từ trước.", ephemeral=True)
+
 
 class RPGCog(commands.Cog):
     def __init__(self, bot):
@@ -206,35 +219,23 @@ class RPGCog(commands.Cog):
         if len(session["history"]) > 20:
             session["history"] = session["history"][-20:]
 
-        api_messages = [{"role": "system", "content": RPG_SYSTEM_PROMPT}]
-        api_messages.extend(session["history"])
-
-        payload = {
-            "model": OLLAMA_MODEL,
-            "messages": api_messages,
-            "stream": False,
-            "options": {
-                "temperature": 0.8,
-                "num_ctx": 4096
-            }
-        }
-
-        headers = {"ngrok-skip-browser-warning": "true"}
+        from src.services.gemini_rotator import get_rotator
+        rotator = get_rotator()
         
-        async with aiohttp.ClientSession(headers=headers) as http_session:
-            async with http_session.post(self.api_url_chat, json=payload, timeout=60) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    raw_answer = data.get('message', {}).get('content', '')
-                    
-                    # Clean <think> tags if Qwen model generates them
-                    import re
-                    answer = re.sub(r'<think>.*?</think>', '', raw_answer, flags=re.DOTALL).strip()
-                    
-                    session["history"].append({"role": "assistant", "content": answer})
-                    return answer
-                else:
-                    raise Exception(f"API Error: {response.status}")
+        try:
+            answer = await rotator.generate_content_async(
+                messages=session["history"],
+                system_instruction=RPG_SYSTEM_PROMPT,
+                temperature=0.8
+            )
+            
+            import re
+            answer = re.sub(r'<think>.*?</think>', '', answer, flags=re.DOTALL).strip()
+            
+            session["history"].append({"role": "assistant", "content": answer})
+            return answer
+        except Exception as e:
+            raise Exception(f"API Error: {str(e)}")
 
     @commands.group(name="rpg", invoke_without_command=True)
     async def rpg(self, ctx):

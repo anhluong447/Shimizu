@@ -218,20 +218,17 @@ class AICog(commands.Cog):
         summary_prompt += f"Nội dung mới từ hội thoại của {user_name} cần trích xuất:\n{chat_text}"
 
         try:
-            payload = {
-                "model": OLLAMA_MODEL,
-                "prompt": summary_prompt,
-                "stream": False
-            }
-            headers = {"ngrok-skip-browser-warning": "true"}
+            from src.services.gemini_rotator import get_rotator
+            rotator = get_rotator()
             
-            async with aiohttp.ClientSession(headers=headers) as session:
-                async with session.post(self.api_url_generate, json=payload) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        self.histories["shared_memory"] = data.get('response', self.histories["shared_memory"])
-                        self.save_memory()
-                        log.info(f"Updated and saved shared memory from {user_name}")
+            response_text = await rotator.generate_content_async(
+                prompt=summary_prompt,
+                temperature=0.3
+            )
+            
+            self.histories["shared_memory"] = response_text
+            self.save_memory()
+            log.info(f"Updated and saved shared memory from {user_name}")
         except Exception as e:
             log.error(f"Summarization error for user {user_id}: {e}")
 
@@ -295,33 +292,18 @@ class AICog(commands.Cog):
                 if self.histories["shared_memory"] and not is_smalltalk:
                     full_system_content += f"\n\n[USER MEMORY - KÝ ỨC CHUNG]\nĐây là những gì ngươi biết về các chủ nhân và các sự kiện quan trọng:\n{self.histories['shared_memory']}"
                 
-                api_messages = [{"role": "system", "content": full_system_content}]
-                api_messages.extend(history["messages"])
+                api_messages = history["messages"].copy()
 
-                payload = {
-                    "model": OLLAMA_MODEL,
-                    "messages": api_messages,
-                    "stream": False,
-                    "options": {
-                        "temperature": 0.8,
-                        "repeat_penalty": 1.15,
-                        "num_ctx": 8192
-                    }
-                }
+                from src.services.gemini_rotator import get_rotator
+                rotator = get_rotator()
                 
-                headers = {
-                    "ngrok-skip-browser-warning": "true",
-                    "Content-Type": "application/json"
-                }
-                
-                async with aiohttp.ClientSession(headers=headers) as session:
-                    async with session.post(self.api_url_chat, json=payload, timeout=600) as response:
-                        if response.status == 200:
-                            data = await response.json()
-                            raw_answer = data.get('message', {}).get('content', '')
-                            log.debug(f"AI RAW RESPONSE (Round 1):\n{raw_answer}")
-                            
-                            answer = self.clean_response(raw_answer)
+                raw_answer = await rotator.generate_content_async(
+                    messages=api_messages,
+                    system_instruction=full_system_content,
+                    temperature=0.8
+                )
+                log.debug(f"AI RAW RESPONSE (Round 1):\n{raw_answer}")
+                answer = self.clean_response(raw_answer)
                             
                             # --- KIỂM TRA TRIGGER SEARCH ---
                             # 1. Bỏ qua think block khi quét lệnh search để tránh bắt nhầm text trong suy nghĩ
@@ -364,27 +346,21 @@ class AICog(commands.Cog):
                                 clean_search_trigger = f"[SEARCH: {search_query}]"
                                 
                                 isolated_messages = [
-                                    {"role": "system", "content": full_system_content},
                                     history["messages"][-1], # Câu hỏi hiện tại của User
                                     {"role": "assistant", "content": clean_search_trigger}, # Chỉ giữ lại tag sạch
                                     {"role": "user", "content": search_prompt} # Kết quả Search
                                 ]
                                 
-                                payload["messages"] = isolated_messages
-                                payload["options"]["temperature"] = 0.0 # Ép AI phải copy 100%, không được sáng tạo 1 pixel nào
+                                log.info(f"Sending second request to Gemini (Isolated & Cleaned). Query: {search_query}")
                                 
-                                log.info(f"Sending second request to Ollama (Isolated & Cleaned). Query: {search_query}")
-                                
-                                async with session.post(self.api_url_chat, json=payload, timeout=600) as second_response:
-                                    if second_response.status == 200:
-                                        second_data = await second_response.json()
-                                        raw_answer = second_data.get('message', {}).get('content', 'Không có câu trả lời.')
-                                        log.debug(f"AI RAW RESPONSE (Round 2):\n{raw_answer}")
-                                        answer = self.clean_response(raw_answer)
-                                        log.info("AI successfully processed search results.")
-                                    else:
-                                        log.error(f"Ollama second request failed: {second_response.status}")
-                                        answer = f"⚠️ Lỗi khi lấy phản hồi sau khi search (Status: {second_response.status})"
+                                raw_answer = await rotator.generate_content_async(
+                                    messages=isolated_messages,
+                                    system_instruction=full_system_content,
+                                    temperature=0.0
+                                )
+                                log.debug(f"AI RAW RESPONSE (Round 2):\n{raw_answer}")
+                                answer = self.clean_response(raw_answer)
+                                log.info("AI successfully processed search results.")
                             
                             if not answer:
                                 answer = context["error"]
@@ -398,17 +374,10 @@ class AICog(commands.Cog):
                                 metrics = benchmark.stop()
                                 chart_path = benchmark.generate_chart(f"data/benchmarks/run_{ctx.message.id}.png")
                                 
-                                # Trích xuất thêm metrics từ Ollama nếu có
-                                ollama_stats = ""
-                                if 'eval_count' in data and data.get('eval_duration', 0) > 0:
-                                    tps = data['eval_count'] / (data['eval_duration'] / 1e9)
-                                    ollama_stats = f" | ⚡ **Tốc độ:** `{tps:.1f} tk/s`"
-
                                 bench_summary = (
                                     f"\n\n---\n"
                                     f"📊 **Benchmark:** `{metrics['duration']:.1f}s` | "
-                                    f"🔥 **GPU Avg:** `{metrics['avg_gpu']:.1f}%`"
-                                    f"{ollama_stats}\n"
+                                    f"🔥 **GPU Avg:** `{metrics['avg_gpu']:.1f}%`\n"
                                     f"📟 **Device:** `{metrics['gpu_name']}`"
                                 )
                                 
@@ -434,9 +403,6 @@ class AICog(commands.Cog):
                                         await ctx.send(chunk)
                                 else:
                                     await ctx.send(answer)
-                        else:
-                            await ctx.send(f"❌ Lỗi từ AI server: {response.status}")
-                            log.error(f"Ollama error {response.status}: {await response.text()}")
                             
             except asyncio.TimeoutError:
                 await ctx.send("⌛ AI phản hồi quá lâu, tôi đã ngắt kết nối để bảo vệ server.")
@@ -473,18 +439,26 @@ class AICog(commands.Cog):
 
     @commands.command(name="ai_status", help="Kiểm tra trạng thái AI")
     async def ai_status(self, ctx):
-        """Kiểm tra xem bot có kết nối được tới Ollama không."""
-        status_url = f"{OLLAMA_API_URL.rstrip('/')}/api/tags"
-        headers = {"ngrok-skip-browser-warning": "true"}
+        """Kiểm tra trạng thái hệ thống xoay vòng Gemini."""
         context = self.get_persona_context(ctx.author.display_name)
         try:
-            async with aiohttp.ClientSession(headers=headers) as session:
-                async with session.get(status_url, timeout=5) as response:
-                    if response.status == 200:
-                        await ctx.send(context["status_ok"])
-                    else:
-                        await ctx.send(context["status_fail"])
-                        log.error(f"AI Server returned {response.status}: {await response.text()}")
+            from src.services.gemini_rotator import get_rotator
+            rotator = get_rotator()
+            
+            key_idx = rotator.current_key_idx
+            model = rotator.models[rotator.current_model_idx]
+            total_keys = len(rotator.keys)
+            total_models = len(rotator.models)
+            
+            status_msg = (
+                f"{context['status_ok']}\n"
+                f"```yaml\n"
+                f"Engine: Gemini Rotation System\n"
+                f"Current Key: {key_idx + 1}/{total_keys}\n"
+                f"Current Model: {model} ({rotator.current_model_idx + 1}/{total_models})\n"
+                f"```"
+            )
+            await ctx.send(status_msg)
         except Exception as e:
             await ctx.send(context["status_conn"])
             log.error(f"Status check error: {e}")
