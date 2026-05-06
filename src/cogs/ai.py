@@ -305,105 +305,105 @@ class AICog(commands.Cog):
                 log.debug(f"AI RAW RESPONSE (Round 1):\n{raw_answer}")
                 answer = self.clean_response(raw_answer)
                             
-                            # --- KIỂM TRA TRIGGER SEARCH ---
-                            # 1. Bỏ qua think block khi quét lệnh search để tránh bắt nhầm text trong suy nghĩ
-                            text_without_think = re.sub(r'<think>.*?</think>', '', raw_answer, flags=re.DOTALL)
-                            search_match = re.search(r"\[SEARCH:\s*(.*?)\]", text_without_think, re.IGNORECASE)
-                            
-                            # Chặn đứng web search hoàn toàn nếu câu hỏi mang tính cá nhân
-                            if search_match and is_personal:
-                                log.info("Blocked an unnecessary search trigger due to personal context.")
-                                search_match = None
-                                
-                            search_query = None
-                            
-                            if search_match:
-                                search_query = search_match.group(1).strip()
-                                # TINH CHỈNH QUERY: Sử dụng trực tiếp search_query, loại bỏ hậu tố hardcode gây nhiễu
-                                refined_query = search_query
-                                log.info(f"AI requested search for: '{search_query}' -> Refined to: '{refined_query}'")
-                                
-                                # Thực hiện search với query đã tinh chỉnh
-                                search_results = await self.search_web(refined_query)
-                                
-                                # Ghi đè chỉ thị Round 2 theo công thức BÁO ĐỘNG ĐỎ
-                                search_prompt = (
-                                    f"🚨 [DỮ LIỆU CÀO ĐƯỢC TỪ INTERNET] 🚨\n"
-                                    f"Dựa vào dữ liệu tìm kiếm được về '{search_query}':\n"
-                                    f"----------------------------------------\n"
-                                    f"{search_results}\n"
-                                    f"----------------------------------------\n"
-                                    f"[YÊU CẦU TỐI THƯỢNG]\n"
-                                    f"1. Ngươi PHẢI giữ đúng nhân cách theo quy định ban đầu (Shimizu cay nghiệt hoặc thanh tao tùy chủ nhân).\n"
-                                    f"2. CẤM TUYỆT ĐỐI tự chế thêm tình tiết. Chỉ được tổng hợp câu trả lời từ dữ liệu trên.\n"
-                                    f"3. Nếu dữ liệu rác hoặc không có thông tin, hãy chửi thẳng vào mặt User là tool search bị ngu hoặc câu hỏi của hắn quá rác.\n"
-                                    f"4. Hãy trả lời câu hỏi: '{prompt}'"
-                                )
-                                
-                                # --- CHIẾN THUẬT TẨY NÃO (Brainwash Isolation) ---
-                                # Ta chỉ giữ lại ĐÚNG lệnh [SEARCH: ...] trong lịch sử, 
-                                # xóa sạch mọi đoạn text "chém gió" mà AI lỡ viết ở Round 1.
-                                clean_search_trigger = f"[SEARCH: {search_query}]"
-                                
-                                isolated_messages = [
-                                    history["messages"][-1], # Câu hỏi hiện tại của User
-                                    {"role": "assistant", "content": clean_search_trigger}, # Chỉ giữ lại tag sạch
-                                    {"role": "user", "content": search_prompt} # Kết quả Search
-                                ]
-                                
-                                log.info(f"Sending second request to Gemini (Isolated & Cleaned). Query: {search_query}")
-                                
-                                raw_answer = await rotator.generate_content_async(
-                                    messages=isolated_messages,
-                                    system_instruction=full_system_content,
-                                    temperature=0.0
-                                )
-                                log.debug(f"AI RAW RESPONSE (Round 2):\n{raw_answer}")
-                                answer = self.clean_response(raw_answer)
-                                log.info("AI successfully processed search results.")
-                            
-                            if not answer:
-                                answer = context["error"]
-                            
-                            # 4. Lưu câu trả lời của AI vào lịch sử
-                            history["messages"].append({"role": "assistant", "content": answer})
-                            self.save_memory() # Lưu câu trả lời của AI
-                            
-                            # --- BENCHMARK STOP & REPORT ---
-                            if self.benchmark_enabled and benchmark:
-                                metrics = benchmark.stop()
-                                chart_path = benchmark.generate_chart(f"data/benchmarks/run_{ctx.message.id}.png")
-                                
-                                bench_summary = (
-                                    f"\n\n---\n"
-                                    f"📊 **Benchmark:** `{metrics['duration']:.1f}s` | "
-                                    f"🔥 **GPU Avg:** `{metrics['avg_gpu']:.1f}%`\n"
-                                    f"📟 **Device:** `{metrics['gpu_name']}`"
-                                )
-                                
-                                # Discord limits messages to 2000 characters
-                                full_response = answer + bench_summary
-                                
-                                file = discord.File(chart_path) if chart_path else None
-                                
-                                if len(full_response) > 1900:
-                                    chunks = [full_response[i:i+1900] for i in range(0, len(full_response), 1900)]
-                                    for i, chunk in enumerate(chunks):
-                                        if i == len(chunks) - 1:
-                                            await ctx.send(chunk, file=file)
-                                        else:
-                                            await ctx.send(chunk)
-                                else:
-                                    await ctx.send(full_response, file=file)
+                # --- KIỂM TRA TRIGGER SEARCH ---
+                # 1. Bỏ qua think block khi quét lệnh search để tránh bắt nhầm text trong suy nghĩ
+                text_without_think = re.sub(r'<think>.*?</think>', '', raw_answer, flags=re.DOTALL)
+                search_match = re.search(r"\[SEARCH:\s*(.*?)\]", text_without_think, re.IGNORECASE)
+                
+                # Chặn đứng web search hoàn toàn nếu câu hỏi mang tính cá nhân
+                if search_match and is_personal:
+                    log.info("Blocked an unnecessary search trigger due to personal context.")
+                    search_match = None
+                    
+                search_query = None
+                
+                if search_match:
+                    search_query = search_match.group(1).strip()
+                    # TINH CHỈNH QUERY: Sử dụng trực tiếp search_query, loại bỏ hậu tố hardcode gây nhiễu
+                    refined_query = search_query
+                    log.info(f"AI requested search for: '{search_query}' -> Refined to: '{refined_query}'")
+                    
+                    # Thực hiện search với query đã tinh chỉnh
+                    search_results = await self.search_web(refined_query)
+                    
+                    # Ghi đè chỉ thị Round 2 theo công thức BÁO ĐỘNG ĐỎ
+                    search_prompt = (
+                        f"🚨 [DỮ LIỆU CÀO ĐƯỢC TỪ INTERNET] 🚨\n"
+                        f"Dựa vào dữ liệu tìm kiếm được về '{search_query}':\n"
+                        f"----------------------------------------\n"
+                        f"{search_results}\n"
+                        f"----------------------------------------\n"
+                        f"[YÊU CẦU TỐI THƯỢNG]\n"
+                        f"1. Ngươi PHẢI giữ đúng nhân cách theo quy định ban đầu (Shimizu cay nghiệt hoặc thanh tao tùy chủ nhân).\n"
+                        f"2. CẤM TUYỆT ĐỐI tự chế thêm tình tiết. Chỉ được tổng hợp câu trả lời từ dữ liệu trên.\n"
+                        f"3. Nếu dữ liệu rác hoặc không có thông tin, hãy chửi thẳng vào mặt User là tool search bị ngu hoặc câu hỏi của hắn quá rác.\n"
+                        f"4. Hãy trả lời câu hỏi: '{prompt}'"
+                    )
+                    
+                    # --- CHIẾN THUẬT TẨY NÃO (Brainwash Isolation) ---
+                    # Ta chỉ giữ lại ĐÚNG lệnh [SEARCH: ...] trong lịch sử, 
+                    # xóa sạch mọi đoạn text "chém gió" mà AI lỡ viết ở Round 1.
+                    clean_search_trigger = f"[SEARCH: {search_query}]"
+                    
+                    isolated_messages = [
+                        history["messages"][-1], # Câu hỏi hiện tại của User
+                        {"role": "assistant", "content": clean_search_trigger}, # Chỉ giữ lại tag sạch
+                        {"role": "user", "content": search_prompt} # Kết quả Search
+                    ]
+                    
+                    log.info(f"Sending second request to Gemini (Isolated & Cleaned). Query: {search_query}")
+                    
+                    raw_answer = await rotator.generate_content_async(
+                        messages=isolated_messages,
+                        system_instruction=full_system_content,
+                        temperature=0.0
+                    )
+                    log.debug(f"AI RAW RESPONSE (Round 2):\n{raw_answer}")
+                    answer = self.clean_response(raw_answer)
+                    log.info("AI successfully processed search results.")
+                
+                if not answer:
+                    answer = context["error"]
+                
+                # 4. Lưu câu trả lời của AI vào lịch sử
+                history["messages"].append({"role": "assistant", "content": answer})
+                self.save_memory() # Lưu câu trả lời của AI
+                
+                # --- BENCHMARK STOP & REPORT ---
+                if self.benchmark_enabled and benchmark:
+                    metrics = benchmark.stop()
+                    chart_path = benchmark.generate_chart(f"data/benchmarks/run_{ctx.message.id}.png")
+                    
+                    bench_summary = (
+                        f"\n\n---\n"
+                        f"📊 **Benchmark:** `{metrics['duration']:.1f}s` | "
+                        f"🔥 **GPU Avg:** `{metrics['avg_gpu']:.1f}%`\n"
+                        f"📟 **Device:** `{metrics['gpu_name']}`"
+                    )
+                    
+                    # Discord limits messages to 2000 characters
+                    full_response = answer + bench_summary
+                    
+                    file = discord.File(chart_path) if chart_path else None
+                    
+                    if len(full_response) > 1900:
+                        chunks = [full_response[i:i+1900] for i in range(0, len(full_response), 1900)]
+                        for i, chunk in enumerate(chunks):
+                            if i == len(chunks) - 1:
+                                await ctx.send(chunk, file=file)
                             else:
-                                # Nếu tắt benchmark, chỉ gửi câu trả lời bình thường
-                                if len(answer) > 1900:
-                                    chunks = [answer[i:i+1900] for i in range(0, len(answer), 1900)]
-                                    for chunk in chunks:
-                                        await ctx.send(chunk)
-                                else:
-                                    await ctx.send(answer)
-                            
+                                await ctx.send(chunk)
+                    else:
+                        await ctx.send(full_response, file=file)
+                else:
+                    # Nếu tắt benchmark, chỉ gửi câu trả lời bình thường
+                    if len(answer) > 1900:
+                        chunks = [answer[i:i+1900] for i in range(0, len(answer), 1900)]
+                        for chunk in chunks:
+                            await ctx.send(chunk)
+                    else:
+                        await ctx.send(answer)
+                
             except asyncio.TimeoutError:
                 await ctx.send("⌛ AI phản hồi quá lâu, tôi đã ngắt kết nối để bảo vệ server.")
                 log.error("AI request timed out")
