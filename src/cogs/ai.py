@@ -54,13 +54,30 @@ class AICog(commands.Cog):
         self.histories = self.load_memory()
         self.save_memory() # Đảm bảo file tồn tại ngay khi khởi tạo
 
+    async def fetch_page_content(self, url: str) -> str:
+        """Sử dụng Jina Reader API để trích xuất nội dung chính của trang web dưới dạng Markdown."""
+        jina_url = f"https://r.jina.ai/{url}"
+        try:
+            # Thêm header cần thiết để API Jina hoạt động tốt
+            headers = {"Accept": "application/json"}
+            async with aiohttp.ClientSession() as session:
+                async with session.get(jina_url, headers=headers, timeout=10) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        text = data.get("data", {}).get("content", "")
+                        if text:
+                            # Giới hạn nội dung lấy về (~2500 ký tự)
+                            return text[:2500] + "\n...[Nội dung đã được cắt bớt]..."
+        except Exception as e:
+            log.error(f"Lỗi khi đọc nội dung từ {url}: {e}")
+        return ""
+
     async def search_web(self, query: str, max_results: int = 10):
-        """Tìm kiếm thông tin trên DuckDuckGo (Non-blocking)."""
+        """Tìm kiếm thông tin trên DuckDuckGo và đọc nội dung chi tiết."""
         def sync_search():
             with DDGS() as ddgs:
-                # Tìm kiếm cả tiếng Việt và tiếng Anh để có dữ liệu phong phú nhất
                 results_vn = list(ddgs.text(query, max_results=max_results))
-                results_en = list(ddgs.text(f"{query} wiki english", max_results=max_results))
+                results_en = list(ddgs.text(f"{query} english", max_results=max_results))
                 return results_vn + results_en
 
         try:
@@ -69,21 +86,37 @@ class AICog(commands.Cog):
                 return "Không tìm thấy kết quả nào."
             
             results_text = ""
-            # Kết quả trả về là list gộp [VN..., EN...]
-            # Ta lấy 5 kết quả đầu tiên (thường là sự kết hợp của cả hai)
             final_results = results[:5]
             
-            for i, r in enumerate(final_results, 1):
-                # Làm sạch snippet: Xóa ngày tháng, từ khóa SEO rác
-                body = r.get('body', '')
-                body = re.sub(r'\d{1,2} [A-Z][a-z]+ \d{4} — ', '', body) # Xóa ngày tháng
-                body = re.sub(r'Share your videos with friends, family, and the world', '', body)
-                body = re.sub(r'Bạn đang xem:.*', '', body)
-                
-                snippet = body[:600] + "..." if len(body) > 600 else body
-                results_text += f"[{i}] {r.get('title', 'Không tiêu đề')}\nNội dung: {snippet}\n\n"
+            # Cào dữ liệu chi tiết cho 2 kết quả đầu tiên đồng thời
+            tasks = []
+            for r in final_results[:2]:
+                url = r.get('href')
+                if url:
+                    tasks.append(self.fetch_page_content(url))
+                else:
+                    tasks.append(asyncio.sleep(0))
             
-            log.info(f"Search successful for '{query}': Found {len(final_results)} cleaned results.")
+            detailed_contents = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            for i, r in enumerate(final_results, 1):
+                title = r.get('title', 'Không tiêu đề')
+                url = r.get('href', 'Không có link')
+                snippet = r.get('body', '')
+                
+                # Sử dụng nội dung chi tiết cho 2 top kết quả nếu cào thành công
+                if i <= 2 and isinstance(detailed_contents[i-1], str) and detailed_contents[i-1].strip():
+                    results_text += f"[{i}] {title}\nNguồn: {url}\nNội dung chi tiết:\n{detailed_contents[i-1]}\n\n"
+                else:
+                    # Làm sạch snippet cho các kết quả còn lại
+                    body = re.sub(r'\d{1,2} [A-Z][a-z]+ \d{4} — ', '', snippet)
+                    body = re.sub(r'Share your videos with friends, family, and the world', '', body)
+                    body = re.sub(r'Bạn đang xem:.*', '', body)
+                    
+                    snippet_clean = body[:600] + "..." if len(body) > 600 else body
+                    results_text += f"[{i}] {title}\nNguồn: {url}\nTóm tắt ngắn: {snippet_clean}\n\n"
+            
+            log.info(f"Search successful for '{query}': Fetched {len(final_results)} results, including details for top pages.")
             log.debug(f"SEARCH RESULTS CONTENT:\n{results_text}")
             return results_text
         except Exception as e:
