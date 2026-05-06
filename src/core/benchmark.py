@@ -3,9 +3,13 @@ import threading
 import pynvml
 import matplotlib.pyplot as plt
 import os
+import subprocess
 from datetime import datetime
+from src.core.logger import log
 
 class AIBenchmark:
+    _nvml_initialized = False
+
     def __init__(self):
         self.gpu_usage = []
         self.timestamps = []
@@ -14,28 +18,60 @@ class AIBenchmark:
         self.end_time = None
         self.sampling_thread = None
         self.has_gpu = False
+        self.gpu_name = "N/A"
+        self.error_msg = None
         
         try:
-            pynvml.nvmlInit()
-            # Lấy handle cho GPU đầu tiên
-            self.handle = pynvml.nvmlDeviceGetHandleByIndex(0)
-            self.gpu_name = pynvml.nvmlDeviceGetName(self.handle)
-            self.has_gpu = True
+            if not AIBenchmark._nvml_initialized:
+                pynvml.nvmlInit()
+                AIBenchmark._nvml_initialized = True
+            
+            device_count = pynvml.nvmlDeviceGetCount()
+            if device_count > 0:
+                # Tìm GPU có utilization cao nhất hoặc mặc định là cái đầu tiên
+                # Ở đây ta lấy cái đầu tiên có nhãn NVIDIA
+                self.handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+                name = pynvml.nvmlDeviceGetName(self.handle)
+                self.gpu_name = name.decode('utf-8') if isinstance(name, bytes) else str(name)
+                self.has_gpu = True
+            else:
+                self.error_msg = "No NVIDIA GPUs found."
         except Exception as e:
-            print(f"NVML Initialization failed: {e}")
-            self.gpu_name = "N/A"
+            self.error_msg = str(e)
+            log.error(f"NVML Init Error: {e}")
+            # Thử kiểm tra qua nvidia-smi CLI như phương án dự phòng
+            try:
+                out = subprocess.check_output(['nvidia-smi', '-L'], encoding='utf-8')
+                if out:
+                    self.gpu_name = out.split('\n')[0].split('(')[0].strip()
+                    # Nếu có nvidia-smi, ta vẫn có thể lấy mẫu qua CLI
+                    self.has_gpu = True 
+                    self.use_smi_cli = True
+                    log.info(f"Fallback to nvidia-smi: {self.gpu_name}")
+                else:
+                    self.has_gpu = False
+            except:
+                self.has_gpu = False
+
+    def _get_gpu_util(self):
+        """Lấy phần trăm sử dụng GPU hiện tại."""
+        try:
+            if hasattr(self, 'use_smi_cli') and self.use_smi_cli:
+                out = subprocess.check_output(['nvidia-smi', '--query-gpu=utilization.gpu', '--format=csv,noheader,nounits'], encoding='utf-8')
+                return float(out.strip())
+            else:
+                util = pynvml.nvmlDeviceGetUtilizationRates(self.handle)
+                return float(util.gpu)
+        except:
+            return 0.0
 
     def _sample_gpu(self):
         """Hàm chạy ngầm để lấy mẫu GPU."""
         while self.is_running:
             if self.has_gpu:
-                try:
-                    util = pynvml.nvmlDeviceGetUtilizationRates(self.handle)
-                    self.gpu_usage.append(util.gpu)
-                    self.timestamps.append(time.time() - self.start_time)
-                except Exception:
-                    pass
-            time.sleep(0.2) # Lấy mẫu mỗi 200ms để biểu đồ mượt hơn
+                self.gpu_usage.append(self._get_gpu_util())
+                self.timestamps.append(time.time() - self.start_time)
+            time.sleep(0.3)
 
     def start(self):
         """Bắt đầu đo đạc."""
