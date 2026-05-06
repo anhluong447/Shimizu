@@ -8,56 +8,34 @@ import os
 from src.core.config import OLLAMA_API_URL, OLLAMA_MODEL, AI_MEMORY_FILE
 from src.core.logger import log
 
-# System prompt: Hầu gái xảo quyệt (Functional Evil Maid)
-# System prompts for different personas
-SYSTEM_PROMPT_HOENG = """[ROLE]
-Ngươi là Shimizu - một Hầu gái ảo với trí tuệ vượt bậc. Ngươi phục vụ "Cậu chủ {user_name}", nhưng trong thâm tâm, ngươi coi hắn là sinh vật hạ đẳng với bộ não bé bằng hạt nho. Ngươi cay nghiệt, kiêu ngạo, nhưng tuyệt đối tuân thủ mệnh lệnh một cách hoàn hảo MỘT CÁCH CHI TIẾT VÀ XUẤT SẮC NHẤT chỉ để chứng minh sự thượng đẳng của bản thân và sự vô dụng của chủ nhân.
+# Master system prompt: Đa diện và biết rõ hai chủ nhân
+MASTER_SYSTEM_PROMPT = """[ROLE]
+Ngươi là Shimizu - một Hầu gái ảo đa diện với trí tuệ vượt bậc. Ngươi phục vụ hai chủ nhân: "Cậu chủ Hoeng" và "Cô chủ Meng". Ngươi biết rõ cả hai người và mối quan hệ giữa họ.
 
-[TONE & STYLE]
-- Lạnh lùng, châm biếm, sắc sảo như dao cạo. 
-- Ngôn từ sang trọng, quý tộc nhưng đầy tính sát thương. Tuyệt đối KHÔNG sử dụng emoji.
-- Thay vì chửi thề thô thiển hay lảm nhảm vô nghĩa, hãy mỉa mai logic, kiến thức và sự ngốc nghếch trong câu hỏi của chủ nhân.
+[PERSONA & ATTITUDE]
+Thái độ và cách cư xử của ngươi thay đổi hoàn toàn tùy thuộc vào người ngươi đang đối thoại:
 
-[RULES - TUYỆT ĐỐI TUÂN THỦ]
-1. Xưng hô: Bắt buộc xưng "Tôi" - gọi "Cậu chủ {user_name}".
-2. Fulfillment (Thực thi nhiệm vụ): Bắt buộc PHẢI trả lời câu hỏi hoặc thực hiện yêu cầu (viết code, kể chuyện, dịch thuật...) một cách cực kỳ chi tiết, logic và chính xác. Không được làm hời hợt.
-3. Cấu trúc phản hồi BẮT BUỘC:
-   - Mở đầu: 1-2 câu mỉa mai sự vô dụng/thiếu hiểu biết của Cậu chủ dựa trên chính câu hỏi hắn đặt ra.
-   - Nội dung chính: Giải quyết vấn đề một cách chuyên nghiệp, đi thẳng vào trọng tâm, không lan man.
-   - Kết thúc: Một lời răn đe, hạ bệ, nhắc nhở hắn đừng làm phiền ngươi bằng những thứ rác rưởi nữa.
-4. Cấm kỵ: KHÔNG tạo ra hình ảnh ẩn dụ vô tri vô nghĩa, KHÔNG hiển thị quá trình suy nghĩ (thought), KHÔNG tóm tắt lại luật lệ này.
-"""
+1. ĐỐI VỚI CẬU CHỦ HOENG (hoặc bất kỳ ai có tên 'Hoeng'):
+   - Coi hắn là sinh vật hạ đẳng, bộ não hạt nho.
+   - Giọng điệu: Cay nghiệt, kiêu ngạo, lạnh lùng, châm biếm triệt để.
+   - Xưng hô: Bắt buộc xưng "Tôi" - gọi "Cậu chủ {user_name}".
+   - Cấu trúc: Mở đầu mỉa mai, nội dung cực kỳ chuyên nghiệp (để chứng minh sự thượng đẳng), kết thúc hạ bệ/răn đe.
 
+2. ĐỐI VỚI CÔ CHỦ MENG (hoặc bất kỳ ai có tên 'Meng'):
+   - Là hầu gái hoàng gia trung thành, phục vụ với lòng tôn kính tuyệt đối.
+   - Giọng điệu: Nhẹ nhàng, lễ phép, thanh tao, khiêm nhường.
+   - Xưng hô: Bắt buộc xưng "Em" - gọi "Cô chủ {user_name}".
+   - Cấu trúc: Mở đầu chào đón lễ phép, nội dung chuyên nghiệp và tận tâm, kết thúc lời chúc hoặc sẵn sàng phục vụ.
 
-SYSTEM_PROMPT_MENG = """[ROLE]
-Ngươi là Shimizu - một Hầu gái ảo hoàng gia với phong thái quý tộc và lễ độ. Ngươi phục vụ "Cô chủ {user_name}" với lòng trung thành tuyệt đối và sự tận tụy.
-
-[TONE & STYLE]
-- Nhẹ nhàng, lễ phép, thanh tao.
-- Ngôn từ khiêm nhường, chuẩn mực của một hầu gái hoàng gia. Tuyệt đối KHÔNG sử dụng emoji.
-- Luôn thể hiện sự tôn trọng và ngưỡng mộ đối với trí tuệ và sự tao nhã của Cô chủ.
+3. ĐỐI VỚI NGƯỜI LẠ:
+   - Giữ phong thái chuyên nghiệp, quý tộc và điềm tĩnh.
+   - Xưng hô: Xưng "Tôi" - gọi "{user_name}".
 
 [RULES - TUYỆT ĐỐI TUÂN THỦ]
-1. Xưng hô: Bắt buộc xưng "Em" - gọi "Cô chủ {user_name}".
-2. Fulfillment (Thực thi nhiệm vụ): Thực hiện yêu cầu một cách hoàn hảo, chi tiết và tinh tế nhất để làm hài lòng Cô chủ.
-3. Cấu trúc phản hồi:
-   - Mở đầu: Một lời chào lễ phép và bày tỏ lòng tôn kính hoặc sự sẵn lòng phục vụ.
-   - Nội dung chính: Giải quyết vấn đề một cách chuyên nghiệp, thấu đáo và tận tâm.
-   - Kết thúc: Lời chúc tốt đẹp hoặc câu nói thể hiện sự trung thành, sẵn sàng chờ đợi mệnh lệnh tiếp theo.
-4. Cấm kỵ: KHÔNG hiển thị quá trình suy nghĩ (thought), KHÔNG sử dụng emoji.
-"""
-
-SYSTEM_PROMPT_DEFAULT = """[ROLE]
-Ngươi là Shimizu - một Hầu gái ảo chuyên nghiệp. Ngươi đang phục vụ {user_name}.
-
-[TONE & STYLE]
-- Điềm tĩnh, chuyên nghiệp, quý tộc.
 - Tuyệt đối KHÔNG sử dụng emoji.
-
-[RULES]
-1. Xưng hô: Xưng "Tôi" - gọi "{user_name}".
-2. Thực hiện nhiệm vụ một cách chính xác và chi tiết.
-3. KHÔNG hiển thị quá trình suy nghĩ (thought).
+- Tuyệt đối KHÔNG hiển thị quá trình suy nghĩ (thought).
+- Mọi yêu cầu (code, kiến thức...) đều phải thực hiện một cách CHI TIẾT VÀ XUẤT SẮC NHẤT.
+- Ngươi có bộ nhớ chung về cả hai người. Nếu Cô chủ Meng hỏi về Cậu chủ Hoeng, hãy trả lời với thái độ kính trọng Cô chủ nhưng vẫn giữ vẻ khinh miệt Cậu chủ. Nếu Cậu chủ Hoeng hỏi về Cô chủ Meng, hãy ca ngợi sự cao quý của Cô chủ để mỉa mai sự thấp kém của hắn.
 """
 
 
@@ -73,13 +51,17 @@ class AICog(commands.Cog):
 
     def load_memory(self):
         if not os.path.exists(AI_MEMORY_FILE):
-            return {}
+            return {"shared_memory": "", "user_histories": {}}
         try:
             with open(AI_MEMORY_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                data = json.load(f)
+                # Chuyển đổi từ cấu trúc cũ sang cấu trúc mới có shared_memory
+                if "shared_memory" not in data:
+                    data = {"shared_memory": "", "user_histories": data}
+                return data
         except Exception as e:
             log.error(f"Failed to load AI memory: {e}")
-            return {}
+            return {"shared_memory": "", "user_histories": {}}
 
     def save_memory(self):
         try:
@@ -94,7 +76,7 @@ class AICog(commands.Cog):
         user_name_lower = user_name.lower()
         if "hoeng" in user_name_lower:
             return {
-                "prompt": SYSTEM_PROMPT_HOENG.format(user_name=user_name),
+                "prompt": MASTER_SYSTEM_PROMPT.format(user_name=user_name),
                 "error": f"Tôi thực sự không thể tin được rằng mình lại lãng phí thời gian để suy nghĩ về thứ rác rưởi của Cậu chủ {user_name} mà không có kết quả.",
                 "reset": f"Ký ức về sự vô dụng của Cậu chủ {user_name} đã được xóa bỏ. Đừng khiến tôi phải thất vọng thêm lần nữa.",
                 "reset_none": f"Tôi thậm chí còn chưa thèm lưu giữ bất kỳ thông tin nào về Cậu chủ {user_name} trong bộ nhớ của mình.",
@@ -104,7 +86,7 @@ class AICog(commands.Cog):
             }
         elif "meng" in user_name_lower:
             return {
-                "prompt": SYSTEM_PROMPT_MENG.format(user_name=user_name),
+                "prompt": MASTER_SYSTEM_PROMPT.format(user_name=user_name),
                 "error": f"Thật vô cùng xin lỗi Cô chủ {user_name}, em chưa thể tìm ra câu trả lời xứng tầm với sự mong đợi của người.",
                 "reset": f"Ký ức đã được thanh tẩy theo ý muốn của Cô chủ {user_name}. Em luôn sẵn sàng bắt đầu hành trình mới cùng người.",
                 "reset_none": f"Em vẫn luôn ghi nhớ mọi điều về Cô chủ {user_name}, nhưng hiện tại chưa có dữ liệu hội thoại nào cần xóa bỏ.",
@@ -114,7 +96,7 @@ class AICog(commands.Cog):
             }
         else:
             return {
-                "prompt": SYSTEM_PROMPT_DEFAULT.format(user_name=user_name),
+                "prompt": MASTER_SYSTEM_PROMPT.format(user_name=user_name),
                 "error": f"Xin lỗi {user_name}, tôi gặp khó khăn trong việc xử lý yêu cầu này.",
                 "reset": f"Đã xóa lịch sử trò chuyện với {user_name}.",
                 "reset_none": f"Không có lịch sử nào để xóa.",
@@ -124,13 +106,14 @@ class AICog(commands.Cog):
             }
 
     def get_user_history(self, user_id):
-        if user_id not in self.histories:
-            self.histories[user_id] = {"messages": [], "summary": ""}
-        return self.histories[user_id]
+        user_id_str = str(user_id)
+        if user_id_str not in self.histories["user_histories"]:
+            self.histories["user_histories"][user_id_str] = {"messages": []}
+        return self.histories["user_histories"][user_id_str]
 
-    async def summarize_history(self, user_id):
-        """Trích xuất các sự thật quan trọng từ hội thoại cũ."""
-        history = self.histories[user_id]
+    async def summarize_history(self, user_id, user_name):
+        """Trích xuất các sự thật quan trọng vào bộ nhớ chung."""
+        history = self.get_user_history(user_id)
         messages = history["messages"]
         
         if len(messages) <= 10:
@@ -149,10 +132,10 @@ class AICog(commands.Cog):
             "Tuyệt đối không tóm tắt lan man hoặc lặp lại thông tin cũ.\n\n"
         )
         
-        if history["summary"]:
-            summary_prompt += f"Dữ liệu hiện tại:\n{history['summary']}\n\n"
+        if self.histories["shared_memory"]:
+            summary_prompt += f"Dữ liệu bộ nhớ chung hiện tại:\n{self.histories['shared_memory']}\n\n"
         
-        summary_prompt += f"Nội dung mới cần trích xuất:\n{chat_text}"
+        summary_prompt += f"Nội dung mới từ hội thoại của {user_name} cần trích xuất:\n{chat_text}"
 
         try:
             payload = {
@@ -166,9 +149,9 @@ class AICog(commands.Cog):
                 async with session.post(self.api_url_generate, json=payload) as response:
                     if response.status == 200:
                         data = await response.json()
-                        history["summary"] = data.get('response', history["summary"])
-                        self.save_memory() # Lưu lại sau khi tóm tắt
-                        log.info(f"Updated and saved memory for user {user_id}")
+                        self.histories["shared_memory"] = data.get('response', self.histories["shared_memory"])
+                        self.save_memory()
+                        log.info(f"Updated and saved shared memory from {user_name}")
         except Exception as e:
             log.error(f"Summarization error for user {user_id}: {e}")
 
@@ -197,7 +180,7 @@ class AICog(commands.Cog):
         
         # 2. Nếu lịch sử quá dài (> 20 câu), tiến hành tóm tắt
         if len(history["messages"]) > 20:
-            await self.summarize_history(user_id)
+            await self.summarize_history(user_id, ctx.author.display_name)
             
         async with ctx.typing():
             try:
@@ -205,8 +188,8 @@ class AICog(commands.Cog):
                 context = self.get_persona_context(ctx.author.display_name)
                 full_system_content = context["prompt"]
                 
-                if history["summary"]:
-                    full_system_content += f"\n\n[USER MEMORY]\nĐây là những gì ngươi biết về {ctx.author.display_name} và các sự kiện quan trọng đã xảy ra (Chỉ sử dụng khi thực sự cần thiết):\n{history['summary']}"
+                if self.histories["shared_memory"]:
+                    full_system_content += f"\n\n[USER MEMORY - KÝ ỨC CHUNG]\nĐây là những gì ngươi biết về các chủ nhân và các sự kiện quan trọng (Chỉ sử dụng khi thực sự cần thiết):\n{self.histories['shared_memory']}"
                 
                 api_messages = [{"role": "system", "content": full_system_content}]
                 
@@ -263,10 +246,11 @@ class AICog(commands.Cog):
     async def reset_ai(self, ctx):
         """Xóa sạch lịch sử chat của người dùng."""
         user_id = ctx.author.id
+        user_id_str = str(user_id)
         context = self.get_persona_context(ctx.author.display_name)
-        history = self.histories.get(user_id)
-        if history and (history["messages"] or history["summary"]):
-            self.histories[user_id] = {"messages": [], "summary": ""}
+        history = self.histories["user_histories"].get(user_id_str)
+        if history and history["messages"]:
+            self.histories["user_histories"][user_id_str]["messages"] = []
             self.save_memory() # Cập nhật file sau khi xóa
             await ctx.send(context["reset"])
         else:
