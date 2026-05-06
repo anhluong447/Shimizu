@@ -285,7 +285,7 @@ class AICog(commands.Cog):
                 }
                 
                 async with aiohttp.ClientSession(headers=headers) as session:
-                    async with session.post(self.api_url_chat, json=payload, timeout=90) as response:
+                    async with session.post(self.api_url_chat, json=payload, timeout=600) as response:
                         if response.status == 200:
                             data = await response.json()
                             raw_answer = data.get('message', {}).get('content', '')
@@ -339,7 +339,7 @@ class AICog(commands.Cog):
                                 
                                 log.info(f"Sending second request to Ollama (Isolated & Cleaned). Query: {search_query}")
                                 
-                                async with session.post(self.api_url_chat, json=payload, timeout=120) as second_response:
+                                async with session.post(self.api_url_chat, json=payload, timeout=600) as second_response:
                                     if second_response.status == 200:
                                         second_data = await second_response.json()
                                         raw_answer = second_data.get('message', {}).get('content', 'Không có câu trả lời.')
