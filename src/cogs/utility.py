@@ -51,16 +51,59 @@ class Utility(commands.Cog):
             log.warning("Could not find #off-topic channel for weather update.")
             return
 
-        weather_data = await WeatherService.get_weather()
-        
-        embed = discord.Embed(
-            title="🌤️ Bản tin thời tiết sáng sớm",
-            description=weather_data,
-            color=discord.Color.from_rgb(135, 206, 235),
-            timestamp=datetime.datetime.now(TIMEZONE)
-        )
-        embed.set_footer(text="Chúc bạn một ngày tốt lành! 🌸")
+        w = await WeatherService.get_weather("Hanoi")
+        if not w:
+            log.error("Failed to fetch weather for automated update.")
+            return
+
+        embed = self._create_weather_embed(w)
+        embed.title = "🌤️ Bản tin thời tiết sáng sớm"
         await channel.send(embed=embed)
+
+    def _create_weather_embed(self, w):
+        """Helper để tạo embed thời tiết đẹp mắt."""
+        embed = discord.Embed(
+            title=f"🌤️ Báo Cáo Thời Tiết: {w['city']}",
+            color=discord.Color.from_str('#A0C4FF') # Pastel Blue
+        )
+        
+        embed.set_author(name="Trung tâm Khí tượng Shimizu", icon_url=self.bot.user.display_avatar.url)
+        
+        # 1. Current Condition (Blockquote)
+        current_text = (
+            f"🌡️ **Nhiệt độ:** {w['current']['temp']}°C *(Cảm giác: {w['current']['feels_like']}°C)*\n"
+            f"💧 **Độ ẩm:** {w['current']['humidity']}%\n"
+            f"☁️ **Trạng thái:** {w['current']['desc']}"
+        )
+        embed.add_field(name="📍 TÌNH TRẠNG HIỆN TẠI", value=f">>> {current_text}", inline=False)
+
+        # 2. Hourly Grid (Aligned labels + Blockquote)
+        f = w['forecast']
+        hourly_text = (
+            f"`🌅 Sáng ` **{f['morning']['temp']}°C** ⏤ *{f['morning']['desc']}*\n"
+            f"`☀️ Trưa ` **{f['noon']['temp']}°C** ⏤ *{f['noon']['desc']}*\n"
+            f"`🌆 Chiều` **{f['evening']['temp']}°C** ⏤ *{f['evening']['desc']}*\n"
+            f"`🌙 Tối  ` **{f['night']['temp']}°C** ⏤ *{f['night']['desc']}*"
+        )
+        embed.add_field(name="🕒 DIỄN BIẾN HÔM NAY", value=f">>> {hourly_text}", inline=False)
+
+        # 3. Tomorrow (Blockquote)
+        t = w['tomorrow']
+        tmr_text = (
+            f"🌡️ **Nhiệt độ:** {t['min']}°C ➖ {t['max']}°C\n"
+            f"☁️ **Trạng thái:** {t['desc']}"
+        )
+        
+        # Format date: 2026-05-05 -> 05/05/2026
+        date_parts = t['date'].split('-')
+        fmt_date = f"{date_parts[2]}/{date_parts[1]}/{date_parts[0]}" if len(date_parts) == 3 else t['date']
+        
+        embed.add_field(name=f"📅 DỰ BÁO NGÀY MAI ({fmt_date})", value=f">>> {tmr_text}", inline=False)
+
+        # Footer
+        embed.set_footer(text="Dữ liệu thời gian thực từ wttr.in", icon_url="https://cdn-icons-png.flaticon.com/512/3222/3222801.png")
+        embed.timestamp = datetime.datetime.now(TIMEZONE)
+        return embed
 
     @tasks.loop(minutes=1)
     async def check_notifications(self):
@@ -143,48 +186,7 @@ class Utility(commands.Cog):
             if not w:
                 return await ctx.send("☔ Không thể lấy dữ liệu thời tiết lúc này.")
 
-            embed = discord.Embed(
-                title=f"🌤️ Báo Cáo Thời Tiết: {w['city']}",
-                color=discord.Color.from_str('#A0C4FF') # Pastel Blue
-            )
-            
-            embed.set_author(name="Trung tâm Khí tượng Shimizu", icon_url=self.bot.user.display_avatar.url)
-            
-            # 1. Current Condition (Blockquote)
-            current_text = (
-                f"🌡️ **Nhiệt độ:** {w['current']['temp']}°C *(Cảm giác: {w['current']['feels_like']}°C)*\n"
-                f"💧 **Độ ẩm:** {w['current']['humidity']}%\n"
-                f"☁️ **Trạng thái:** {w['current']['desc']}"
-            )
-            embed.add_field(name="📍 TÌNH TRẠNG HIỆN TẠI", value=f">>> {current_text}", inline=False)
-
-            # 2. Hourly Grid (Aligned labels + Blockquote)
-            f = w['forecast']
-            hourly_text = (
-                f"`🌅 Sáng ` **{f['morning']['temp']}°C** ⏤ *{f['morning']['desc']}*\n"
-                f"`☀️ Trưa ` **{f['noon']['temp']}°C** ⏤ *{f['noon']['desc']}*\n"
-                f"`🌆 Chiều` **{f['evening']['temp']}°C** ⏤ *{f['evening']['desc']}*\n"
-                f"`🌙 Tối  ` **{f['night']['temp']}°C** ⏤ *{f['night']['desc']}*"
-            )
-            embed.add_field(name="🕒 DIỄN BIẾN HÔM NAY", value=f">>> {hourly_text}", inline=False)
-
-            # 3. Tomorrow (Blockquote)
-            t = w['tomorrow']
-            tmr_text = (
-                f"🌡️ **Nhiệt độ:** {t['min']}°C ➖ {t['max']}°C\n"
-                f"☁️ **Trạng thái:** {t['desc']}"
-            )
-            
-            # Format date: 2026-05-05 -> 05/05/2026
-            date_parts = t['date'].split('-')
-            fmt_date = f"{date_parts[2]}/{date_parts[1]}/{date_parts[0]}" if len(date_parts) == 3 else t['date']
-            
-            embed.add_field(name=f"📅 DỰ BÁO NGÀY MAI ({fmt_date})", value=f">>> {tmr_text}", inline=False)
-
-            # Footer
-            embed.set_footer(text="Dữ liệu thời gian thực từ wttr.in", icon_url="https://cdn-icons-png.flaticon.com/512/3222/3222801.png")
-            embed.timestamp = datetime.datetime.now()
-            
+            embed = self._create_weather_embed(w)
             await ctx.send(embed=embed)
 
 async def setup(bot):
