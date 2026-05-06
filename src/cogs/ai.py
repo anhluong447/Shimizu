@@ -54,11 +54,14 @@ class AICog(commands.Cog):
         self.histories = self.load_memory()
         self.save_memory() # Đảm bảo file tồn tại ngay khi khởi tạo
 
-    async def search_web(self, query: str, max_results: int = 5):
+    async def search_web(self, query: str, max_results: int = 10):
         """Tìm kiếm thông tin trên DuckDuckGo (Non-blocking)."""
         def sync_search():
             with DDGS() as ddgs:
-                return list(ddgs.text(query, max_results=max_results))
+                # Tìm kiếm cả tiếng Việt và tiếng Anh để có dữ liệu phong phú nhất
+                results_vn = list(ddgs.text(query, max_results=max_results))
+                results_en = list(ddgs.text(f"{query} wiki english", max_results=max_results))
+                return results_vn + results_en
 
         try:
             results = await asyncio.to_thread(sync_search)
@@ -283,10 +286,10 @@ class AICog(commands.Cog):
                                     f"{search_results}\n"
                                     f"----------------------------------------\n"
                                     f"[CHỈ THỊ QUAN TRỌNG]\n"
-                                    f"1. BỎ QUA hoàn toàn các kiến thức cũ trong lịch sử trò chuyện nếu chúng không khớp với dữ liệu trên.\n"
-                                    f"2. Ngươi PHẢI trích dẫn thông tin CHÍNH XÁC từ dữ liệu này. Tuyệt đối không được gán danh hiệu hoặc thông tin của nhân vật này cho nhân vật khác.\n"
-                                    f"3. Vẫn giữ Persona (kiêu ngạo/lễ phép), nhưng sự thật phải là số 1.\n"
-                                    f"4. Nếu dữ liệu không nhắc tới một chi tiết nào đó, đừng tự bịa ra."
+                                    f"1. CHỈ ĐƯỢC dùng thông tin có trong dữ liệu trên. Nếu dữ liệu thiếu (ví dụ không nói về tính cách), hãy nói thẳng là 'Dữ liệu không đề cập'.\n"
+                                    f"2. KHÔNG ĐƯỢC bịa đặt để đáp ứng yêu cầu về độ dài (ví dụ: yêu cầu 500 từ nhưng dữ liệu chỉ có 50 từ thì chỉ viết 50 từ).\n"
+                                    f"3. BỎ QUA hoàn toàn kiến thức cũ. Nếu dữ liệu nói A, ngươi không được nói B.\n"
+                                    f"4. Thà trả lời ngắn mà đúng, còn hơn dài mà sai. Sự thật là danh dự của ngươi."
                                 )
                                 
                                 # --- CHIẾN THUẬT TẨY NÃO (Brainwash Isolation) ---
