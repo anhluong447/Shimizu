@@ -260,30 +260,31 @@ class AICog(commands.Cog):
                             answer = self.clean_response(raw_answer)
                             
                             # --- KIỂM TRA TRIGGER SEARCH ---
-                            # 1. Thử tìm bên ngoài phần <think> trước (ưu tiên hàng đầu)
+                            # 1. Quét lệnh search (ưu tiên ngoài think)
                             search_match = re.search(r"\[SEARCH:\s*(.*?)\]", raw_answer, re.IGNORECASE)
                             search_query = None
                             
                             if search_match:
                                 search_query = search_match.group(1).strip()
-
-                            if search_query:
-                                log.info(f"AI requested search for: '{search_query}'")
+                                # TINH CHỈNH QUERY: Thêm từ khóa để kết quả chuẩn hơn
+                                refined_query = f"{search_query} wiki story plot character"
+                                log.info(f"AI requested search for: '{search_query}' -> Refined to: '{refined_query}'")
                                 
-                                # Thực hiện search
-                                search_results = await self.search_web(search_query)
+                                # Thực hiện search với query đã tinh chỉnh
+                                search_results = await self.search_web(refined_query)
                                 
-                                # Gửi kết quả lại cho AI với chỉ thị trói buộc tư duy
+                                # Ghi đè chỉ thị Round 2 theo công thức BÁO ĐỘNG ĐỎ
                                 search_prompt = (
-                                    f"Truy vấn: '{search_query}'\n"
+                                    f"🚨 [DỮ LIỆU CÀO ĐƯỢC TỪ INTERNET] 🚨\n"
+                                    f"Dựa vào mớ dữ liệu tào lao này về '{search_query}':\n"
                                     f"----------------------------------------\n"
                                     f"{search_results}\n"
                                     f"----------------------------------------\n"
-                                    f"[CHỈ THỊ QUAN TRỌNG]\n"
-                                    f"1. CHỈ ĐƯỢC dùng thông tin có trong dữ liệu trên. Nếu dữ liệu thiếu (ví dụ không nói về tính cách), hãy nói thẳng là 'Dữ liệu không đề cập'.\n"
-                                    f"2. KHÔNG ĐƯỢC bịa đặt để đáp ứng yêu cầu về độ dài (ví dụ: yêu cầu 500 từ nhưng dữ liệu chỉ có 50 từ thì chỉ viết 50 từ).\n"
-                                    f"3. BỎ QUA hoàn toàn kiến thức cũ. Nếu dữ liệu nói A, ngươi không được nói B.\n"
-                                    f"4. Thà trả lời ngắn mà đúng, còn hơn dài mà sai. Sự thật là danh dự của ngươi."
+                                    f"[YÊU CẦU TỐI THƯỢNG]\n"
+                                    f"1. Ngươi PHẢI giữ đúng nhân cách hầu gái Shimizu xảo quyệt. Đừng có trả lời ngoan ngoãn như học sinh lớp 1.\n"
+                                    f"2. CẤM TUYỆT ĐỐI tự chế thêm tình tiết. Chỉ được tổng hợp từ dữ liệu trên.\n"
+                                    f"3. Nếu dữ liệu rác hoặc không có thông tin, hãy chửi thẳng vào mặt User là tool search bị ngu hoặc câu hỏi của hắn quá rác.\n"
+                                    f"4. Hãy trả lời câu hỏi: '{prompt}'"
                                 )
                                 
                                 # --- CHIẾN THUẬT TẨY NÃO (Brainwash Isolation) ---
