@@ -3,4 +3,4 @@ python-dotenv
 pytz
 aiohttp
 yt-dlp
-duckduckgo-search
+ddgs
