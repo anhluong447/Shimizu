@@ -77,8 +77,10 @@ class AICog(commands.Cog):
                 snippet = r['body'][:500] + "..." if len(r['body']) > 500 else r['body']
                 formatted_results.append(f"{i}. {r['title']}\nLink: {r['href']}\nSnippet: {snippet}")
             
+            results_text = "\n\n".join(formatted_results)
             log.info(f"Search successful for '{query}': Found {len(results)} results.")
-            return "\n\n".join(formatted_results)
+            log.debug(f"SEARCH RESULTS CONTENT:\n{results_text}")
+            return results_text
         except Exception as e:
             log.error(f"Search error: {e}")
             return f"Lỗi khi tìm kiếm: {e}"
@@ -249,6 +251,7 @@ class AICog(commands.Cog):
                         if response.status == 200:
                             data = await response.json()
                             raw_answer = data.get('message', {}).get('content', '')
+                            log.debug(f"AI RAW RESPONSE (Round 1):\n{raw_answer}")
                             answer = self.clean_response(raw_answer)
 
                             # --- KIỂM TRA TRIGGER SEARCH ---
@@ -287,6 +290,7 @@ class AICog(commands.Cog):
                                     if second_response.status == 200:
                                         second_data = await second_response.json()
                                         raw_answer = second_data.get('message', {}).get('content', 'Không có câu trả lời.')
+                                        log.debug(f"AI RAW RESPONSE (Round 2):\n{raw_answer}")
                                         answer = self.clean_response(raw_answer)
                                         log.info("AI successfully processed search results.")
                                     else:

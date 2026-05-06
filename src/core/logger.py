@@ -5,7 +5,7 @@ from logging.handlers import RotatingFileHandler
 
 def setup_logger(name="Shimizu"):
     logger = logging.getLogger(name)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     # Format
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
