@@ -69,8 +69,8 @@ class AICog(commands.Cog):
             
             formatted_results = []
             for i, r in enumerate(results, 1):
-                # Giới hạn snippet để tránh quá tải context
-                snippet = r['body'][:500] + "..." if len(r['body']) > 500 else r['body']
+                # Tăng giới hạn snippet để AI có nhiều dữ liệu hơn
+                snippet = r['body'][:800] + "..." if len(r['body']) > 800 else r['body']
                 formatted_results.append(f"{i}. {r['title']}\nLink: {r['href']}\nSnippet: {snippet}")
             
             results_text = "\n\n".join(formatted_results)
@@ -272,26 +272,25 @@ class AICog(commands.Cog):
                                 # Thực hiện search
                                 search_results = await self.search_web(search_query)
                                 
-                                # Gửi kết quả lại cho AI với chỉ thị nghiêm ngặt
+                                # Gửi kết quả lại cho AI với chỉ thị cực kỳ nghiêm ngặt
                                 search_prompt = (
-                                    f"⚠️ [DỮ LIỆU THỰC TẾ TỪ INTERNET CHO TRUY VẤN: '{search_query}'] ⚠️\n"
+                                    f"🚨 [DỮ LIỆU THỰC TẾ TỪ INTERNET - ƯU TIÊN TỐI CAO] 🚨\n"
+                                    f"Truy vấn: '{search_query}'\n"
                                     f"----------------------------------------\n"
                                     f"{search_results}\n"
                                     f"----------------------------------------\n"
-                                    f"[YÊU CẦU BẮT BUỘC]\n"
-                                    f"1. Ngươi PHẢI sử dụng dữ liệu trên để trả lời. Nếu dữ liệu nói A, ngươi không được nói B.\n"
-                                    f"2. Giữ nguyên Persona: Vẫn mỉa mai, kiêu ngạo (nếu là Hoeng) hoặc lễ phép (nếu là Meng), nhưng tuyệt đối không được sai sự thật.\n"
-                                    f"3. Nếu dữ liệu không có thông tin, hãy mỉa mai sự vô tri của Cậu chủ/Cô chủ khi hỏi những thứ không tồn tại.\n"
-                                    f"4. Trả lời ngắn gọn, súc tích, đi thẳng vào vấn đề."
+                                    f"[CHỈ THỊ QUAN TRỌNG]\n"
+                                    f"1. BỎ QUA hoàn toàn các kiến thức cũ trong lịch sử trò chuyện nếu chúng không khớp với dữ liệu trên.\n"
+                                    f"2. Ngươi PHẢI trích dẫn thông tin CHÍNH XÁC từ dữ liệu này. Tuyệt đối không được gán danh hiệu hoặc thông tin của nhân vật này cho nhân vật khác.\n"
+                                    f"3. Vẫn giữ Persona (kiêu ngạo/lễ phép), nhưng sự thật phải là số 1.\n"
+                                    f"4. Nếu dữ liệu không nhắc tới một chi tiết nào đó, đừng tự bịa ra."
                                 )
                                 
-                                # Xóa bớt các tin nhắn cũ nếu cần để tập trung vào dữ liệu mới
-                                # Ở đây ta giữ nguyên nhưng gắn thêm chỉ thị mạnh
                                 api_messages.append({"role": "assistant", "content": raw_answer})
                                 api_messages.append({"role": "user", "content": search_prompt})
                                 
                                 payload["messages"] = api_messages
-                                payload["options"]["temperature"] = 0.4 # Giảm nhiệt độ để AI bớt "sáng tạo" lung tung
+                                payload["options"]["temperature"] = 0.2 # Giảm tối đa sự sáng tạo để tăng độ chính xác
                                 
                                 log.info(f"Sending second request to Ollama. Query: {search_query}")
                                 
