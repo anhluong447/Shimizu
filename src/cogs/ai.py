@@ -286,11 +286,18 @@ class AICog(commands.Cog):
                                     f"4. Nếu dữ liệu không nhắc tới một chi tiết nào đó, đừng tự bịa ra."
                                 )
                                 
-                                api_messages.append({"role": "assistant", "content": raw_answer})
-                                api_messages.append({"role": "user", "content": search_prompt})
+                                # --- CHIẾN THUẬT CÁCH LY NGỮ CẢNH (Context Isolation) ---
+                                # Để tránh AI bị "nhiễm độc" bởi các ảo giác ở tin nhắn cũ trong lịch sử,
+                                # ta chỉ gửi System Prompt + Câu hỏi hiện tại + Kết quả Search.
+                                isolated_messages = [
+                                    {"role": "system", "content": full_system_content},
+                                    history["messages"][-1], # Câu hỏi hiện tại của User
+                                    {"role": "assistant", "content": raw_answer}, # Lệnh [SEARCH: ...]
+                                    {"role": "user", "content": search_prompt} # Kết quả Search
+                                ]
                                 
-                                payload["messages"] = api_messages
-                                payload["options"]["temperature"] = 0.2 # Giảm tối đa sự sáng tạo để tăng độ chính xác
+                                payload["messages"] = isolated_messages
+                                payload["options"]["temperature"] = 0.1 # Giảm xuống mức cực thấp để đảm bảo độ chính xác tuyệt đối
                                 
                                 log.info(f"Sending second request to Ollama. Query: {search_query}")
                                 
