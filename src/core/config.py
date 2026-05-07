@@ -20,6 +20,10 @@ OLLAMA_MODEL = os.getenv('OLLAMA_MODEL', 'shimizu-qwen')
 _gemini_keys_str = os.getenv('GEMINI_API_KEYS', '')
 GEMINI_API_KEYS = [k.strip() for k in _gemini_keys_str.split(',')] if _gemini_keys_str else []
 
+# --- Groq Config ---
+_groq_keys_str = os.getenv('GROQ_API_KEYS', '')
+GROQ_API_KEYS = [k.strip() for k in _groq_keys_str.split(',')] if _groq_keys_str else []
+
 # --- Paths ---
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA_DIR = os.path.join(BASE_DIR, 'data')
@@ -32,6 +36,8 @@ MENG_ENC_FILE = os.path.join(DATA_DIR, 'meng.ann')
 AI_MEMORY_FILE = os.path.join(DATA_DIR, 'ai_memory.json')
 RPG_DATA_FILE = os.path.join(DATA_DIR, 'rpg_data.json')
 GEMINI_ROTATION_LOG = os.path.join(LOGS_DIR, 'gemini_rotation.log')
+GROQ_ROTATION_LOG = os.path.join(LOGS_DIR, 'groq_rotation.log')
+GROQ_TEST_LOG = os.path.join(LOGS_DIR, 'groq_test.log')
 
 # --- Music Config ---
 if platform.system() == 'Windows':
