@@ -12,7 +12,7 @@ class Secret(commands.Cog):
 
     @commands.hybrid_command(name='meng', description="What's this about? Hmmm...?")
     async def meng(self, ctx):
-        """Lệnh bí mật cho Meng và Hoeng"""
+        """Lệnh bài cấp cao nhất"""
         # Kiểm tra quyền truy cập
         if ctx.author.name.lower() not in ['hoeng', 'meng']:
             await ctx.send("❌ Bạn không có quyền sử dụng lệnh này.")
