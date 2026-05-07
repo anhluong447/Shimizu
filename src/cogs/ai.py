@@ -299,7 +299,7 @@ class AICog(commands.Cog):
             
             response_text = await rotator.generate_content_async(
                 messages=[{"role": "user", "content": summary_prompt}],
-                temperature=0.3
+                temperature=0.2
             )
             
             self.histories["shared_memory"] = response_text

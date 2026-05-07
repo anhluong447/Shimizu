@@ -18,10 +18,12 @@
 Shimizu isn't just a music bot—she's a highly intelligent virtual maid. She combines high-fidelity audio with a sophisticated AI brain capable of internet-grounded reasoning, memory retention, and performance monitoring.
 
 ### 🤖 Advanced AI Intelligence
-- **Grounded Reasoning** — Integrates with Ollama (Qwen/Llama) and DuckDuckGo to provide factual, real-time answers.
-- **Deep Web Search** — Uses **Jina Reader API** to scrape and understand full article contents, not just snippets.
-- **Multilingual Search** — Automatically translates queries to English for superior information gathering.
-- **Persona Memory** — Maintains distinct personalities for different users and remembers past interactions/preferences.
+- **Hybrid AI Infrastructure** — High-performance multi-provider rotation system using **Groq** (primary) and **Gemini** (fallback).
+- **Multi-Key Rotation** — Automatically cycles through multiple API keys and models (Llama 3.3, Qwen 3, Gemini 1.5/2.0) to maximize free-tier quotas.
+- **Grounded Reasoning** — Integrates with DuckDuckGo and Jina Reader to provide factual, real-time answers for events beyond model training data.
+- **Deep Web Search v2** — Enhanced multi-stage search with HTML backends and character-level scraping limits for deep context understanding.
+- **Multilingual Intelligence** — Automatically handles cross-lingual queries (VN/EN) for superior information gathering.
+- **Persona Memory** — Maintains distinct personalities for different users with shared memory summarization.
 - **Performance Benchmarking** — Real-time GPU/CPU monitoring during AI generation with beautiful visual charts.
 
 ### 🎵 High-Fidelity Music
@@ -65,7 +67,7 @@ Shimizu isn't just a music bot—she's a highly intelligent virtual maid. She co
 | `!ask` | Ask Shimizu anything (Includes web search & memory). |
 | `!bench` | Toggle performance benchmarking (GPU/Time charts). |
 | `!bench_debug` | Debug GPU detection and NVML status. |
-| `!ai_status` | Check connection to the local Ollama server. |
+| `!ai_status` | Check status of the Groq & Gemini rotation systems. |
 | `!reset_ai` | Clear your current conversation history. |
 
 ### 📋 Management & Utility
@@ -133,12 +135,12 @@ Shimizu/
 │   │   ├── presence.py  # Bot status management
 │   │   └── tarot.py     # Mystical Tarot system
 │   ├── core/            # Configuration and logging
-│   ├── services/        # External API integrations (Weather, etc.)
+│   ├── services/        # External API integrations (Groq, Gemini, Unified Rotator)
 │   └── utils/           # Shared helper functions
-├── data/                # Persistent storage (JSON, TXT)
+├── data/                # Persistent storage (JSON, TXT, Logs)
 ├── main.py              # Application entry point
 ├── .env                 # Environment variables
-└── requirements.txt     # Python dependencies
+├── requirements.txt     # Python dependencies
 ```
 
 ---

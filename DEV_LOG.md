@@ -184,3 +184,23 @@ Nâng cấp khả năng "nghĩ sâu" của AI và bổ sung công cụ đo đạ
 
 **Kết quả:** Shimizu giờ đây không chỉ là một bot nhạc mà còn là một trợ lý AI "có kiến thức, có chiều sâu" và cực kỳ minh bạch về hiệu năng phần cứng. 🌸🤖📈
 
+## 🌀 Giai đoạn 13: Kỷ Nguyên AI Hybrid & Hệ Thống Xoay Vòng API
+Chuyển mình mạnh mẽ sang mô hình Hybrid AI, kết hợp sức mạnh của nhiều nhà cung cấp đám mây để đạt hiệu suất và độ ổn định cao nhất.
+
+- **Hệ thống Groq Rotator (Primary AI):**
+    - Tích hợp **Groq API** với tốc độ sinh token cực nhanh (gần như tức thì).
+    - Triển khai cơ chế **Xoay vòng đa Model & đa Key**: Tự động chuyển đổi giữa 8 model hàng đầu (Llama 3.3-70B, Qwen 3, GPT-OSS...) và luân phiên các API Key khi gặp giới hạn (Rate Limit).
+    - Loại bỏ các model kém chất lượng hoặc không phù hợp để đảm bảo persona luôn nhất quán.
+- **Cơ chế Fallback Gemini (Secondary AI):**
+    - Xây dựng **Unified Rotator**: Hệ thống ưu tiên gọi Groq trước, nếu Groq cạn kiệt tài nguyên sẽ tự động "nhảy" sang **Gemini 1.5/2.0** làm dự phòng.
+    - Đảm bảo bot luôn phản hồi 24/7 bất kể sự cố từ nhà cung cấp đơn lẻ.
+- **Hardening Công cụ Tìm kiếm (Search v3):**
+    - **HTML Backend Fallback**: Bổ sung cơ chế cào dữ liệu từ bản DuckDuckGo HTML nếu bản API bị chặn, giúp bot "lì lợm" hơn trước các rào cản IP.
+    - **Rút gọn đa tầng (Tiered Fallback)**: Tự động rút gọn câu lệnh tìm kiếm từ 10 từ -> 5 từ -> 3 từ để đảm bảo luôn tìm thấy kết quả ngay cả với những câu hỏi phức tạp.
+    - **Tối ưu hóa Token**: Cân bằng lại dung lượng dữ liệu cào (từ 6000 xuống 3500 ký tự) để giảm thiểu chi phí token mà vẫn giữ được độ sâu thông tin.
+- **Tinh chỉnh Persona & Search Logic:**
+    - Loại bỏ từ khóa gây nhiễu "background" (vốn khiến search engine trả về hình nền) và thay bằng các từ khóa chuyên sâu như `biography`, `wiki`, `backstory`.
+    - Nâng cấp lệnh `!ai_status`: Hiển thị chi tiết trạng thái, Model và Key hiện tại của cả hai hệ thống Groq và Gemini.
+
+**Kết quả:** Shimizu hiện sở hữu một hạ tầng AI "bất tử" và thông minh vượt trội, có khả năng xử lý thông tin thực tế với độ chính xác cao và tốc độ phản hồi tính bằng miligiây. 🌀🤖🚀
+
