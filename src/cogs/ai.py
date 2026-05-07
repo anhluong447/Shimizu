@@ -113,16 +113,25 @@ class AICog(commands.Cog):
                 with DDGS() as ddgs:
                     # 1. Thử tìm kiếm với query gốc (Backend API)
                     try:
-                        res_vn = list(ddgs.text(clean_query, region='wt-wt', safesearch='off', max_results=max_results))
+                        # Dùng region 'v-vn' để tìm kiếm tiếng Việt chuẩn
+                        res_vn = list(ddgs.text(clean_query, region='v-vn', safesearch='off', max_results=max_results))
                         results.extend(res_vn)
                     except Exception as e:
-                        log.warning(f"DDGS API Search failed: {e}")
+                        log.warning(f"DDGS API Search (VN) failed: {e}")
                     
-                    # 2. Nếu hẹo, thử Backend HTML (Chậm hơn nhưng trâu bò hơn)
+                    # 2. Nếu hẹo, thử tìm kiếm quốc tế (US)
+                    if not results:
+                        try:
+                            res_en = list(ddgs.text(clean_query, region='us-en', safesearch='off', max_results=max_results))
+                            results.extend(res_en)
+                        except Exception as e:
+                            log.warning(f"DDGS API Search (EN) failed: {e}")
+
+                    # 3. Backend HTML dự phòng (Dùng region us-en cho ổn định)
                     if not results:
                         try:
                             log.info(f"Trying HTML backend for: {clean_query}")
-                            res_html = list(ddgs.text(clean_query, region='wt-wt', safesearch='off', backend='html', max_results=max_results))
+                            res_html = list(ddgs.text(clean_query, region='us-en', safesearch='off', backend='html', max_results=max_results))
                             results.extend(res_html)
                         except Exception as e:
                             log.warning(f"DDGS HTML Search failed: {e}")
@@ -132,15 +141,15 @@ class AICog(commands.Cog):
                         simplified = " ".join(clean_query.split()[:5])
                         log.info(f"Fallback 1 (Simplified): {simplified}")
                         try:
-                            results.extend(list(ddgs.text(simplified, region='wt-wt', safesearch='off', max_results=max_results)))
+                            results.extend(list(ddgs.text(simplified, region='v-vn', safesearch='off', max_results=max_results)))
                         except Exception: pass
                     
-                    # 4. Fallback 2: Rút gọn cực hạn xuống 3 từ đầu
+                    # 5. Fallback 2: Rút gọn cực hạn xuống 3 từ đầu
                     if not results:
                         core_terms = " ".join(clean_query.split()[:3])
                         log.info(f"Fallback 2 (Core): {core_terms}")
                         try:
-                            results.extend(list(ddgs.text(core_terms, region='wt-wt', safesearch='off', max_results=max_results)))
+                            results.extend(list(ddgs.text(core_terms, region='v-vn', safesearch='off', max_results=max_results)))
                         except Exception: pass
             except Exception as e:
                 log.error(f"DDGS critical error: {e}")
