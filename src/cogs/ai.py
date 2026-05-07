@@ -103,10 +103,35 @@ class AICog(commands.Cog):
     async def search_web(self, query: str, max_results: int = 10):
         """Tìm kiếm thông tin trên DuckDuckGo và đọc nội dung chi tiết."""
         def sync_search():
-            with DDGS() as ddgs:
-                results_vn = list(ddgs.text(query, max_results=max_results))
-                results_en = list(ddgs.text(f"{query} english", max_results=max_results))
-                return results_vn + results_en
+            results = []
+            try:
+                with DDGS() as ddgs:
+                    # 1. Thử tìm kiếm chính xác với tiếng Việt
+                    try:
+                        res_vn = list(ddgs.text(query, region='wt-wt', safesearch='off', max_results=max_results))
+                        results.extend(res_vn)
+                    except Exception as e:
+                        log.warning(f"VN search failed: {e}")
+                    
+                    # 2. Thử tìm kiếm với tiếng Anh nếu cần thêm thông tin
+                    try:
+                        res_en = list(ddgs.text(f"{query} news english", region='wt-wt', safesearch='off', max_results=max_results))
+                        results.extend(res_en)
+                    except Exception as e:
+                        log.warning(f"EN search failed: {e}")
+
+                    # 3. Nếu vẫn không có kết quả, thử rút gọn query (lấy 5 từ đầu)
+                    if not results:
+                        simplified = " ".join(query.split()[:5])
+                        log.info(f"Trying simplified search: {simplified}")
+                        try:
+                            res_simple = list(ddgs.text(simplified, region='wt-wt', safesearch='off', max_results=max_results))
+                            results.extend(res_simple)
+                        except Exception as e:
+                            log.warning(f"Simplified search failed: {e}")
+            except Exception as e:
+                log.error(f"DDGS critical error: {e}")
+            return results
 
         try:
             results = await asyncio.to_thread(sync_search)
