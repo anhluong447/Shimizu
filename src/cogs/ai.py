@@ -94,8 +94,8 @@ class AICog(commands.Cog):
                         data = await response.json()
                         text = data.get("data", {}).get("content", "")
                         if text:
-                            # Tăng giới hạn nội dung lấy về (~6000 ký tự) để AI có nhiều dữ liệu hơn
-                            return text[:6000] + "\n...[Nội dung đã được cắt bớt]..."
+                            # Giới hạn nội dung lấy về (~3500 ký tự) để cân bằng giữa thông tin và token
+                            return text[:3500] + "\n...[Nội dung đã được cắt bớt]..."
         except Exception as e:
             log.error(f"Lỗi khi đọc nội dung từ {url}: {e}")
         return ""
@@ -139,12 +139,12 @@ class AICog(commands.Cog):
                 return "Không tìm thấy kết quả nào."
             
             results_text = ""
-            # Lấy 7 kết quả để tăng độ phủ thông tin
-            final_results = results[:7]
+            # Lấy 5 kết quả để tiết kiệm token
+            final_results = results[:5]
             
-            # Cào dữ liệu chi tiết cho 3 kết quả đầu tiên (tăng từ 2 lên 3)
+            # Cào dữ liệu chi tiết cho 2 kết quả đầu tiên
             tasks = []
-            for r in final_results[:3]:
+            for r in final_results[:2]:
                 url = r.get('href')
                 if url:
                     tasks.append(self.fetch_page_content(url))
@@ -158,8 +158,8 @@ class AICog(commands.Cog):
                 url = r.get('href', 'Không có link')
                 snippet = r.get('body', '')
                 
-                # Sử dụng nội dung chi tiết cho 3 top kết quả nếu cào thành công
-                if i <= 3 and isinstance(detailed_contents[i-1], str) and detailed_contents[i-1].strip():
+                # Sử dụng nội dung chi tiết cho 2 top kết quả nếu cào thành công
+                if i <= 2 and isinstance(detailed_contents[i-1], str) and detailed_contents[i-1].strip():
                     results_text += f"[{i}] {title}\nNguồn: {url}\nNội dung chi tiết:\n{detailed_contents[i-1]}\n\n"
                 else:
                     # Làm sạch snippet cho các kết quả còn lại
