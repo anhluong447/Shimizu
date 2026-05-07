@@ -11,12 +11,23 @@ class General(commands.Cog):
     async def ping(self, ctx):
         """Kiểm tra độ trễ của bot"""
         latency = round(self.bot.latency * 1000)
-        await ctx.send(f'🏓 Pong! Latency: {latency}ms')
+        ai_cog = self.bot.get_cog('AICog')
+        if ai_cog:
+            context = ai_cog.get_persona_context(ctx.author.display_name)
+            message = context["ping"](latency)
+            await ctx.send(message)
+        else:
+            await ctx.send(f'🏓 Pong! Latency: {latency}ms')
 
     @commands.hybrid_command(name='hello', description='Chào hỏi người dùng.')
     async def hello(self, ctx):
         """Chào hỏi người dùng"""
-        await ctx.send(f'Chào bồ {ctx.author.name}! Mình là Shimizu, hân hạnh được phục vụ! 🌸')
+        ai_cog = self.bot.get_cog('AICog')
+        if ai_cog:
+            context = ai_cog.get_persona_context(ctx.author.display_name)
+            await ctx.send(context["hello"])
+        else:
+            await ctx.send(f'Chào bồ {ctx.author.name}! Mình là Shimizu, hân hạnh được phục vụ! 🌸')
 
     @commands.command(name='reset')
     @commands.is_owner()
