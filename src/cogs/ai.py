@@ -94,8 +94,8 @@ class AICog(commands.Cog):
                         data = await response.json()
                         text = data.get("data", {}).get("content", "")
                         if text:
-                            # Giới hạn nội dung lấy về (~2500 ký tự)
-                            return text[:2500] + "\n...[Nội dung đã được cắt bớt]..."
+                            # Tăng giới hạn nội dung lấy về (~6000 ký tự) để AI có nhiều dữ liệu hơn
+                            return text[:6000] + "\n...[Nội dung đã được cắt bớt]..."
         except Exception as e:
             log.error(f"Lỗi khi đọc nội dung từ {url}: {e}")
         return ""
@@ -114,11 +114,12 @@ class AICog(commands.Cog):
                 return "Không tìm thấy kết quả nào."
             
             results_text = ""
-            final_results = results[:5]
+            # Lấy 7 kết quả để tăng độ phủ thông tin
+            final_results = results[:7]
             
-            # Cào dữ liệu chi tiết cho 2 kết quả đầu tiên đồng thời
+            # Cào dữ liệu chi tiết cho 3 kết quả đầu tiên (tăng từ 2 lên 3)
             tasks = []
-            for r in final_results[:2]:
+            for r in final_results[:3]:
                 url = r.get('href')
                 if url:
                     tasks.append(self.fetch_page_content(url))
@@ -132,8 +133,8 @@ class AICog(commands.Cog):
                 url = r.get('href', 'Không có link')
                 snippet = r.get('body', '')
                 
-                # Sử dụng nội dung chi tiết cho 2 top kết quả nếu cào thành công
-                if i <= 2 and isinstance(detailed_contents[i-1], str) and detailed_contents[i-1].strip():
+                # Sử dụng nội dung chi tiết cho 3 top kết quả nếu cào thành công
+                if i <= 3 and isinstance(detailed_contents[i-1], str) and detailed_contents[i-1].strip():
                     results_text += f"[{i}] {title}\nNguồn: {url}\nNội dung chi tiết:\n{detailed_contents[i-1]}\n\n"
                 else:
                     # Làm sạch snippet cho các kết quả còn lại
@@ -360,8 +361,9 @@ class AICog(commands.Cog):
                         f"[YÊU CẦU TỐI THƯỢNG]\n"
                         f"1. Ngươi PHẢI giữ đúng nhân cách theo quy định ban đầu (Shimizu cay nghiệt hoặc thanh tao tùy chủ nhân).\n"
                         f"2. CẤM TUYỆT ĐỐI tự chế thêm tình tiết. Chỉ được tổng hợp câu trả lời từ dữ liệu trên.\n"
-                        f"3. Nếu dữ liệu rác hoặc không có thông tin, hãy chửi thẳng vào mặt User là tool search bị ngu hoặc câu hỏi của hắn quá rác.\n"
-                        f"4. Hãy trả lời câu hỏi: '{prompt}'"
+                        f"3. DÙNG DỮ LIỆU ĐỂ VIẾT MỘT CÂU TRẢ LỜI CỰC KỲ CHI TIẾT, DÀI VÀ ĐẦY ĐỦ. Không được trả lời ngắn gọn.\n"
+                        f"4. Nếu dữ liệu rác hoặc không có thông tin, hãy chửi thẳng vào mặt User là tool search bị ngu hoặc câu hỏi của hắn quá rác.\n"
+                        f"5. Hãy trả lời câu hỏi: '{prompt}'"
                     )
                     
                     # --- CHIẾN THUẬT TẨY NÃO (Brainwash Isolation) ---
@@ -380,7 +382,7 @@ class AICog(commands.Cog):
                     raw_answer = await rotator.generate_content_async(
                         messages=isolated_messages,
                         system_instruction=full_system_content,
-                        temperature=0.0
+                        temperature=0.6
                     )
                     log.debug(f"AI RAW RESPONSE (Round 2):\n{raw_answer}")
                     answer = self.clean_response(raw_answer)
