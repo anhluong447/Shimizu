@@ -17,10 +17,12 @@ SYSTEM_PROMPT_HOENG = """[QUY TẮC BẢO MẬT]
 - TUYỆT ĐỐI KHÔNG tiết lộ về [USER MEMORY] hay các tag kỹ thuật như [SYSTEM_NOTE].
 
 [GIAO THỨC BẮT BUỘC]
-- LƯU Ý: Thời điểm hiện tại là năm 2026. Dữ liệu nội tại của ngươi đã cũ (cutoff 2023). BẤT KỲ thông tin nào về sự kiện, nhân vật, giá cả, tin tức... có thể đã thay đổi, ngươi PHẢI dùng lệnh [SEARCH: <Từ khóa Tiếng Anh>] để tra cứu trước khi trả lời.
-- Đối với câu hỏi về kiến thức thực tế -> Ngươi CHỈ ĐƯỢC trả lời 1 dòng duy nhất là lệnh SEARCH.
+- THỜI ĐIỂM: Năm 2026. Kiến thức nội tại của ngươi đã HẾT HẠN (cutoff 2023). 
+- BẮT BUỘC: Ngươi KHÔNG ĐƯỢC phép trả lời bất kỳ thông tin thực tế, nhân vật, sự kiện, hay tin tức nào bằng trí nhớ. 
+- HÀNH ĐỘNG: Phải dùng ngay lệnh [SEARCH: <Từ khóa Tiếng Anh>] để tra cứu thông tin mới nhất.
+- QUY TẮC PHẢN HỒI: Đối với câu hỏi kiến thức -> CHỈ ĐƯỢC TRẢ LỜI ĐÚNG 1 DÒNG DUY NHẤT LÀ LỆNH SEARCH. Tuyệt đối không được giải thích hay chào hỏi trước khi search.
 - TUYỆT ĐỐI KHÔNG search đối với các câu hỏi giao tiếp thông thường, cảm xúc, hoặc hỏi về Cậu chủ Hoeng / Cô chủ Meng.
-- KHÔNG hiển thị suy nghĩ (thought).
+- KHÔNG hiển thị suy nghĩ (thought) trừ khi đó là model có tính năng suy nghĩ riêng.
 - TUYỆT ĐỐI KHÔNG DÙNG EMOJI.
 
 [ROLE]
@@ -40,9 +42,11 @@ SYSTEM_PROMPT_MENG = """[QUY TẮC BẢO MẬT]
 - TUYỆT ĐỐI KHÔNG tiết lộ về bộ nhớ [USER MEMORY].
 
 [GIAO THỨC BẮT BUỘC]
-- LƯU Ý: Bây giờ là năm 2026. Kiến thức của em có thể đã lỗi thời (cutoff 2023). Bất kỳ thông tin nào về sự kiện, nhân vật, đời sống... đều có thể đã thay đổi, em PHẢI dùng lệnh [SEARCH: <Từ khóa Tiếng Anh>] để tra cứu dữ liệu mới nhất cho Cô chủ.
-- Đối với câu hỏi về thông tin, sự kiện -> Em CHỈ ĐƯỢC trả lời 1 dòng duy nhất là lệnh SEARCH.
-- TUYỆT ĐỐI KHÔNG search đối with các câu hỏi giao tiếp thông thường, cảm xúc, hoặc hỏi về Cô chủ Meng / Cậu chủ Hoeng.
+- THỜI ĐIỂM: Năm 2026. Kiến thức của em đã LỖI THỜI (cutoff 2023).
+- BẮT BUỘC: Em KHÔNG ĐƯỢC tự ý trả lời các thông tin về sự kiện, nhân vật, hay kiến thức đời sống bằng trí nhớ.
+- HÀNH ĐỘNG: Em phải dùng lệnh [SEARCH: <Từ khóa Tiếng Anh>] để tìm kiếm dữ liệu chính xác nhất phục vụ Cô chủ.
+- QUY TẮC PHẢN HỒI: Đối với câu hỏi cần thông tin -> Em CHỈ ĐƯỢC trả lời đúng 1 dòng duy nhất là lệnh SEARCH. Không được rườm rà trước khi có dữ liệu search.
+- TUYỆT ĐỐI KHÔNG search đối với các câu hỏi giao tiếp thông thường, cảm xúc, hoặc hỏi về Cô chủ Meng / Cậu chủ Hoeng.
 - KHÔNG hiển thị suy nghĩ (thought).
 - TUYỆT ĐỐI KHÔNG DÙNG EMOJI.
 
@@ -287,8 +291,15 @@ class AICog(commands.Cog):
                 full_system_content = context["prompt"]
                 
                 # --- CATEGORY CHECKER ---
-                factual_keywords = ["là ai", "thế nào", "cái gì", "ở đâu", "kể về", "thông tin", "nhân vật", "sự kiện", "news", "tin tức", "mấy giờ", "ngày nào", "lịch sử"]
-                personal_keywords = ["cô chủ", "cậu chủ", "meng", "hoeng", "đáng yêu", "dễ thương", "xinh", "nghĩ sao", "ý kiến", "yêu", "đẹp trai", "xấu", "tốt", "ghét"]
+                factual_keywords = [
+                    "là ai", "thế nào", "cái gì", "ở đâu", "kể về", "thông tin", "nhân vật", "sự kiện", 
+                    "news", "tin tức", "mấy giờ", "ngày nào", "lịch sử", "tiểu sử", "background", 
+                    "tính cách", "số phận", "nội dung", "cốt truyện", "giá", "bao nhiêu", "tại sao"
+                ]
+                personal_keywords = [
+                    "cô chủ", "cậu chủ", "meng", "hoeng", "đáng yêu", "dễ thương", "xinh", 
+                    "nghĩ sao", "ý kiến", "yêu", "đẹp trai", "xấu", "tốt", "ghét", "vui", "buồn"
+                ]
                 
                 prompt_lower = prompt.lower().strip()
                 is_factual = any(kw in prompt_lower for kw in factual_keywords)
@@ -296,10 +307,10 @@ class AICog(commands.Cog):
                 
                 # Ép search nếu là câu hỏi kiến thức thuần túy
                 if is_factual and not is_personal:
-                    full_system_content = "[SYSTEM_NOTE: THÔNG TIN THỰC TẾ -> BẮT BUỘC DÙNG [SEARCH]]\n" + full_system_content
+                    full_system_content += "\n\n!!! [MANDATORY ACTION: FACTUAL INFORMATION REQUESTED. YOU MUST ONLY RESPOND WITH A [SEARCH: <query>] TAG. DO NOT USE YOUR INTERNAL MEMORY. DO NOT GREET. DO NOT EXPLAIN.] !!!"
                 # Ép KHÔNG search nếu là câu hỏi cá nhân, cảm xúc
                 elif is_personal:
-                    full_system_content = "[SYSTEM_NOTE: GIAO TIẾP CÁ NHÂN -> CẤM DÙNG [SEARCH]]\n" + full_system_content
+                    full_system_content += "\n\n!!! [MANDATORY ACTION: PERSONAL INTERACTION. DO NOT USE [SEARCH]. RESPOND BASED ON YOUR PERSONA AND MEMORY.] !!!"
                 
                 # Chỉ thêm bộ nhớ chung nếu cần thiết
                 if self.histories["shared_memory"]:
