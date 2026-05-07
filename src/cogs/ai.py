@@ -104,36 +104,41 @@ class AICog(commands.Cog):
         """Tìm kiếm thông tin trên DuckDuckGo và đọc nội dung chi tiết."""
         def sync_search():
             # Làm sạch query: xóa dấu phẩy, chấm, và các từ thừa
-            clean_query = re.sub(r'[^\w\s]', ' ', query).strip()
+            # Chuyển về lowercase và chuẩn hóa khoảng trắng
+            clean_query = re.sub(r'[^\w\s]', ' ', query).lower()
+            clean_query = re.sub(r'\s+', ' ', clean_query).strip()
             
             results = []
             try:
                 with DDGS() as ddgs:
-                    # 1. Thử tìm kiếm với query gốc (đã làm sạch)
+                    # 1. Thử tìm kiếm với query gốc (Backend API)
                     try:
                         res_vn = list(ddgs.text(clean_query, region='wt-wt', safesearch='off', max_results=max_results))
                         results.extend(res_vn)
-                    except Exception: pass
+                    except Exception as e:
+                        log.warning(f"DDGS API Search failed: {e}")
                     
-                    # 2. Thử tìm kiếm với tiếng Anh nếu là query ngắn
-                    if len(clean_query.split()) < 6:
+                    # 2. Nếu hẹo, thử Backend HTML (Chậm hơn nhưng trâu bò hơn)
+                    if not results:
                         try:
-                            res_en = list(ddgs.text(f"{clean_query} wiki", region='wt-wt', safesearch='off', max_results=max_results))
-                            results.extend(res_en)
-                        except Exception: pass
+                            log.info(f"Trying HTML backend for: {clean_query}")
+                            res_html = list(ddgs.text(clean_query, region='wt-wt', safesearch='off', backend='html', max_results=max_results))
+                            results.extend(res_html)
+                        except Exception as e:
+                            log.warning(f"DDGS HTML Search failed: {e}")
 
                     # 3. Fallback 1: Rút gọn xuống 5 từ đầu
                     if not results:
                         simplified = " ".join(clean_query.split()[:5])
-                        log.info(f"Fallback 1: {simplified}")
+                        log.info(f"Fallback 1 (Simplified): {simplified}")
                         try:
                             results.extend(list(ddgs.text(simplified, region='wt-wt', safesearch='off', max_results=max_results)))
                         except Exception: pass
                     
-                    # 4. Fallback 2: Rút gọn cực hạn xuống 3 từ đầu (Thường là tên riêng)
+                    # 4. Fallback 2: Rút gọn cực hạn xuống 3 từ đầu
                     if not results:
                         core_terms = " ".join(clean_query.split()[:3])
-                        log.info(f"Fallback 2: {core_terms}")
+                        log.info(f"Fallback 2 (Core): {core_terms}")
                         try:
                             results.extend(list(ddgs.text(core_terms, region='wt-wt', safesearch='off', max_results=max_results)))
                         except Exception: pass
