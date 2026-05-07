@@ -1,6 +1,7 @@
 import os
 import platform
 import pytz
+from datetime import timezone, timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,7 +11,7 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 SECRET_KEY = os.getenv('SECRET_KEY')
 GUILD_ID = os.getenv('GUILD_ID')
 PREFIX = '!'
-TIMEZONE = pytz.timezone('Asia/Ho_Chi_Minh')
+TIMEZONE = timezone(timedelta(hours=7))
 
 # --- Ollama Config ---
 OLLAMA_API_URL = os.getenv('OLLAMA_API_URL', 'http://localhost:11434')

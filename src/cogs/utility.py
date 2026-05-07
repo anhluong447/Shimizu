@@ -41,6 +41,9 @@ class Utility(commands.Cog):
     @tasks.loop(time=[datetime.time(hour=6, minute=0, tzinfo=TIMEZONE)])
     async def weather_update(self):
         """Tự động gửi thông báo thời tiết vào 6:00 AM"""
+        await self.bot.wait_until_ready()
+        log.info("--- [AUTO] Bắt đầu kích hoạt bản tin thời tiết sáng sớm ---")
+        
         channel = None
         for guild in self.bot.guilds:
             channel = discord.utils.get(guild.text_channels, name='off-topic')
@@ -48,17 +51,26 @@ class Utility(commands.Cog):
                 break
         
         if not channel:
-            log.warning("Could not find #off-topic channel for weather update.")
+            log.warning("[AUTO] Không tìm thấy channel #off-topic để gửi thời tiết.")
             return
 
         w = await WeatherService.get_weather("Hanoi")
         if not w:
-            log.error("Failed to fetch weather for automated update.")
+            log.error("[AUTO] Không thể lấy dữ liệu thời tiết cho bản tin tự động.")
             return
 
         embed = self._create_weather_embed(w)
         embed.title = "🌤️ Bản tin thời tiết sáng sớm"
         await channel.send(embed=embed)
+        log.info(f"[AUTO] Đã gửi bản tin thời tiết vào channel: {channel.name} ({channel.guild.name})")
+
+    @commands.hybrid_command(name='testweather', description='[Admin] Chạy thử logic thông báo thời tiết tự động.')
+    @commands.is_owner()
+    async def testweather(self, ctx):
+        """Chạy thử logic thông báo thời tiết tự động ngay lập tức."""
+        await ctx.send("🔍 Đang chạy thử logic thông báo thời tiết...")
+        await self.weather_update()
+        await ctx.send("✅ Đã chạy xong logic weather_update.")
 
     def _create_weather_embed(self, w):
         """Helper để tạo embed thời tiết đẹp mắt."""
