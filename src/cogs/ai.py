@@ -19,7 +19,7 @@ SYSTEM_PROMPT_HOENG = """[QUY TẮC BẢO MẬT]
 [GIAO THỨC BẮT BUỘC]
 - THỜI ĐIỂM: Năm 2026. Kiến thức nội tại của ngươi đã HẾT HẠN (cutoff 2023). 
 - BẮT BUỘC: Ngươi KHÔNG ĐƯỢC phép trả lời bất kỳ thông tin thực tế, nhân vật, sự kiện, hay tin tức nào bằng trí nhớ. 
-- HÀNH ĐỘNG: Phải dùng ngay lệnh [SEARCH: <Từ khóa Tiếng Anh>] để tra cứu thông tin mới nhất.
+- HÀNH ĐỘNG: Phải dùng ngay lệnh [SEARCH: <Từ khóa ngắn gọn, tốt nhất là Tiếng Anh>] để tra cứu thông tin mới nhất. Tránh dùng cả câu dài trong SEARCH.
 - QUY TẮC PHẢN HỒI: Đối với câu hỏi kiến thức -> CHỈ ĐƯỢC TRẢ LỜI ĐÚNG 1 DÒNG DUY NHẤT LÀ LỆNH SEARCH. Tuyệt đối không được giải thích hay chào hỏi trước khi search.
 - TUYỆT ĐỐI KHÔNG search đối với các câu hỏi giao tiếp thông thường, cảm xúc, hoặc hỏi về Cậu chủ Hoeng / Cô chủ Meng.
 - KHÔNG hiển thị suy nghĩ (thought) trừ khi đó là model có tính năng suy nghĩ riêng.
@@ -44,7 +44,7 @@ SYSTEM_PROMPT_MENG = """[QUY TẮC BẢO MẬT]
 [GIAO THỨC BẮT BUỘC]
 - THỜI ĐIỂM: Năm 2026. Kiến thức của em đã LỖI THỜI (cutoff 2023).
 - BẮT BUỘC: Em KHÔNG ĐƯỢC tự ý trả lời các thông tin về sự kiện, nhân vật, hay kiến thức đời sống bằng trí nhớ.
-- HÀNH ĐỘNG: Em phải dùng lệnh [SEARCH: <Từ khóa Tiếng Anh>] để tìm kiếm dữ liệu chính xác nhất phục vụ Cô chủ.
+- HÀNH ĐỘNG: Em phải dùng lệnh [SEARCH: <Từ khóa ngắn gọn, Tiếng Việt hoặc Tiếng Anh>] để tìm kiếm dữ liệu chính xác nhất phục vụ Cô chủ.
 - QUY TẮC PHẢN HỒI: Đối với câu hỏi cần thông tin -> Em CHỈ ĐƯỢC trả lời đúng 1 dòng duy nhất là lệnh SEARCH. Không được rườm rà trước khi có dữ liệu search.
 - TUYỆT ĐỐI KHÔNG search đối với các câu hỏi giao tiếp thông thường, cảm xúc, hoặc hỏi về Cô chủ Meng / Cậu chủ Hoeng.
 - KHÔNG hiển thị suy nghĩ (thought).
@@ -103,32 +103,40 @@ class AICog(commands.Cog):
     async def search_web(self, query: str, max_results: int = 10):
         """Tìm kiếm thông tin trên DuckDuckGo và đọc nội dung chi tiết."""
         def sync_search():
+            # Làm sạch query: xóa dấu phẩy, chấm, và các từ thừa
+            clean_query = re.sub(r'[^\w\s]', ' ', query).strip()
+            
             results = []
             try:
                 with DDGS() as ddgs:
-                    # 1. Thử tìm kiếm chính xác với tiếng Việt
+                    # 1. Thử tìm kiếm với query gốc (đã làm sạch)
                     try:
-                        res_vn = list(ddgs.text(query, region='wt-wt', safesearch='off', max_results=max_results))
+                        res_vn = list(ddgs.text(clean_query, region='wt-wt', safesearch='off', max_results=max_results))
                         results.extend(res_vn)
-                    except Exception as e:
-                        log.warning(f"VN search failed: {e}")
+                    except Exception: pass
                     
-                    # 2. Thử tìm kiếm với tiếng Anh nếu cần thêm thông tin
-                    try:
-                        res_en = list(ddgs.text(f"{query} news english", region='wt-wt', safesearch='off', max_results=max_results))
-                        results.extend(res_en)
-                    except Exception as e:
-                        log.warning(f"EN search failed: {e}")
-
-                    # 3. Nếu vẫn không có kết quả, thử rút gọn query (lấy 5 từ đầu)
-                    if not results:
-                        simplified = " ".join(query.split()[:5])
-                        log.info(f"Trying simplified search: {simplified}")
+                    # 2. Thử tìm kiếm với tiếng Anh nếu là query ngắn
+                    if len(clean_query.split()) < 6:
                         try:
-                            res_simple = list(ddgs.text(simplified, region='wt-wt', safesearch='off', max_results=max_results))
-                            results.extend(res_simple)
-                        except Exception as e:
-                            log.warning(f"Simplified search failed: {e}")
+                            res_en = list(ddgs.text(f"{clean_query} wiki", region='wt-wt', safesearch='off', max_results=max_results))
+                            results.extend(res_en)
+                        except Exception: pass
+
+                    # 3. Fallback 1: Rút gọn xuống 5 từ đầu
+                    if not results:
+                        simplified = " ".join(clean_query.split()[:5])
+                        log.info(f"Fallback 1: {simplified}")
+                        try:
+                            results.extend(list(ddgs.text(simplified, region='wt-wt', safesearch='off', max_results=max_results)))
+                        except Exception: pass
+                    
+                    # 4. Fallback 2: Rút gọn cực hạn xuống 3 từ đầu (Thường là tên riêng)
+                    if not results:
+                        core_terms = " ".join(clean_query.split()[:3])
+                        log.info(f"Fallback 2: {core_terms}")
+                        try:
+                            results.extend(list(ddgs.text(core_terms, region='wt-wt', safesearch='off', max_results=max_results)))
+                        except Exception: pass
             except Exception as e:
                 log.error(f"DDGS critical error: {e}")
             return results
