@@ -6,3 +6,5 @@ yt-dlp
 ddgs
 matplotlib
 pynvml
+groq
+google-genai
