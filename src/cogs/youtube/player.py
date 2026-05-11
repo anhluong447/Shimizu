@@ -73,7 +73,8 @@ class YTPlayer:
             return None
         query = f"{self.current.title} {self.current.uploader}"
         try:
-            results = await YTSongInfo.search(query, loop=self.bot.loop)
+            # Tăng giới hạn search để có nhiều lựa chọn hơn nếu gặp video bị chặn
+            results = await YTSongInfo.search(query, loop=self.bot.loop, limit=10)
             played_ids = {s.video_id for s in self.history}
             queue_ids = {s.video_id for s in self.queue}
             if self.current:
@@ -128,6 +129,8 @@ class YTPlayer:
                     await self.downloader.download(song, loop=self.bot.loop)
                 except Exception as e:
                     await self.channel.send(f"❌ Không tải được: **{song.title}** — `{e}`", delete_after=10)
+                    # Delay một chút để tránh spam retry khi bị rate limit
+                    await asyncio.sleep(3)
                     continue
 
             self.current = song
