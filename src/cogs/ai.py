@@ -304,48 +304,68 @@ class AICog(commands.Cog):
         return self.histories["user_histories"][user_id_str]
 
     async def summarize_history(self, user_id, user_name):
-        """Trích xuất các sự thật quan trọng vào bộ nhớ chung (Owners hoặc General)."""
+        """Triển khai Hybrid Memory:
+        - 5 tin nhắn gần nhất giữ nguyên.
+        - 10 tin nhắn tiếp theo được tóm tắt.
+        - Các tin nhắn cũ hơn được đẩy vào Vector DB.
+        """
         history = self.get_user_history(user_id)
         messages = history["messages"]
         
-        if len(messages) <= 10:
+        # Chỉ xử lý khi có nhiều hơn 15 tin nhắn
+        if len(messages) <= 15:
             return
 
-        # Giữ lại 10 câu gần nhất, tóm tắt phần còn lại
-        to_summarize = messages[:-10]
-        history["messages"] = messages[-10:]
-        
-        chat_text = "\n".join([f"{m['role']}: {m['content']}" for m in to_summarize])
-        
-        # Xác định bộ nhớ cần tóm tắt
-        is_owner = any(name in user_name.lower() for name in ["hoeng", "meng"])
-        memory_key = "shared_memory_owners" if is_owner else "shared_memory_general"
-        current_memory = self.histories.get(memory_key, "")
+        # 1. Tách các phần
+        short_term = messages[-5:]      # 5 tin gần nhất
+        mid_term = messages[-15:-5]     # 10 tin tiếp theo (cần tóm tắt)
+        to_archive = messages[:-15]     # Cũ hơn 15 tin (đẩy vào Vector DB)
+
+        # 2. Đẩy tin nhắn cũ vào Vector DB
+        if to_archive:
+            from src.utils.vector_memory import get_vector_memory
+            from src.services.unified_rotator import get_unified_rotator
+            vm = get_vector_memory()
+            rotator = get_unified_rotator()
+            
+            # Xác định namespace
+            is_owner = any(name in user_name.lower() for name in ["hoeng", "meng"])
+            namespace = "owners" if is_owner else "general"
+            
+            for msg in to_archive:
+                if msg["role"] == "user": # Chỉ archive câu hỏi của user để tiết kiệm và chính xác khi search
+                    content = msg["content"]
+                    # Chỉ archive nếu câu đủ dài hoặc quan trọng
+                    if len(content) > 10:
+                        vector = await rotator.gemini.embed_content_async(content)
+                        if vector:
+                            vm.add_memory(namespace, vector, content, timestamp=discord.utils.utcnow().isoformat())
+            
+            log.info(f"Archived {len(to_archive)} old messages for {user_name} to Vector DB.")
+
+        # 3. Tóm tắt Mid-term
+        chat_text = "\n".join([f"{m['role']}: {m['content']}" for m in mid_term])
         
         summary_prompt = (
-            "Dựa trên nội dung cuộc trò chuyện dưới đây, hãy cập nhật danh sách các 'Sự kiện chính' và 'Thông tin về người dùng'.\n"
-            "Chỉ giữ lại những thông tin thực sự quan trọng (sở thích, tên, sự kiện đã hứa, tâm trạng).\n"
-            "Định dạng: Các gạch đầu dòng ngắn gọn, súc tích.\n"
-            "Tuyệt đối không tóm tắt lan man hoặc lặp lại thông tin cũ.\n\n"
+            "Hãy tóm tắt ngắn gọn (dưới 3 dòng) nội dung quan trọng nhất của đoạn hội thoại này để lưu vào bộ nhớ đệm.\n"
+            "Chỉ tập trung vào: Sự kiện, ý muốn của người dùng, hoặc thông tin cá nhân mới.\n"
+            f"Nội dung hội thoại:\n{chat_text}"
         )
-        
-        if current_memory:
-            summary_prompt += f"Dữ liệu bộ nhớ hiện tại:\n{current_memory}\n\n"
-        
-        summary_prompt += f"Nội dung mới từ hội thoại của {user_name} cần trích xuất:\n{chat_text}"
 
         try:
             from src.services.unified_rotator import get_unified_rotator
             rotator = get_unified_rotator()
             
-            response_text = await rotator.generate_content_async(
+            mid_summary = await rotator.generate_content_async(
                 messages=[{"role": "user", "content": summary_prompt}],
                 temperature=0.2
             )
             
-            self.histories[memory_key] = response_text
+            # Cập nhật lại lịch sử
+            history["messages"] = short_term
+            history["mid_term_summary"] = mid_summary.strip()
             self.save_memory()
-            log.info(f"Updated and saved {memory_key} from {user_name}")
+            log.info(f"Updated Hybrid Memory for {user_name}: 5 short-term, 10 summarized.")
         except Exception as e:
             log.error(f"Summarization error for user {user_id}: {e}")
 
@@ -405,13 +425,36 @@ class AICog(commands.Cog):
                 elif is_personal:
                     full_system_content += "\n\n!!! [MANDATORY ACTION: PERSONAL INTERACTION. DO NOT USE [SEARCH]. RESPOND BASED ON YOUR PERSONA AND MEMORY.] !!!"
                 
-                # Chỉ thêm bộ nhớ chung nếu cần thiết
+                # --- HYBRID MEMORY INJECTION ---
                 is_owner = any(name in ctx.author.display_name.lower() for name in ["hoeng", "meng"])
-                memory_key = "shared_memory_owners" if is_owner else "shared_memory_general"
-                current_memory = self.histories.get(memory_key, "")
+                namespace = "owners" if is_owner else "general"
                 
-                if current_memory:
-                    full_system_content += f"\n\n[USER MEMORY - KÝ ỨC CHUNG]\nĐây là những gì ngươi biết về các chủ nhân và các sự kiện quan trọng:\n{current_memory}"
+                # 1. Thêm Mid-term Summary nếu có
+                if "mid_term_summary" in history and history["mid_term_summary"]:
+                    full_system_content += f"\n\n[CONTEXT - TÓM TẮT GẦN ĐÂY]\n{history['mid_term_summary']}"
+
+                # 2. Vector Search (Long-term Memory)
+                from src.utils.vector_memory import get_vector_memory
+                vm = get_vector_memory()
+                query_vector = await rotator.gemini.embed_content_async(prompt)
+                
+                memories_found = []
+                if query_vector:
+                    memories_found = vm.search(namespace, query_vector, top_k=3, threshold=0.6)
+                
+                memory_notify = ""
+                if memories_found:
+                    # Tạo block kiến thức cũ
+                    old_memories_text = "\n".join([f"- {m['text']}" for m in memories_found])
+                    full_system_content += f"\n\n[ARCHIVE - KÝ ỨC CŨ TÌM THẤY]\n{old_memories_text}"
+                    
+                    # Notify based on persona
+                    if "hoeng" in ctx.author.display_name.lower():
+                        memory_notify = "*Hừm... có vẻ như ta vẫn còn giữ vài mảnh ký ức vụn vặt về chuyện này...*\n\n"
+                    elif "meng" in ctx.author.display_name.lower():
+                        memory_notify = "*A... em vừa nhớ ra một chút chuyện cũ liên quan đến yêu cầu của Cô chủ ạ...*\n\n"
+                    else:
+                        memory_notify = "*A... dạ... hình như em có nhớ mang máng về chuyện này rồi ạ...*\n\n"
                 
                 api_messages = history["messages"].copy()
 
@@ -440,12 +483,34 @@ class AICog(commands.Cog):
                 
                 if search_match:
                     search_query = search_match.group(1).strip()
-                    # TINH CHỈNH QUERY: Sử dụng trực tiếp search_query, loại bỏ hậu tố hardcode gây nhiễu
-                    refined_query = search_query
-                    log.info(f"AI requested search for: '{search_query}' -> Refined to: '{refined_query}'")
                     
-                    # Thực hiện search với query đã tinh chỉnh
-                    search_results = await self.search_web(refined_query)
+                    # --- KNOWLEDGE CACHE CHECK ---
+                    from src.utils.vector_memory import get_vector_memory
+                    vm = get_vector_memory()
+                    
+                    # Tìm kiếm trong kho tri thức chung (namespace 'knowledge')
+                    knowledge_query_vector = await rotator.gemini.embed_content_async(search_query)
+                    cached_knowledge = []
+                    if knowledge_query_vector:
+                        cached_knowledge = vm.search("knowledge", knowledge_query_vector, top_k=1, threshold=0.85)
+                    
+                    search_results = ""
+                    if cached_knowledge:
+                        search_results = cached_knowledge[0]["text"]
+                        log.info(f"Using cached knowledge for query: '{search_query}'")
+                        if not memory_notify: # Nếu chưa có thông báo nhớ từ User memory
+                            memory_notify = "*A... về vấn đề này thì em đã từng tìm hiểu qua rồi, để em nói cho Cậu chủ nghe...*\n\n"
+                    else:
+                        # Thực hiện search mới nếu không có cache
+                        refined_query = search_query
+                        log.info(f"AI requested search for: '{search_query}' -> Performing live search.")
+                        search_results = await self.search_web(refined_query)
+                        
+                        # LƯU VÀO KNOWLEDGE CACHE (Chỉ lưu nếu search có kết quả thực sự)
+                        if search_results and "Không tìm thấy kết quả" not in search_results:
+                            if knowledge_query_vector:
+                                vm.add_memory("knowledge", knowledge_query_vector, search_results, timestamp=discord.utils.utcnow().isoformat())
+                                log.info(f"Saved new knowledge to cache for query: '{search_query}'")
                     
                     # Ghi đè chỉ thị Round 2 theo công thức BÁO ĐỘNG ĐỎ
                     search_prompt = (
@@ -518,13 +583,15 @@ class AICog(commands.Cog):
                     else:
                         await ctx.send(full_response, file=file)
                 else:
-                    # Nếu tắt benchmark, chỉ gửi câu trả lời bình thường
-                    if len(answer) > 1900:
-                        chunks = [answer[i:i+1900] for i in range(0, len(answer), 1900)]
+                    # Thêm thông báo tìm thấy ký ức vào đầu câu trả lời nếu có
+                    final_answer = memory_notify + answer
+                    
+                    if len(final_answer) > 1900:
+                        chunks = [final_answer[i:i+1900] for i in range(0, len(final_answer), 1900)]
                         for chunk in chunks:
                             await ctx.send(chunk)
                     else:
-                        await ctx.send(answer)
+                        await ctx.send(final_answer)
                 
             except asyncio.TimeoutError:
                 await ctx.send("⌛ AI phản hồi quá lâu, tôi đã ngắt kết nối để bảo vệ server.")

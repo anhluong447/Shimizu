@@ -146,6 +146,53 @@ class GeminiRotator:
         
         return "Lỗi nội bộ: Đã thử quá số lần cho phép nhưng không thành công."
 
+    async def embed_content_async(self, text: str, task_type: str = None) -> list:
+        """Tạo embedding vector từ văn bản. Sử dụng gemini-embedding-2."""
+        max_attempts = len(self.keys)
+        # gemini-embedding-2 là model embedding mới nhất
+        model_name = "gemini-embedding-2"
+        
+        for attempt in range(max_attempts):
+            key_idx = self.current_key_idx
+            try:
+                # gemini-embedding-2 không dùng task_type nhưng hỗ trợ output_dimensionality
+                config = types.EmbedContentConfig(
+                    output_dimensionality=768
+                )
+                
+                if hasattr(self.client, 'aio'):
+                    response = await self.client.aio.models.embed_content(
+                        model=model_name,
+                        contents=text,
+                        config=config
+                    )
+                else:
+                    import asyncio
+                    def sync_call():
+                        return self.client.models.embed_content(
+                            model=model_name,
+                            contents=text,
+                            config=config
+                        )
+                    response = await asyncio.to_thread(sync_call)
+                
+                if response and response.embeddings:
+                    return response.embeddings[0].values
+                
+            except Exception as e:
+                rotation_logger.warning(f"❌ LỖI Embedding ({model_name}) trên Key {key_idx}: {e}")
+                # Nếu model 2 không tìm thấy (hiếm), thử fallback sang model 001
+                if "not found" in str(e).lower() and model_name == "gemini-embedding-2":
+                    model_name = "gemini-embedding-001"
+                    rotation_logger.info(f"🔄 Fallback sang model embedding: {model_name}")
+                    continue
+                
+                # Đổi sang key tiếp theo
+                self.current_key_idx = (self.current_key_idx + 1) % len(self.keys)
+                self._initialize_client()
+                
+        return []
+
 # Singleton instance
 gemini_rotator = None
 

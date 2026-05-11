@@ -46,12 +46,12 @@ class Utility(commands.Cog):
         
         channel = None
         for guild in self.bot.guilds:
-            channel = discord.utils.get(guild.text_channels, name='off-topic')
+            channel = discord.utils.get(guild.text_channels, name='weather')
             if channel:
                 break
         
         if not channel:
-            log.warning("[AUTO] Không tìm thấy channel #off-topic để gửi thời tiết.")
+            log.warning("[AUTO] Không tìm thấy channel #weather để gửi thời tiết.")
             return
 
         w = await WeatherService.get_weather("Hanoi")

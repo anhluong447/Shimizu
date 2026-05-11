@@ -45,4 +45,6 @@ meng.ann
 *.bak
 backup/
 data/benchmarks/
+data/vector_memory/
 *.png
+*.npy
