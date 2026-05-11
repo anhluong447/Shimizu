@@ -328,9 +328,14 @@ class AICog(commands.Cog):
             vm = get_vector_memory()
             rotator = get_unified_rotator()
             
-            # Xác định namespace
-            is_owner = any(name in user_name.lower() for name in ["hoeng", "meng"])
-            namespace = "owners" if is_owner else "general"
+            # Xác định namespace riêng biệt
+            user_name_lower = user_name.lower()
+            if "hoeng" in user_name_lower:
+                namespace = "hoeng"
+            elif "meng" in user_name_lower:
+                namespace = "meng"
+            else:
+                namespace = "general"
             
             for msg in to_archive:
                 if msg["role"] == "user": # Chỉ archive câu hỏi của user để tiết kiệm và chính xác khi search
@@ -426,8 +431,13 @@ class AICog(commands.Cog):
                     full_system_content += "\n\n!!! [MANDATORY ACTION: PERSONAL INTERACTION. DO NOT USE [SEARCH]. RESPOND BASED ON YOUR PERSONA AND MEMORY.] !!!"
                 
                 # --- HYBRID MEMORY INJECTION ---
-                is_owner = any(name in ctx.author.display_name.lower() for name in ["hoeng", "meng"])
-                namespace = "owners" if is_owner else "general"
+                user_name_lower = ctx.author.display_name.lower()
+                if "hoeng" in user_name_lower:
+                    namespace = "hoeng"
+                elif "meng" in user_name_lower:
+                    namespace = "meng"
+                else:
+                    namespace = "general"
                 
                 # 1. Thêm Mid-term Summary nếu có
                 if "mid_term_summary" in history and history["mid_term_summary"]:
@@ -435,7 +445,9 @@ class AICog(commands.Cog):
 
                 # 2. Vector Search (Long-term Memory)
                 from src.utils.vector_memory import get_vector_memory
+                from src.services.unified_rotator import get_unified_rotator
                 vm = get_vector_memory()
+                rotator = get_unified_rotator()
                 query_vector = await rotator.gemini.embed_content_async(prompt)
                 
                 memories_found = []
@@ -632,8 +644,13 @@ class AICog(commands.Cog):
     @commands.command(name="clear_brain", help="XÓA SẠCH ký ức Long-term (Vector DB)")
     async def clear_brain(self, ctx):
         """Xóa vĩnh viễn kho tri thức Vector của namespace hiện tại."""
-        is_owner = any(name in ctx.author.display_name.lower() for name in ["hoeng", "meng"])
-        namespace = "owners" if is_owner else "general"
+        user_name_lower = ctx.author.display_name.lower()
+        if "hoeng" in user_name_lower:
+            namespace = "hoeng"
+        elif "meng" in user_name_lower:
+            namespace = "meng"
+        else:
+            namespace = "general"
         
         from src.utils.vector_memory import get_vector_memory
         vm = get_vector_memory()
