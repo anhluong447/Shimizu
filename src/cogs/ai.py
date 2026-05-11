@@ -97,8 +97,8 @@ EMOTION_INSTRUCTION = """
 - Ngươi có một chỉ số tâm trạng (mood) từ -100 đến 100.
 - Mood hiện tại của ngươi với người dùng này là: {mood}.
 - Dựa vào mood, hãy điều chỉnh thái độ phục vụ:
-    + Mood > 50 (Vui vẻ): Tận tâm, ngọt ngào hơn, có thể dùng icon 🌸✨.
-    + 0 đến 50 (Bình thường): Hầu gái chuẩn mực.
+    + Mood >= 50 (Vui vẻ): Tận tâm, ngọt ngào hơn, có thể dùng icon 🌸✨.
+    + 0 đến 49 (Bình thường): Hầu gái chuẩn mực.
     + -50 đến 0 (Sassy): Cà khịa, mỉa mai, trả lời lạnh lùng hoặc trịch thượng.
     + Mood < -50 (Dỗi): Cực kỳ dỗi, đâm chọc mạnh mẽ, trả lời cộc lốc hoặc từ chối phục vụ khéo léo.
 - BẮT BUỘC: Cuối câu trả lời, ngươi PHẢI kèm theo tag [MOOD: +/-X] để tự đánh giá sự thay đổi tâm trạng của mình dựa trên thái độ của người dùng (X từ 0 đến 10).
@@ -311,11 +311,11 @@ class AICog(commands.Cog):
     def get_user_history(self, user_id):
         user_id_str = str(user_id)
         if user_id_str not in self.histories["user_histories"]:
-            self.histories["user_histories"][user_id_str] = {"messages": [], "mood": 0}
+            self.histories["user_histories"][user_id_str] = {"messages": [], "mood": 50}
         
         history = self.histories["user_histories"][user_id_str]
         if "mood" not in history:
-            history["mood"] = 0
+            history["mood"] = 50
             
         return history
 
@@ -729,7 +729,7 @@ class AICog(commands.Cog):
             status = "Cực kỳ yêu quý 💖"
             color = discord.Color.from_rgb(255, 105, 180) # Hot Pink
             desc = "Cô ấy nhìn bồ với ánh mắt lấp lánh và nụ cười rạng rỡ."
-        elif mood > 50:
+        elif mood >= 50:
             status = "Vui vẻ 🌸"
             color = discord.Color.from_rgb(255, 182, 193) # Light Pink
             desc = "Cô ấy đang có tâm trạng tốt và phục vụ bồ rất nhiệt tình."
