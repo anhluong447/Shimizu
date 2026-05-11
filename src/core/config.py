@@ -29,6 +29,8 @@ GROQ_API_KEYS = [k.strip() for k in _groq_keys_str.split(',')] if _groq_keys_str
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+MUSIC_CACHE_DIR = os.path.join(DATA_DIR, 'music_cache')
+os.makedirs(MUSIC_CACHE_DIR, exist_ok=True)
 
 # Data Files
 PLAYLISTS_FILE = os.path.join(DATA_DIR, 'playlists.json')
