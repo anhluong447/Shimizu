@@ -143,7 +143,7 @@ class YTDownloader:
 
             loop = loop or asyncio.get_event_loop()
             try:
-                await loop.run_in_executor(None, self._dl_sync, vid, song.url)
+                await loop.run_in_executor(None, self._dl_sync, vid, song.url, song.title)
                 song.local_path = path
                 log.info(f"[YT-DL] ✅ Downloaded: {song.title} ({vid})")
                 return path
@@ -153,16 +153,14 @@ class YTDownloader:
             finally:
                 self._locks.pop(vid, None)
 
-    def _dl_sync(self, video_id, url):
+    def _dl_sync(self, video_id, url, title=None):
         ffmpeg_dir = os.path.dirname(FFMPEG_EXE) if FFMPEG_EXE != 'ffmpeg' else None
         
-        # Thử nhiều client khác nhau để bypass bot detection
-        # Android là client ổn định nhất hiện tại để bypass login requirement
+        # --- PHASE 1: HARDENED YT-DLP (TRY FIRST) ---
         clients = ['android', 'web_embedded', 'ios', 'tv']
         proxy = os.getenv('YTDL_PROXY')
         cookies_file = os.path.join(os.path.dirname(MUSIC_CACHE_DIR), 'cookies.txt')
         
-        last_error = None
         for client in clients:
             try:
                 opts = {
@@ -177,8 +175,10 @@ class YTDownloader:
                     'no_warnings': True,
                     'noplaylist': True,
                     'extractor_args': {'youtube': {'player_client': [client]}},
+                    'source_address': '0.0.0.0',
+                    'cachedir': False,
+                    'no_cache_dir': True,
                 }
-                
                 if ffmpeg_dir:
                     opts['ffmpeg_location'] = ffmpeg_dir
                 if proxy:
@@ -186,18 +186,76 @@ class YTDownloader:
                 if os.path.exists(cookies_file):
                     opts['cookiefile'] = cookies_file
                 
+                with yt_dlp.YoutubeDL({'quiet': True, 'no_cache_dir': True}) as ydl:
+                    ydl.cache.remove()
+                
                 with yt_dlp.YoutubeDL(opts) as ydl:
                     ydl.download([url])
                 return # Thành công
             except Exception as e:
-                last_error = e
-                # Nếu lỗi là "Sign in" hoặc "Format not available", ta thử client khác
                 if "Sign in to confirm" in str(e) or "Requested format is not available" in str(e):
-                    log.warning(f"[YT-DL] Client {client} bị chặn hoặc lỗi format, đang thử client tiếp theo...")
+                    log.warning(f"[YT-DL] Client {client} bị chặn, thử fallback...")
                     continue
                 else:
-                    # Nếu là lỗi khác (như network), dừng luôn
                     break
+
+        # --- PHASE 2: THIRD-PARTY API FALLBACK (LOADER.TO) ---
+        log.info(f"[YT-DL] ⚡ Đang dùng 'Chiêu tà đạo' (Loader.to) cho: {video_id}")
+        try:
+            import requests
+            import time
+            
+            headers = {"User-Agent": "Mozilla/5.0", "Referer": "https://loader.to/"}
+            init_url = "https://loader.to/ajax/download.php"
+            init_params = {"url": url, "format": "mp3", "button": 1, "start": 1, "end": 1}
+            
+            r = requests.get(init_url, params=init_params, headers=headers, timeout=15)
+            data = r.json()
+            if data.get("id"):
+                task_id = data["id"]
+                progress_url = "https://loader.to/api/progress"
+                for _ in range(25): # Max 50s
+                    p_resp = requests.get(progress_url, params={"id": task_id}, headers=headers, timeout=10)
+                    p_data = p_resp.json()
+                    if p_data.get("success") == 1:
+                        dl_url = p_data.get("download_url")
+                        file_resp = requests.get(dl_url, stream=True, timeout=60)
+                        final_path = self.get_path(video_id)
+                        with open(final_path, 'wb') as f:
+                            for chunk in file_resp.iter_content(chunk_size=16384):
+                                f.write(chunk)
+                        log.info(f"[YT-DL] ✅ Tải thành công qua Loader.to: {video_id}")
+                        return
+                    if p_data.get("error"): break
+                    time.sleep(2)
+        except Exception as e:
+            log.error(f"[YT-DL] ❌ Loader.to thất bại: {e}")
+
+        # --- PHASE 3: COBALT.TOOLS FALLBACK ---
+        log.info(f"[YT-DL] ⚡ Đang thử fallback cuối (Cobalt) cho: {video_id}")
+        try:
+            import requests
+            # Sử dụng instance ổn định nhất
+            cobalt_api = "https://cobalt.api.kavin.rocks/api/json"
+            payload = {"url": url, "isAudioOnly": True, "audioFormat": "mp3"}
+            headers = {"Accept": "application/json", "Content-Type": "application/json"}
+            
+            r = requests.post(cobalt_api, json=payload, headers=headers, timeout=15)
+            if r.status_code == 200:
+                data = r.json()
+                if data.get("url"):
+                    dl_url = data["url"]
+                    file_resp = requests.get(dl_url, stream=True, timeout=60)
+                    final_path = self.get_path(video_id)
+                    with open(final_path, 'wb') as f:
+                        for chunk in file_resp.iter_content(chunk_size=16384):
+                            f.write(chunk)
+                    log.info(f"[YT-DL] ✅ Tải thành công qua Cobalt: {video_id}")
+                    return
+        except Exception as e:
+            log.error(f"[YT-DL] ❌ Cobalt thất bại: {e}")
+
+        raise Exception("YouTube chặn toàn bộ phương thức tải (Direct, Loader.to, Cobalt).")
         
         if last_error:
             raise last_error
