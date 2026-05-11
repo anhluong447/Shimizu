@@ -612,19 +612,36 @@ class AICog(commands.Cog):
             else:
                 await ctx.send(results)
 
-    @commands.command(name="reset_ai", help="Xóa trí nhớ của AI với bạn")
+    @commands.command(name="reset_ai", help="Xóa trí nhớ Short-term & Mid-term của AI")
     async def reset_ai(self, ctx):
-        """Xóa sạch lịch sử chat của người dùng."""
+        """Xóa sạch lịch sử chat và tóm tắt của người dùng."""
         user_id = ctx.author.id
         user_id_str = str(user_id)
         context = self.get_persona_context(ctx.author.display_name)
         history = self.histories["user_histories"].get(user_id_str)
-        if history and history["messages"]:
-            self.histories["user_histories"][user_id_str]["messages"] = []
-            self.save_memory() # Cập nhật file sau khi xóa
+        
+        if history:
+            history["messages"] = []
+            if "mid_term_summary" in history:
+                history["mid_term_summary"] = ""
+            self.save_memory()
             await ctx.send(context["reset"])
         else:
             await ctx.send(context["reset_none"])
+
+    @commands.command(name="clear_brain", help="XÓA SẠCH ký ức Long-term (Vector DB)")
+    async def clear_brain(self, ctx):
+        """Xóa vĩnh viễn kho tri thức Vector của namespace hiện tại."""
+        is_owner = any(name in ctx.author.display_name.lower() for name in ["hoeng", "meng"])
+        namespace = "owners" if is_owner else "general"
+        
+        from src.utils.vector_memory import get_vector_memory
+        vm = get_vector_memory()
+        
+        if vm.clear_namespace(namespace):
+            await ctx.send(f"🧹 Đã 'tẩy não' hoàn toàn ký ức Long-term trong kho `{namespace}` theo lệnh của Cậu chủ.")
+        else:
+            await ctx.send(f"🔍 Em không tìm thấy ký ức nào trong kho `{namespace}` để xóa ạ.")
 
     @commands.command(name="ai_status", help="Kiểm tra trạng thái AI (Groq & Gemini)")
     async def ai_status(self, ctx):

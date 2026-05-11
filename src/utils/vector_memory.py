@@ -105,6 +105,17 @@ class VectorMemory:
         
         return results
 
+    def clear_namespace(self, namespace):
+        """Xóa sạch sành sanh một namespace."""
+        if namespace in self.indices:
+            del self.indices[namespace]
+            vec_path, meta_path = self._get_paths(namespace)
+            if os.path.exists(vec_path): os.remove(vec_path)
+            if os.path.exists(meta_path): os.remove(meta_path)
+            log.info(f"Namespace '{namespace}' has been completely wiped.")
+            return True
+        return False
+
 # Singleton
 vector_memory = None
 
