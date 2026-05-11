@@ -43,8 +43,14 @@ class YTSongInfo:
     async def search(cls, query, *, loop=None, limit=5):
         """Search YouTube and return raw result entries."""
         loop = loop or asyncio.get_event_loop()
-        from src.core.config import YTDL_OPTS
-        opts = {**YTDL_OPTS, 'default_search': f'ytsearch{limit}'}
+        opts = {
+            'format': 'bestaudio/best',
+            'noplaylist': True,
+            'quiet': True,
+            'no_warnings': True,
+            'default_search': f'ytsearch{limit}',
+            'extract_flat': 'in_playlist',
+        }
 
         def _do_search():
             with yt_dlp.YoutubeDL(opts) as ydl:
@@ -64,8 +70,12 @@ class YTSongInfo:
     async def from_url(cls, url, *, requester, loop=None):
         """Extract full info from a YouTube URL."""
         loop = loop or asyncio.get_event_loop()
-        from src.core.config import YTDL_OPTS
-        opts = {**YTDL_OPTS}
+        opts = {
+            'format': 'bestaudio/best',
+            'noplaylist': True,
+            'quiet': True,
+            'no_warnings': True,
+        }
 
         def _extract():
             with yt_dlp.YoutubeDL(opts) as ydl:
@@ -121,16 +131,18 @@ class YTDownloader:
                 self._locks.pop(vid, None)
 
     def _dl_sync(self, video_id, url):
-        from src.core.config import YTDL_OPTS, FFMPEG_EXE
         ffmpeg_dir = os.path.dirname(FFMPEG_EXE) if FFMPEG_EXE != 'ffmpeg' else None
         opts = {
-            **YTDL_OPTS,
+            'format': 'bestaudio/best',
             'outtmpl': os.path.join(self.cache_dir, f'{video_id}.%(ext)s'),
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
+            'quiet': True,
+            'no_warnings': True,
+            'noplaylist': True,
         }
         if ffmpeg_dir:
             opts['ffmpeg_location'] = ffmpeg_dir
