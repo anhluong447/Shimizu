@@ -19,11 +19,13 @@ Shimizu isn't just a music bot—she's a highly intelligent virtual maid. She co
 
 ### 🤖 Advanced AI Intelligence
 - **Hybrid AI Infrastructure** — High-performance multi-provider rotation system using **Groq** (primary) and **Gemini** (fallback).
-- **Multi-Key Rotation** — Automatically cycles through multiple API keys and models (Llama 3.3, Qwen 3, Gemini 1.5/2.0) to maximize free-tier quotas.
+- **Hybrid Memory System (3-Tier)** — Advanced memory management:
+    - **Short-term**: Instant recall of the last 5 messages.
+    - **Mid-term**: Dynamic summarization of the recent 10 messages for session coherence.
+    - **Long-term (Vector RAG)**: Unlimited archival storage using Gemini embeddings and local vector search (Numpy).
+- **Semantic Knowledge Cache** — Automatically caches web search results in a persistent Vector DB, allowing instant retrieval of previously learned facts and reducing hallucination.
+- **Privacy Partitioning** — Individual, secure memory silos for different owners (e.g., Cậu chủ vs. Cô chủ).
 - **Grounded Reasoning** — Integrates with DuckDuckGo and Jina Reader to provide factual, real-time answers for events beyond model training data.
-- **Deep Web Search v2** — Enhanced multi-stage search with HTML backends and character-level scraping limits for deep context understanding.
-- **Multilingual Intelligence** — Automatically handles cross-lingual queries (VN/EN) for superior information gathering.
-- **Persona Memory** — Maintains distinct personalities for different users with shared memory summarization.
 - **Performance Benchmarking** — Real-time GPU/CPU monitoring during AI generation with beautiful visual charts.
 
 ### 🎵 High-Fidelity Music
@@ -68,7 +70,8 @@ Shimizu isn't just a music bot—she's a highly intelligent virtual maid. She co
 | `!bench` | Toggle performance benchmarking (GPU/Time charts). |
 | `!bench_debug` | Debug GPU detection and NVML status. |
 | `!ai_status` | Check status of the Groq & Gemini rotation systems. |
-| `!reset_ai` | Clear your current conversation history. |
+| `!reset_ai` | Clear Short-term & Mid-term conversation history. |
+| `!clear_brain` | Permanent wipe of Long-term (Vector) memory archive. |
 
 ### 📋 Management & Utility
 | Command | Description |
