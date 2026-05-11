@@ -227,3 +227,23 @@ Nâng cấp toàn diện khả năng ghi nhớ và tra cứu tri thức của Sh
 
 **Kết quả:** Shimizu giờ đây sở hữu một bộ não có chiều sâu, có khả năng học tập liên tục và ghi nhớ mọi kỷ niệm cùng các chủ nhân một cách bền vững. 🌸🧠🌀
 
+## ⚔️ Giai đoạn 15: Cuộc Chiến YouTube Tái Khởi & Giải Pháp "Tà Đạo" Hybrid
+Sau một thời gian yên bình với SoundCloud, chúng ta quyết định tái khởi động cuộc chiến lấy lại "chủ quyền" âm nhạc trên YouTube với những chiến thuật tinh vi hơn.
+
+- **Nâng cấp Hệ thống Tải (Downloader v2.0):**
+    - **Chiến dịch "Cửa hậu" (No-Cookie Embed):** Chuyển hướng yêu cầu từ `youtube.com` sang `youtube-nocookie.com` (tên miền dành cho nhúng video).
+    - **Client Rotation 2.0:** Ép bot sử dụng các client "vùng xanh" như **`android_vr`** (Kính thực tế ảo) và `web_embedded` để lách bộ lọc của YouTube.
+- **Tích hợp "Bên thứ 3" (Third-party Intermediaries):**
+    - Xây dựng hệ thống Fallback 3 tầng: 
+        1. **Direct Download:** Tải trực tiếp bằng kỹ thuật bypass.
+        2. **Loader.to API:** Âm thầm nhờ server trung gian của Loader.to tải và convert hộ bài hát.
+        3. **Invidious Proxy:** Sử dụng mạng lưới server Invidious toàn cầu làm "khiên" che IP server AWS.
+- **Giải pháp "Chính đạo" - OAuth2 Authentication:**
+    - Triển khai cơ chế **Device Code (TV App Authentication)**. Bot được cấp "giấy thông hành" chính chủ từ Google bằng cách giả danh một ứng dụng YouTube trên Smart TV.
+    - Kết quả: Sau khi Cậu chủ nhập mã xác nhận, Bot chính thức có quyền truy cập "cửa hậu" của YouTube với độ ổn định tuyệt đối.
+- **Tính năng tìm kiếm YouTube độc lập:**
+    - Xây dựng lệnh `!yt`: Tách biệt hoàn toàn với hệ thống SoundCloud, mang lại trải nghiệm YouTube thuần túy cho người dùng với Top 5 kết quả tìm kiếm và giao diện đỏ đặc trưng.
+
+**Kết quả:** Một thất bại "ngọt ngào". Dù đã tung ra mọi chiêu trò tà đạo từ Proxy, Embed đến giả danh TV App, YouTube vẫn quét ra IP của AWS và chặn đứng yêu cầu ở những bước cuối cùng.
+**Bài học rút ra:** YouTube hiện tại đã chặn IP Datacenter ở mức độ "tận diệt". Giải pháp duy nhất còn lại để thắng cuộc chiến này là dùng **Cookies** của người dùng thật để bảo chứng cho Bot. Cuộc chiến tạm thời tạm dừng ở đây với tỉ lệ thắng 50/50. 🏳️⚔️🎵
+
