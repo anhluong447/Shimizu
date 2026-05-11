@@ -156,51 +156,39 @@ class YTDownloader:
     def _dl_sync(self, video_id, url, title=None):
         ffmpeg_dir = os.path.dirname(FFMPEG_EXE) if FFMPEG_EXE != 'ffmpeg' else None
         
-        # --- PHASE 1: HARDENED YT-DLP (TRY FIRST) ---
-        clients = ['android', 'web_embedded', 'ios', 'tv']
-        proxy = os.getenv('YTDL_PROXY')
-        cookies_file = os.path.join(os.path.dirname(MUSIC_CACHE_DIR), 'cookies.txt')
+        # --- PHASE 1: NO-COOKIE EMBED + ANDROID_VR (CHIẾN THUẬT TỐI THƯỢNG) ---
+        # Sử dụng domain nhúng và client thực tế ảo để lách bộ lọc bot
+        embed_url = f"https://www.youtube-nocookie.com/embed/{video_id}"
+        log.info(f"[YT-DL] ⚡ Đang dùng 'Cửa hậu' (No-Cookie Embed) cho: {video_id}")
         
-        for client in clients:
-            try:
-                opts = {
-                    'format': 'bestaudio/best',
-                    'outtmpl': os.path.join(self.cache_dir, f'{video_id}.%(ext)s'),
-                    'postprocessors': [{
-                        'key': 'FFmpegExtractAudio',
-                        'preferredcodec': 'mp3',
-                        'preferredquality': '192',
-                    }],
-                    'quiet': True,
-                    'no_warnings': True,
-                    'noplaylist': True,
-                    'extractor_args': {'youtube': {'player_client': [client]}},
-                    'source_address': '0.0.0.0',
-                    'cachedir': False,
-                    'no_cache_dir': True,
-                }
-                if ffmpeg_dir:
-                    opts['ffmpeg_location'] = ffmpeg_dir
-                if proxy:
-                    opts['proxy'] = proxy
-                if os.path.exists(cookies_file):
-                    opts['cookiefile'] = cookies_file
-                
-                with yt_dlp.YoutubeDL({'quiet': True, 'no_cache_dir': True}) as ydl:
-                    ydl.cache.remove()
-                
-                with yt_dlp.YoutubeDL(opts) as ydl:
-                    ydl.download([url])
-                return # Thành công
-            except Exception as e:
-                if "Sign in to confirm" in str(e) or "Requested format is not available" in str(e):
-                    log.warning(f"[YT-DL] Client {client} bị chặn, thử fallback...")
-                    continue
-                else:
-                    break
+        try:
+            opts = {
+                'format': 'bestaudio/best',
+                'outtmpl': os.path.join(self.cache_dir, f'{video_id}.%(ext)s'),
+                'postprocessors': [{
+                    'key': 'FFmpegExtractAudio',
+                    'preferredcodec': 'mp3',
+                    'preferredquality': '192',
+                }],
+                'quiet': True,
+                'no_warnings': True,
+                'noplaylist': True,
+                'extractor_args': {'youtube': {'player_client': ['android_vr', 'web_embedded']}},
+                'source_address': '0.0.0.0', # Force IPv4
+                'cachedir': False,
+            }
+            if ffmpeg_dir:
+                opts['ffmpeg_location'] = ffmpeg_dir
+            
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                ydl.download([embed_url])
+            return # Thành công
+        except Exception as e:
+            log.warning(f"[YT-DL] Phase 1 thất bại: {e}")
 
         # --- PHASE 2: THIRD-PARTY API FALLBACK (LOADER.TO) ---
-        log.info(f"[YT-DL] ⚡ Đang dùng 'Chiêu tà đạo' (Loader.to) cho: {video_id}")
+        # Đây là "Bên trung gian" theo yêu cầu của Cậu chủ
+        log.info(f"[YT-DL] ⚡ Đang nhờ 'Bên thứ 3' (Loader.to) tải hộ cho: {video_id}")
         try:
             import requests
             import time
@@ -214,7 +202,7 @@ class YTDownloader:
             if data.get("id"):
                 task_id = data["id"]
                 progress_url = "https://loader.to/api/progress"
-                for _ in range(25): # Max 50s
+                for _ in range(20): # Max 40s
                     p_resp = requests.get(progress_url, params={"id": task_id}, headers=headers, timeout=10)
                     p_data = p_resp.json()
                     if p_data.get("success") == 1:
@@ -231,31 +219,29 @@ class YTDownloader:
         except Exception as e:
             log.error(f"[YT-DL] ❌ Loader.to thất bại: {e}")
 
-        # --- PHASE 3: COBALT.TOOLS FALLBACK ---
-        log.info(f"[YT-DL] ⚡ Đang thử fallback cuối (Cobalt) cho: {video_id}")
+        # --- PHASE 3: INVIDIOUS REDIRECT FALLBACK (MẠNG LƯỚI PROXY) ---
+        log.info(f"[YT-DL] ⚡ Đang thử 'Cổng Invidious' cho: {video_id}")
         try:
             import requests
-            # Sử dụng instance ổn định nhất
-            cobalt_api = "https://cobalt.api.kavin.rocks/api/json"
-            payload = {"url": url, "isAudioOnly": True, "audioFormat": "mp3"}
-            headers = {"Accept": "application/json", "Content-Type": "application/json"}
-            
-            r = requests.post(cobalt_api, json=payload, headers=headers, timeout=15)
-            if r.status_code == 200:
-                data = r.json()
-                if data.get("url"):
-                    dl_url = data["url"]
-                    file_resp = requests.get(dl_url, stream=True, timeout=60)
-                    final_path = self.get_path(video_id)
-                    with open(final_path, 'wb') as f:
-                        for chunk in file_resp.iter_content(chunk_size=16384):
-                            f.write(chunk)
-                    log.info(f"[YT-DL] ✅ Tải thành công qua Cobalt: {video_id}")
-                    return
+            instances = ["https://invidious.lunar.icu", "https://inv.vern.cc", "https://invidious.jing.rocks"]
+            for inst in instances:
+                try:
+                    # Endpoint /latest/ của Invidious sẽ redirect thẳng tới link googlevideo
+                    api_url = f"{inst}/latest/{video_id}?quality=audio"
+                    r = requests.head(api_url, allow_redirects=True, timeout=10)
+                    if "googlevideo.com" in r.url:
+                        file_resp = requests.get(r.url, stream=True, timeout=60)
+                        final_path = self.get_path(video_id)
+                        with open(final_path, 'wb') as f:
+                            for chunk in file_resp.iter_content(chunk_size=16384):
+                                f.write(chunk)
+                        log.info(f"[YT-DL] ✅ Tải thành công qua Invidious Proxy ({inst})")
+                        return
+                except: continue
         except Exception as e:
-            log.error(f"[YT-DL] ❌ Cobalt thất bại: {e}")
+            log.error(f"[YT-DL] ❌ Invidious thất bại: {e}")
 
-        raise Exception("YouTube chặn toàn bộ phương thức tải (Direct, Loader.to, Cobalt).")
+        raise Exception("Mọi phương thức tải (Embed, Loader.to, Invidious) đều bị YouTube chặn đứng.")
         
         if last_error:
             raise last_error
