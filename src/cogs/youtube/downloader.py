@@ -43,16 +43,25 @@ class YTSongInfo:
     async def search(cls, query, *, loop=None, limit=5):
         """Search YouTube and return raw result entries."""
         loop = loop or asyncio.get_event_loop()
-        opts = {
-            'format': 'bestaudio/best',
-            'noplaylist': True,
-            'quiet': True,
-            'no_warnings': True,
-            'default_search': f'ytsearch{limit}',
-            'extract_flat': 'in_playlist',
-        }
-
+        cookies_file = os.path.join(os.path.dirname(MUSIC_CACHE_DIR), 'cookies.txt')
+        proxy = os.getenv('YTDL_PROXY')
+        
         def _do_search():
+            # Thử android client vì nó rất ổn định
+            opts = {
+                'format': 'bestaudio/best',
+                'noplaylist': True,
+                'quiet': True,
+                'no_warnings': True,
+                'default_search': f'ytsearch{limit}',
+                'extract_flat': 'in_playlist',
+                'extractor_args': {'youtube': {'player_client': ['android']}},
+            }
+            if os.path.exists(cookies_file):
+                opts['cookiefile'] = cookies_file
+            if proxy:
+                opts['proxy'] = proxy
+                
             with yt_dlp.YoutubeDL(opts) as ydl:
                 return ydl.extract_info(f'ytsearch{limit}:{query}', download=False)
 
@@ -70,16 +79,30 @@ class YTSongInfo:
     async def from_url(cls, url, *, requester, loop=None):
         """Extract full info from a YouTube URL."""
         loop = loop or asyncio.get_event_loop()
-        opts = {
-            'format': 'bestaudio/best',
-            'noplaylist': True,
-            'quiet': True,
-            'no_warnings': True,
-        }
-
+        cookies_file = os.path.join(os.path.dirname(MUSIC_CACHE_DIR), 'cookies.txt')
+        proxy = os.getenv('YTDL_PROXY')
+        
         def _extract():
-            with yt_dlp.YoutubeDL(opts) as ydl:
-                return ydl.extract_info(url, download=False)
+            # Thử xoay vòng client cho extraction
+            for client in ['android', 'web_embedded', 'ios']:
+                try:
+                    opts = {
+                        'format': 'bestaudio/best',
+                        'noplaylist': True,
+                        'quiet': True,
+                        'no_warnings': True,
+                        'extractor_args': {'youtube': {'player_client': [client]}},
+                    }
+                    if os.path.exists(cookies_file):
+                        opts['cookiefile'] = cookies_file
+                    if proxy:
+                        opts['proxy'] = proxy
+                        
+                    with yt_dlp.YoutubeDL(opts) as ydl:
+                        return ydl.extract_info(url, download=False)
+                except Exception:
+                    continue
+            raise Exception("YouTube chặn toàn bộ client extraction. Vui lòng kiểm tra lại IP hoặc Cookies.")
 
         data = await loop.run_in_executor(None, _extract)
         if 'entries' in data:
@@ -132,23 +155,52 @@ class YTDownloader:
 
     def _dl_sync(self, video_id, url):
         ffmpeg_dir = os.path.dirname(FFMPEG_EXE) if FFMPEG_EXE != 'ffmpeg' else None
-        opts = {
-            'format': 'bestaudio/best',
-            'outtmpl': os.path.join(self.cache_dir, f'{video_id}.%(ext)s'),
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
-            'quiet': True,
-            'no_warnings': True,
-            'noplaylist': True,
-        }
-        if ffmpeg_dir:
-            opts['ffmpeg_location'] = ffmpeg_dir
-
-        with yt_dlp.YoutubeDL(opts) as ydl:
-            ydl.download([url])
+        
+        # Thử nhiều client khác nhau để bypass bot detection
+        # Android là client ổn định nhất hiện tại để bypass login requirement
+        clients = ['android', 'web_embedded', 'ios', 'tv']
+        proxy = os.getenv('YTDL_PROXY')
+        cookies_file = os.path.join(os.path.dirname(MUSIC_CACHE_DIR), 'cookies.txt')
+        
+        last_error = None
+        for client in clients:
+            try:
+                opts = {
+                    'format': 'bestaudio/best',
+                    'outtmpl': os.path.join(self.cache_dir, f'{video_id}.%(ext)s'),
+                    'postprocessors': [{
+                        'key': 'FFmpegExtractAudio',
+                        'preferredcodec': 'mp3',
+                        'preferredquality': '192',
+                    }],
+                    'quiet': True,
+                    'no_warnings': True,
+                    'noplaylist': True,
+                    'extractor_args': {'youtube': {'player_client': [client]}},
+                }
+                
+                if ffmpeg_dir:
+                    opts['ffmpeg_location'] = ffmpeg_dir
+                if proxy:
+                    opts['proxy'] = proxy
+                if os.path.exists(cookies_file):
+                    opts['cookiefile'] = cookies_file
+                
+                with yt_dlp.YoutubeDL(opts) as ydl:
+                    ydl.download([url])
+                return # Thành công
+            except Exception as e:
+                last_error = e
+                # Nếu lỗi là "Sign in" hoặc "Format not available", ta thử client khác
+                if "Sign in to confirm" in str(e) or "Requested format is not available" in str(e):
+                    log.warning(f"[YT-DL] Client {client} bị chặn hoặc lỗi format, đang thử client tiếp theo...")
+                    continue
+                else:
+                    # Nếu là lỗi khác (như network), dừng luôn
+                    break
+        
+        if last_error:
+            raise last_error
 
     def cleanup(self, video_id):
         path = self.get_path(video_id)

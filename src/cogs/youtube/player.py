@@ -64,16 +64,25 @@ class YTPlayer:
                 return
             except Exception as e:
                 log.error(f"[YT-Buffer] Error: {e}")
-                await asyncio.sleep(5)
+                await asyncio.sleep(30) # Tăng delay khi lỗi để tránh bị YouTube flag IP
 
     # ── Autoplay: find related song ────────────────────
     async def _fetch_related(self):
         """Search YouTube for a related song based on current track."""
         if not self.current:
             return None
-        query = f"{self.current.title} {self.current.uploader}"
+        
+        # Chiến thuật 1: Tìm theo ID gốc
+        query = f"related to {self.current.video_id}"
+        
         try:
             results = await YTSongInfo.search(query, loop=self.bot.loop)
+            
+            # Fallback 2: Nếu không thấy, tìm theo tiêu đề
+            if not results:
+                query = f"{self.current.title} {self.current.uploader} official"
+                results = await YTSongInfo.search(query, loop=self.bot.loop)
+
             played_ids = {s.video_id for s in self.history}
             queue_ids = {s.video_id for s in self.queue}
             if self.current:
@@ -82,6 +91,7 @@ class YTPlayer:
             for r in results:
                 vid = r.get('id', '')
                 if vid and vid not in played_ids and vid not in queue_ids:
+                    # Đảm bảo r có đủ data cần thiết
                     song = YTSongInfo(r, self.bot.user)
                     return song
         except Exception as e:
