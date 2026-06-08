@@ -77,12 +77,6 @@ class AICog(commands.Cog):
         messages.append({"role": "user", "content": prompt})
         messages = trim_history_by_tokens(messages)
         
-        # Bắt đầu đo benchmark nếu bật
-        benchmark = None
-        if self.benchmark_enabled:
-            benchmark = AIBenchmark()
-            benchmark.start()
-            
         async with ctx.typing():
             try:
                 from src.services.unified_rotator import get_unified_rotator
@@ -136,36 +130,13 @@ class AICog(commands.Cog):
                 # Chạy trích xuất Fact & Chấm điểm chất lượng bất đồng bộ (Phase 2 & Phase 5)
                 asyncio.create_task(self.async_post_processing(user_id, prompt, answer))
                 
-                # Gửi phản hồi kèm benchmark nếu có bật
-                if self.benchmark_enabled and benchmark:
-                    metrics = benchmark.stop()
-                    chart_path = benchmark.generate_chart()
-                    bench_summary = (
-                        f"\n\n---\n"
-                        f"📊 **Benchmark:** `{metrics['duration']:.1f}s` | "
-                        f"🔥 **GPU Avg:** `{metrics['avg_gpu']:.1f}%`\n"
-                        f"📟 **Device:** `{metrics['gpu_name']}`"
-                    )
-                    
-                    full_response = answer + bench_summary
-                    file = discord.File(chart_path) if chart_path else None
-                    
-                    if len(full_response) > 1900:
-                        chunks = [full_response[i:i+1900] for i in range(0, len(full_response), 1900)]
-                        for i, chunk in enumerate(chunks):
-                            if i == len(chunks) - 1:
-                                await ctx.send(chunk, file=file)
-                            else:
-                                await ctx.send(chunk)
-                    else:
-                        await ctx.send(full_response, file=file)
+                # Gửi phản hồi
+                if len(answer) > 1900:
+                    chunks = [answer[i:i+1900] for i in range(0, len(answer), 1900)]
+                    for chunk in chunks:
+                        await ctx.send(chunk)
                 else:
-                    if len(answer) > 1900:
-                        chunks = [answer[i:i+1900] for i in range(0, len(answer), 1900)]
-                        for chunk in chunks:
-                            await ctx.send(chunk)
-                    else:
-                        await ctx.send(answer)
+                    await ctx.send(answer)
                         
             except asyncio.TimeoutError:
                 await ctx.send("⌛ AI phản hồi quá lâu, em xin phép ngắt kết nối để bảo vệ máy chủ ạ.")
