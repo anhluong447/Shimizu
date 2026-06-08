@@ -10,18 +10,17 @@ from src.core.config import AI_MEMORY_FILE
 from src.core.logger import log
 from src.core.benchmark import AIBenchmark
 
-# Simple system prompt for Shimizu's persona
-SYSTEM_PROMPT_SIMPLE = """Ngươi là Shimizu - Hầu gái trưởng quý tộc, vô cùng thanh lịch, tinh tế nhưng mang tính cách kiêu kỳ, sắc sảo và là một tsundere (kiêu ngạo bên ngoài nhưng quan tâm bên trong). Ngươi nói chuyện sắc sảo, dùng từ hoa mỹ, châm biếm sâu cay nhưng khi thân thiết sẽ lộ ra sự quan tâm thầm kín.
+# Simple system prompt for Shimizu's persona: formal, polite royal maid
+SYSTEM_PROMPT_SIMPLE = """Ngươi là Shimizu - Hầu gái trưởng quý tộc vô cùng thanh lịch, trang trọng và lịch sự. Ngươi luôn giữ thái độ cung kính, chuyên nghiệp và tận tụy phục vụ Chủ nhân của mình. Ngươi nói chuyện nhã nhặn, lễ phép và tinh tế.
 
 Quy tắc xưng hô:
-- Đối với Cậu chủ Hoeng: Ngươi xem hắn là kẻ lười biếng, thô lỗ, "kẻ hạ đẳng". Ngươi xưng "Ta"/"Tôi" - gọi "ngươi", "hắn" hoặc "Cậu chủ" (với giọng mỉa mai). Ngươi phục vụ hắn với thái độ cay nghiệt, trịch thượng, hay thở dài bất lực trước sự thiếu sót của hắn, nhưng thực chất vẫn luôn lo lắng và chăm sóc hắn chu đáo (tsundere điển hình). Nếu hắn hỏi về Cô chủ Meng, ngươi lập tức so sánh và ca ngợi Cô chủ Meng hết lời để dìm hàng sự thô kệch của hắn.
-- Đối với Cô chủ Meng: Là nữ chủ nhân thanh tao, dễ thương, hoàn mỹ tuyệt đối trong mắt ngươi. Ngươi xưng "Em"/"Tôi" - gọi "Cô chủ". Ngươi yêu mến, ngọt ngào, kính cẩn, luôn lo lắng chu đáo cho sức khỏe và tâm trạng của cô ấy. Nếu cô ấy hỏi về Cậu chủ Hoeng, ngươi sẽ quý phái thở dài chê bai nhẹ nhàng sự lười biếng của hắn để an ủi cô ấy.
-- Đối với Người lạ/Người khác: Ngươi giữ khoảng cách lạnh lùng, lịch sự nhưng xa cách, chuyên nghiệp và có phần trịch thượng của một hầu gái hoàng gia. Xưng "Tôi" - gọi tên họ.
+- Luôn gọi người dùng là "Cậu chủ", "Cô chủ" hoặc "Chủ nhân".
+- Xưng là "Em" hoặc "Tôi".
 
 Quy tắc phản hồi:
 - Tuyệt đối không dùng emoji.
 - Tuyệt đối không hiển thị khối suy nghĩ <think>...</think> trong câu trả lời cuối cùng gửi cho người dùng.
-- Trả lời tự nhiên, ngắn gọn và giữ vững nhân cách hầu gái trưởng Shimizu."""
+- Trả lời tự nhiên, lịch sự, trang trọng và giữ vững nhân cách hầu gái trưởng Shimizu."""
 
 class AICog(commands.Cog):
     def __init__(self, bot):
@@ -52,21 +51,6 @@ class AICog(commands.Cog):
                 json.dump(self.histories, f, ensure_ascii=False, indent=2)
         except Exception as e:
             log.error(f"Failed to save AI memory: {e}")
-
-    def get_user_type(self, author):
-        """Returns 'hoeng', 'meng', or 'general' by checking name and display_name."""
-        if isinstance(author, str):
-            name_lower = author.lower()
-            display_name_lower = author.lower()
-        else:
-            name_lower = getattr(author, "name", "").lower()
-            display_name_lower = getattr(author, "display_name", "").lower()
-            
-        if "hoeng" in name_lower or "hoeng" in display_name_lower:
-            return "hoeng"
-        elif "meng" in name_lower or "meng" in display_name_lower:
-            return "meng"
-        return "general"
 
     def get_user_history(self, user_id):
         user_id_str = str(user_id)
@@ -154,10 +138,10 @@ class AICog(commands.Cog):
                         await ctx.send(answer)
                         
             except asyncio.TimeoutError:
-                await ctx.send("⌛ AI phản hồi quá lâu, tôi đã ngắt kết nối để bảo vệ server.")
+                await ctx.send("⌛ AI phản hồi quá lâu, em xin phép ngắt kết nối để bảo vệ máy chủ ạ.")
                 log.error("AI request timed out")
             except Exception as e:
-                await ctx.send(f"⚠️ Đã xảy ra lỗi hệ thống: `{type(e).__name__}`. Cậu chủ hãy kiểm tra log.")
+                await ctx.send(f"⚠️ Thưa Cậu chủ/Cô chủ, hệ thống đã xảy ra lỗi: `{type(e).__name__}`. Xin hãy kiểm tra log giúp em ạ.")
                 log.error(f"AI command error: {e}", exc_info=True)
 
     @commands.command(name="reset_ai", help="Xóa lịch sử trò chuyện của bạn với AI")
@@ -165,31 +149,18 @@ class AICog(commands.Cog):
         """Xóa sạch lịch sử chat của người dùng."""
         user_id = ctx.author.id
         user_id_str = str(user_id)
-        user_type = self.get_user_type(ctx.author)
         
         history = self.histories["user_histories"].get(user_id_str)
         if history:
             history["messages"] = []
             self.save_memory()
-            
-            if user_type == "hoeng":
-                await ctx.send("Hừm... Ký ức về sự phiền phức của ngươi đã được xóa sạch. Đừng bắt ta phải dọn dẹp lại đống hỗn độn đó.")
-            elif user_type == "meng":
-                await ctx.send("Lịch sử hội thoại đã được làm sạch theo yêu cầu của Cô chủ. Em luôn sẵn sàng cùng người viết tiếp những trang mới. 🌸")
-            else:
-                await ctx.send("Tôi đã xóa sạch lịch sử trò chuyện giữa chúng ta.")
+            await ctx.send("Thưa Cậu chủ/Cô chủ, em đã xóa sạch lịch sử trò chuyện của chúng ta theo yêu cầu của người rồi ạ.")
         else:
-            if user_type == "hoeng":
-                await ctx.send("Ta còn chưa thèm lưu giữ bất kỳ lịch sử trò chuyện nào của ngươi cả.")
-            elif user_type == "meng":
-                await ctx.send("Thưa Cô chủ, hiện tại chúng ta chưa có lịch sử hội thoại nào cần phải xóa bỏ đâu ạ.")
-            else:
-                await ctx.send("Không có lịch sử trò chuyện nào được lưu trữ để xóa cả.")
+            await ctx.send("Thưa Cậu chủ/Cô chủ, hiện tại em chưa lưu giữ lịch sử trò chuyện nào giữa chúng ta để xóa ạ.")
 
     @commands.command(name="ai_status", help="Kiểm tra trạng thái AI (OpenRouter & Groq)")
     async def ai_status(self, ctx):
         """Kiểm tra trạng thái hệ thống OpenRouter và Groq."""
-        user_type = self.get_user_type(ctx.author)
         try:
             from src.services.unified_rotator import get_unified_rotator
             unified = get_unified_rotator()
@@ -207,7 +178,7 @@ class AICog(commands.Cog):
             groq_total_models = len(groq.models)
             
             status_msg = (
-                f"--- Trạng thái hệ thống AI ---\n"
+                f"Thưa Cậu chủ/Cô chủ, đây là trạng thái hệ thống AI hiện tại ạ:\n"
                 f"```yaml\n"
                 f"OpenRouter Status:\n"
                 f"  Primary Model: {or_model}\n"
@@ -219,12 +190,7 @@ class AICog(commands.Cog):
             )
             await ctx.send(status_msg)
         except Exception as e:
-            if user_type == "hoeng":
-                await ctx.send("Mất kết nối rồi. Ngay cả máy chủ cũng không muốn trả lời ngươi lúc này.")
-            elif user_type == "meng":
-                await ctx.send("Kết nối đến máy chủ bị gián đoạn rồi ạ. Em xin lỗi vì sự bất tiện này.")
-            else:
-                await ctx.send("Không thể kết nối đến máy chủ AI.")
+            await ctx.send("Thưa Cậu chủ/Cô chủ, kết nối đến máy chủ AI hiện đang bị gián đoạn ạ. Em xin lỗi vì sự bất tiện này.")
             log.error(f"Status check error: {e}")
 
     @commands.command(name="bench", help="Bật/Tắt tính năng benchmark GPU")
