@@ -1,6 +1,7 @@
 import logging
 from src.services.openrouter_client import get_openrouter_client
 from src.services.groq_rotator import get_groq_rotator
+from src.services.gemini_rotator import get_rotator as get_gemini_rotator
 
 log = logging.getLogger("UnifiedRotator")
 
@@ -8,6 +9,7 @@ class UnifiedRotator:
     def __init__(self):
         self.openrouter = get_openrouter_client()
         self.groq = get_groq_rotator()
+        self.gemini = get_gemini_rotator()
 
     async def generate_content_async(self, messages: list, system_instruction: str = None, temperature: float = 0.8) -> str:
         """Thử OpenRouter trước, nếu lỗi thì chuyển sang Groq làm dự phòng."""
