@@ -25,6 +25,9 @@ GEMINI_API_KEYS = [k.strip() for k in _gemini_keys_str.split(',')] if _gemini_ke
 _groq_keys_str = os.getenv('GROQ_API_KEYS', '')
 GROQ_API_KEYS = [k.strip() for k in _groq_keys_str.split(',')] if _groq_keys_str else []
 
+# --- OpenRouter Config ---
+OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
+
 # --- Paths ---
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA_DIR = os.path.join(BASE_DIR, 'data')

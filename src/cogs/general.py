@@ -81,7 +81,7 @@ class General(commands.Cog):
         latency = round(self.bot.latency * 1000)
         ai_cog = self.bot.get_cog('AICog')
         if ai_cog:
-            context = ai_cog.get_persona_context(ctx.author.display_name)
+            context = ai_cog.get_persona_context(ctx.author)
             message = context["ping"](latency)
             await ctx.send(message)
         else:
@@ -92,7 +92,7 @@ class General(commands.Cog):
         """Chào hỏi người dùng"""
         ai_cog = self.bot.get_cog('AICog')
         if ai_cog:
-            context = ai_cog.get_persona_context(ctx.author.display_name)
+            context = ai_cog.get_persona_context(ctx.author)
             await ctx.send(context["hello"])
         else:
             await ctx.send(f'Chào bồ {ctx.author.name}! Mình là Shimizu, hân hạnh được phục vụ! 🌸')

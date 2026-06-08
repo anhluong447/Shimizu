@@ -28,16 +28,9 @@ class GroqRotator:
             groq_logger.error("CRITICAL: Không tìm thấy GROQ_API_KEYS trong file .env")
             raise ValueError("GROQ_API_KEYS không được cấu hình.")
 
-        # Cleaned model list for high-quality chat interaction
+        # Cleaned model list for high-quality chat interaction - ONLY best model
         self.models = [
-            "llama-3.3-70b-versatile",
-            "openai/gpt-oss-120b",
-            "qwen/qwen3-32b",
-            "meta-llama/llama-4-scout-17b-16e-instruct",
-            "groq/compound",
-            "mixtral-8x7b-32768",
-            "groq/compound-mini",
-            "gemma2-9b-it"
+            "llama-3.3-70b-versatile"
         ]
         
         self.current_key_idx = 0
