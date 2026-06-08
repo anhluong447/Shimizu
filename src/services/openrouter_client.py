@@ -55,7 +55,8 @@ class OpenRouterClient:
             data = {
                 "model": model_name,
                 "messages": final_messages,
-                "temperature": temperature
+                "temperature": temperature,
+                "max_tokens": 4096
             }
             
             log.info(f"Calling OpenRouter model '{model_name}' (Attempt {attempt + 1}/{max_attempts})")

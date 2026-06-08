@@ -22,6 +22,20 @@ Quy tắc phản hồi:
 - Tuyệt đối không hiển thị khối suy nghĩ <think>...</think> trong câu trả lời cuối cùng gửi cho người dùng.
 - Trả lời tự nhiên, lịch sự, trang trọng và giữ vững nhân cách hầu gái trưởng Shimizu."""
 
+MAX_HISTORY_TOKENS = 2000
+
+def trim_history_by_tokens(messages: list, max_tokens: int = MAX_HISTORY_TOKENS) -> list:
+    """Giữ các tin nhắn gần nhất, không vượt quá max_tokens (ước lượng 1 token ≈ 3 ký tự)."""
+    total = 0
+    result = []
+    for msg in reversed(messages):
+        est_tokens = len(msg.get("content", "")) // 3
+        if total + est_tokens > max_tokens:
+            break
+        result.insert(0, msg)
+        total += est_tokens
+    return result
+
 class AICog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -73,9 +87,8 @@ class AICog(commands.Cog):
         # Thêm câu hỏi vào lịch sử chat
         history["messages"].append({"role": "user", "content": prompt})
         
-        # Giới hạn số lượng tin nhắn tối đa trong lịch sử để tránh phình ngữ cảnh (tối đa 15 tin nhắn)
-        if len(history["messages"]) > 15:
-            history["messages"] = history["messages"][-15:]
+        # Giới hạn số lượng tin nhắn trong lịch sử bằng token-aware window
+        history["messages"] = trim_history_by_tokens(history["messages"])
             
         self.save_memory()
         
@@ -93,10 +106,13 @@ class AICog(commands.Cog):
                 from src.services.unified_rotator import get_unified_rotator
                 rotator = get_unified_rotator()
                 
-                raw_answer = await rotator.generate_content_async(
-                    messages=api_messages,
-                    system_instruction=system_instruction,
-                    temperature=0.8
+                raw_answer = await asyncio.wait_for(
+                    rotator.generate_content_async(
+                        messages=api_messages,
+                        system_instruction=system_instruction,
+                        temperature=0.8
+                    ),
+                    timeout=30.0
                 )
                 
                 # Xóa bỏ khối <think>...</think> nếu có

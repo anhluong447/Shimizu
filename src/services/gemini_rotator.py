@@ -28,13 +28,12 @@ class GeminiRotator:
 
         self.models = [
             "gemini-2.5-flash",
-            "gemma-3-27b",
-            "gemma-3-12b",
-            "gemma-4-26b",
-            "gemma-4-31b",
-            "gemini-3-flash",
-            "gemini-3.1-flash-lite",
-            "gemini-2.5-flash-lite"
+            "gemini-2.5-flash-lite",
+            "gemini-2.0-flash",
+            "gemini-1.5-flash",
+            "gemini-1.5-flash-8b",
+            "gemini-1.5-pro",
+            "gemini-2.5-pro"
         ]
         
         self.current_key_idx = 0
