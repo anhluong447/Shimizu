@@ -8,7 +8,7 @@ log = logging.getLogger("OpenRouterClient")
 class OpenRouterClient:
     def __init__(self):
         self.api_key = OPENROUTER_API_KEY
-        self.default_model = "sao10k/l3-lunaris-8b"
+        self.default_model = "thedrummer/cydonia-24b-v4.1"
         if not self.api_key:
             log.error("CRITICAL: Không tìm thấy OPENROUTER_API_KEY trong file .env")
 
