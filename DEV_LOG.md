@@ -247,3 +247,28 @@ Sau một thời gian yên bình với SoundCloud, chúng ta quyết định tá
 **Kết quả:** Một thất bại "ngọt ngào". Dù đã tung ra mọi chiêu trò tà đạo từ Proxy, Embed đến giả danh TV App, YouTube vẫn quét ra IP của AWS và chặn đứng yêu cầu ở những bước cuối cùng.
 **Bài học rút ra:** YouTube hiện tại đã chặn IP Datacenter ở mức độ "tận diệt". Giải pháp duy nhất còn lại để thắng cuộc chiến này là dùng **Cookies** của người dùng thật để bảo chứng cho Bot. Cuộc chiến tạm thời tạm dừng ở đây với tỉ lệ thắng 50/50. 🏳️⚔️🎵
 
+## 👑 Giai đoạn 16: Thống Nhất Nhân Cách & Nhận Thức Toàn Diện (SQLite + Hybrid Memory + Intelligent Search)
+Sau khi decommission hoàn toàn các hệ thống memory và mối quan hệ cũ để đơn giản hóa kiến trúc, Shimizu được nâng cấp toàn diện và đồng bộ từ Phase 1 đến Phase 5 của lộ trình phát triển.
+
+- **Thống nhất Nhân Cách Hoàng Gia (Royal Maid):**
+  - Loại bỏ các hệ thống prompt rườm rà, tsundere và phân chia người dùng phức tạp.
+  - Shimizu giờ đây sở hữu nhân cách hầu gái trưởng lịch thiệp, quý tộc và trang nghiêm, xưng "Em/Tôi" và gọi người dùng là "Cậu chủ/Cô chủ/Chủ nhân".
+- **Hạ tầng Bộ nhớ SQLite Persistent:**
+  - Chuyển đổi toàn bộ việc lưu trữ lịch sử trò chuyện ngắn hạn từ file JSON sang cơ sở dữ liệu SQLite (`message_history`).
+  - Tích hợp bộ nhớ ngữ nghĩa dài hạn (Semantic Memory - `user_facts`) lưu trữ thông tin/sở thích của chủ nhân.
+  - Tích hợp bộ nhớ hồi ức (Episodic Memory - `episodes`) lưu trữ các tóm tắt cuộc hội thoại trước đó.
+  - Thuật toán tìm kiếm bộ nhớ dựa trên Keyword Overlap giúp tìm kiếm hồi ức phù hợp nhất với ngữ cảnh hiện tại mà không phụ thuộc vào Vector DB bên thứ ba.
+- **Tìm kiếm Web thông minh (Intelligent Search):**
+  - Sử dụng LLM phân loại nhu cầu tìm kiếm (`SEARCH` hoặc `SKIP`) dựa trên câu hỏi của người dùng.
+  - Viết lại câu hỏi thành query tối ưu, thực hiện tìm kiếm qua DuckDuckGo bất đồng bộ (`asyncio.to_thread`), và tích hợp cơ chế caching trong SQLite trong vòng 24 giờ.
+- **Tự động trích xuất bộ nhớ & Chấm điểm chất lượng (LLM Judge):**
+  - Sau mỗi câu trả lời, một tiến trình chạy ngầm bất đồng bộ tự động trích xuất các facts mới và tóm tắt cuộc hội thoại để lưu vào SQLite.
+  - Tiến trình cũng tự động chấm điểm chất lượng câu trả lời từ 1-5 để lưu nhật ký đánh giá.
+- **Lệnh tối ưu hóa và stress test nhân cách:**
+  - `!ai_test`: Thực hiện stress test nhân cách, phát hiện các từ cấm (như ChatGPT, tôi là AI) để đảm bảo độ nhất quán của nhân cách hầu gái.
+  - `!ai_review`: Phân tích tự động các câu trả lời điểm thấp và đưa ra giải pháp cải tiến Prompt hệ thống.
+- **Tối ưu hóa kỹ thuật:**
+  - Giới hạn ngữ cảnh thông minh bằng cách đếm token (ước lượng) giúp tối ưu hóa chi phí token.
+  - Thiết lập timeout cứng 30 giây tránh treo tiến trình Discord.
+
+**Kết quả:** Shimizu sở hữu một bộ não hoàn thiện, hoạt động cực kỳ mượt mà, ghi nhớ sâu sắc và tìm kiếm thông tin nhanh chóng từ Internet với phong thái phục vụ chuẩn mực quý tộc. 🌸🧠⚙️

@@ -48,3 +48,6 @@ data/benchmarks/
 data/vector_memory/
 *.png
 *.npy
+updates/
+*.db
+data/*.db
