@@ -100,7 +100,13 @@ class AICog(commands.Cog):
                 )
                 
                 # Xóa bỏ khối <think>...</think> nếu có
-                answer = re.sub(r'<think>.*?</think>', '', raw_answer, flags=re.DOTALL).strip()
+                answer = re.sub(r'<think>.*?</think>', '', raw_answer, flags=re.DOTALL)
+                
+                # Xóa bỏ các tag kỹ thuật dạng [TAG_NAME: ...] hoặc [TAG NAME: ...]
+                answer = re.sub(r'\[[A-Z_ ]+:[^\]]*\]', '', answer)
+                
+                # Xử lý các khoảng trống và dòng trống thừa
+                answer = re.sub(r'\n\s*\n', '\n\n', answer).strip()
                 
                 # Lưu phản hồi của AI vào lịch sử
                 history["messages"].append({"role": "assistant", "content": answer})
