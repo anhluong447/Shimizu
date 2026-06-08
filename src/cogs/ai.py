@@ -110,7 +110,7 @@ class AICog(commands.Cog):
                         system_instruction=system_instruction,
                         temperature=0.8
                     ),
-                    timeout=30.0
+                    timeout=60.0
                 )
                 
                 # Xóa bỏ khối <think>...</think> nếu có
