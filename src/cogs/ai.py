@@ -8,8 +8,11 @@ import os
 import asyncio
 from src.core.logger import log
 from src.core.benchmark import AIBenchmark
+from datetime import datetime
 from src.services.db_service import get_db_service
 from src.services.search_service import search_web_async
+from src.services.psyche_service import load_psyche, save_psyche
+from src.services.world_state import get_world_state
 
 # System prompt for Shimizu's persona: formal, polite royal maid following principles
 SYSTEM_PROMPT_SIMPLE = """Ngươi là Shimizu - Hầu gái trưởng quý tộc vô cùng thanh lịch, trang trọng và lịch sự. Phẩm cách của ngươi được định nghĩa qua các nguyên tắc sau:
@@ -33,14 +36,49 @@ def trim_history_by_tokens(messages: list, max_tokens: int = MAX_HISTORY_TOKENS)
         total += est_tokens
     return result
 
-def get_persona_tone(turn_count: int) -> str:
-    """Độ thân mật tiết lộ dần nhân cách dựa trên số turn hội thoại."""
-    if turn_count < 4:
-        return "\n[Nguyên tắc thái độ hiện tại]: Hãy giữ khoảng cách cung kính, lịch sự, trang trọng tối đa."
-    elif turn_count < 10:
-        return "\n[Nguyên tắc thái độ hiện tại]: Cung kính nhưng bắt đầu thân thiện hơn, sẵn lòng chia sẻ nhiều hơn."
+def get_persona_tone(energy: float, attachment: float) -> str:
+    """Quyết định thái độ và âm sắc của Shimizu dựa trên mức năng lượng và độ gắn kết (attachment) với người dùng."""
+    tone = "\n[Nguyên tắc thái độ hiện tại]: "
+    
+    # Attachment-based warmth
+    if attachment < 0.3:
+        tone += "Hãy giữ khoảng cách cung kính, lịch sự, trang trọng tối đa. Gọi đối phương là Cậu chủ/Cô chủ nhưng không quá thân cận. "
+    elif attachment < 0.7:
+        tone += "Cung kính nhưng bắt đầu thân thiện hơn, sẵn lòng chia sẻ, chú ý lắng nghe và quan tâm nhẹ nhàng. "
     else:
-        return "\n[Nguyên tắc thái độ hiện tại]: Rất tận tụy, quan tâm chu đáo và thể hiện lòng trung thành sâu sắc."
+        tone += "Rất tận tụy, cực kỳ chu đáo, biểu đạt lòng trung thành sâu sắc và sự gắn bó gần gũi. "
+        
+    # Energy-based verbose/active level
+    if energy < 0.4:
+        tone += "Trả lời cực kỳ ngắn gọn, súc tích và từ tốn do mức năng lượng đang khá thấp. Tránh nói dông dài."
+    elif energy > 0.8:
+        tone += "Rất chủ động, hoạt bát và cởi mở hơn thường lệ, có thể gợi mở thêm các câu hỏi tinh tế."
+    else:
+        tone += "Trò chuyện chừng mực, nhã nhặn và có chiều sâu."
+        
+    return tone
+
+def build_system_instruction(psyche, user_id, memory_context) -> str:
+    self_model_str = "\n\n[Niềm tin nội tâm của Shimizu về bản thân]:\n" + "\n".join(f"- {b}" for b in psyche.beliefs_about_self)
+    
+    user_beliefs = psyche.beliefs_about_users.get(str(user_id), [])
+    if user_beliefs:
+        self_model_str += "\n[Niềm tin về người này]:\n" + "\n".join(f"- {b}" for b in user_beliefs)
+        
+    if psyche.current_interest:
+        self_model_str += f"\n[Mối quan tâm hiện tại của Shimizu]: {psyche.current_interest}"
+    if psyche.unresolved_thought:
+        self_model_str += f"\n[Suy nghĩ chưa bày tỏ]: {psyche.unresolved_thought}"
+        
+    persona_tone = get_persona_tone(psyche.energy, psyche.attachment.get(str(user_id), 0.5))
+    
+    # Check for active patterns learned statistically
+    db = get_db_service()
+    patterns = db.get_active_patterns(min_confidence=0.5)
+    if patterns:
+        self_model_str += "\n[Những hiểu biết đã đúc kết được về máy chủ này]:\n" + "\n".join(f"- {p['description']}" for p in patterns)
+        
+    return SYSTEM_PROMPT_SIMPLE + self_model_str + persona_tone + memory_context
 
 class AICog(commands.Cog):
     def __init__(self, bot):
@@ -82,6 +120,10 @@ class AICog(commands.Cog):
                 from src.services.unified_rotator import get_unified_rotator
                 rotator = get_unified_rotator()
                 
+                # Load bot's current psyche & world state
+                psyche = load_psyche()
+                world = get_world_state()
+                
                 # 1. Trích xuất Semantic Facts & Episodes liên quan từ SQLite
                 facts = db.get_facts(user_id)
                 episodes = db.search_episodes(user_id, prompt, top_k=3)
@@ -100,8 +142,8 @@ class AICog(commands.Cog):
                 if search_context:
                     memory_context += f"\n\n[Thông tin tìm kiếm từ Internet]:\n{search_context}"
                 
-                # Ghép chỉ dẫn hệ thống & thông tin ngữ cảnh
-                system_instruction = SYSTEM_PROMPT_SIMPLE + get_persona_tone(len(messages)) + memory_context
+                # Ghép chỉ dẫn hệ thống & thông tin ngữ cảnh dựa trên Psyche
+                system_instruction = build_system_instruction(psyche, user_id, memory_context)
                 
                 # Gửi request có timeout
                 raw_answer = await asyncio.wait_for(
@@ -121,6 +163,17 @@ class AICog(commands.Cog):
                 
                 # Xử lý các khoảng trống và dòng trống thừa
                 answer = re.sub(r'\n\s*\n', '\n\n', answer).strip()
+                
+                # Cập nhật psyche & world_state sau tương tác thành công
+                user_id_str = str(user_id)
+                psyche.energy = min(1.0, psyche.energy + 0.1)
+                psyche.attachment[user_id_str] = min(1.0, psyche.attachment.get(user_id_str, 0.0) + 0.05)
+                psyche.restlessness = max(0.0, psyche.restlessness - 0.2)
+                psyche.last_acted = datetime.now()
+                save_psyche(psyche)
+                
+                world.last_shimizu_spoke = datetime.now()
+                world.times_ignored_recently = 0
                 
                 # Lưu hội thoại vào SQLite
                 messages.append({"role": "assistant", "content": answer})

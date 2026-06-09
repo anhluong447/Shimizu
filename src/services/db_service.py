@@ -75,6 +75,49 @@ class DBService:
                     created_at TIMESTAMP
                 )
             """)
+
+            # 6. psyche: Internal emotional and self states
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS psyche (
+                    key TEXT PRIMARY KEY,
+                    value TEXT,         -- JSON serialized
+                    updated_at TIMESTAMP
+                )
+            """)
+
+            # 7. agenda: Proactive objectives
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS agenda (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    description TEXT,
+                    priority INTEGER,   -- 1 (high) to 3 (low)
+                    context TEXT,       -- trigger conditions
+                    created_at TIMESTAMP,
+                    executed_at TIMESTAMP  -- NULL if pending
+                )
+            """)
+
+            # 8. action_cooldowns: Cooldowns on proactive activities
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS action_cooldowns (
+                    action_type TEXT PRIMARY KEY,
+                    last_executed TIMESTAMP
+                )
+            """)
+
+            # 9. server_patterns: Learned server behavior statistics
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS server_patterns (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    pattern_type TEXT,      -- "peak_hours", "recurring_topic", "user_behavior"
+                    description TEXT,
+                    confidence REAL,        -- 0.0 to 1.0
+                    observation_count INTEGER DEFAULT 1,
+                    first_observed TIMESTAMP,
+                    last_observed TIMESTAMP
+                )
+            """)
+
             conn.commit()
             log.info("Database initialized successfully.")
 
@@ -218,6 +261,153 @@ class DBService:
             cursor.execute(
                 "SELECT user_msg, bot_reply, score FROM responses WHERE score < 3 ORDER BY id DESC LIMIT ?",
                 (limit,)
+            )
+            return [dict(r) for r in cursor.fetchall()]
+
+    # --- psyche ---
+    def save_psyche_raw(self, key: str, value: str):
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            now = datetime.now().isoformat()
+            cursor.execute(
+                "INSERT OR REPLACE INTO psyche (key, value, updated_at) VALUES (?, ?, ?)",
+                (key, value, now)
+            )
+            conn.commit()
+
+    def get_psyche_raw(self, key: str) -> str:
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT value FROM psyche WHERE key = ?", (key,))
+            row = cursor.fetchone()
+            return row["value"] if row else None
+
+    # --- agenda ---
+    def get_pending_agenda(self, priority: int = None) -> list:
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            if priority is not None:
+                cursor.execute(
+                    "SELECT id, description, priority, context FROM agenda WHERE executed_at IS NULL AND priority = ? ORDER BY priority ASC, created_at ASC",
+                    (priority,)
+                )
+            else:
+                cursor.execute(
+                    "SELECT id, description, priority, context FROM agenda WHERE executed_at IS NULL ORDER BY priority ASC, created_at ASC"
+                )
+            return [dict(r) for r in cursor.fetchall()]
+
+    def save_agenda(self, description: str, priority: int = 2, context: str = None):
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            now = datetime.now().isoformat()
+            cursor.execute(
+                "INSERT INTO agenda (description, priority, context, created_at) VALUES (?, ?, ?, ?)",
+                (description, priority, context, now)
+            )
+            conn.commit()
+
+    def mark_agenda_executed(self, agenda_id: int):
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            now = datetime.now().isoformat()
+            cursor.execute(
+                "UPDATE agenda SET executed_at = ? WHERE id = ?",
+                (now, agenda_id)
+            )
+            conn.commit()
+
+    # --- action_cooldowns ---
+    def get_cooldown(self, action_type: str) -> str:
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT last_executed FROM action_cooldowns WHERE action_type = ?", (action_type,))
+            row = cursor.fetchone()
+            return row["last_executed"] if row else None
+
+    def set_cooldown(self, action_type: str, last_executed: str = None):
+        if last_executed is None:
+            last_executed = datetime.now().isoformat()
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT OR REPLACE INTO action_cooldowns (action_type, last_executed) VALUES (?, ?)",
+                (action_type, last_executed)
+            )
+            conn.commit()
+
+    # --- today data for dream ---
+    def get_today_episodes(self) -> list:
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT user_id, summary, keywords, created_at FROM episodes WHERE created_at LIKE ? ORDER BY id ASC",
+                (f"{today_str}%",)
+            )
+            rows = cursor.fetchall()
+            result = []
+            for r in rows:
+                try:
+                    kw = json.loads(r["keywords"])
+                except Exception:
+                    kw = []
+                result.append({"user_id": r["user_id"], "summary": r["summary"], "keywords": kw, "created_at": r["created_at"]})
+            return result
+
+    def get_today_responses(self) -> list:
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT user_id, user_msg, bot_reply, score, created_at FROM responses WHERE created_at LIKE ? ORDER BY id ASC",
+                (f"{today_str}%",)
+            )
+            return [dict(r) for r in cursor.fetchall()]
+
+    def dream_done_today(self) -> bool:
+        val = self.get_psyche_raw("dream_last_run")
+        if not val:
+            return False
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        return val == today_str
+
+    def mark_dream_done_today(self):
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        self.save_psyche_raw("dream_last_run", today_str)
+
+    # --- server_patterns ---
+    def upsert_pattern(self, pattern_type: str, description: str, initial_confidence: float = 0.3):
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            now = datetime.now().isoformat()
+            cursor.execute(
+                "SELECT id, confidence, observation_count FROM server_patterns WHERE pattern_type = ? AND description = ?",
+                (pattern_type, description)
+            )
+            row = cursor.fetchone()
+            if row:
+                new_count = row["observation_count"] + 1
+                new_conf = min(1.0, row["confidence"] + 0.15)
+                cursor.execute(
+                    "UPDATE server_patterns SET confidence = ?, observation_count = ?, last_observed = ? WHERE id = ?",
+                    (new_conf, new_count, now, row["id"])
+                )
+            else:
+                cursor.execute(
+                    """INSERT INTO server_patterns 
+                       (pattern_type, description, confidence, observation_count, first_observed, last_observed) 
+                       VALUES (?, ?, ?, 1, ?, ?)""",
+                    (pattern_type, description, initial_confidence, now, now)
+                )
+            conn.commit()
+
+    def get_active_patterns(self, min_confidence: float = 0.5) -> list:
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT pattern_type, description, confidence FROM server_patterns WHERE confidence >= ? ORDER BY confidence DESC",
+                (min_confidence,)
             )
             return [dict(r) for r in cursor.fetchall()]
 
