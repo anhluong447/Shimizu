@@ -95,10 +95,23 @@ class AwarenessCog(commands.Cog):
         self.shimizu_heartbeat.cancel()
         self.dream_cycle_check.cancel()
 
-    # --- helper: get target channel ---
     def get_target_channel(self, guild):
         if not guild:
             return None
+            
+        from src.core.config import GUILD_ID
+        if GUILD_ID:
+            if str(guild.id) != str(GUILD_ID):
+                return None
+            general_chan = discord.utils.get(guild.text_channels, name='general')
+            if general_chan and general_chan.permissions_for(guild.me).send_messages:
+                return general_chan
+            # Fallback to any text channel named 'general'
+            for channel in guild.text_channels:
+                if channel.name == 'general' and channel.permissions_for(guild.me).send_messages:
+                    return channel
+            return None
+
         # Try the channel from the last message
         if self.world.last_message_per_channel:
             valid_channels = []
@@ -134,6 +147,13 @@ class AwarenessCog(commands.Cog):
     async def on_message(self, message):
         if message.author.bot:
             return
+            
+        from src.core.config import GUILD_ID
+        if GUILD_ID:
+            if not message.guild or str(message.guild.id) != str(GUILD_ID):
+                return
+            if getattr(message.channel, 'name', '') != 'general':
+                return
             
         # Update WorldState message record
         self.world.record_message(
@@ -192,6 +212,9 @@ class AwarenessCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
+        from src.core.config import GUILD_ID
+        if GUILD_ID and after.guild and str(after.guild.id) != str(GUILD_ID):
+            return
         # Detect online transition
         if before.status == discord.Status.offline and after.status != discord.Status.offline:
             self.world.online_members[after.id] = {
@@ -204,6 +227,12 @@ class AwarenessCog(commands.Cog):
     async def on_reaction_add(self, reaction, user):
         if user.bot:
             return
+        from src.core.config import GUILD_ID
+        if GUILD_ID:
+            if not reaction.message.guild or str(reaction.message.guild.id) != str(GUILD_ID):
+                return
+            if getattr(reaction.message.channel, 'name', '') != 'general':
+                return
         # Reaction counts as activity, updates rolling averages
         self.world.record_message(
             author_id=user.id,
@@ -223,6 +252,9 @@ class AwarenessCog(commands.Cog):
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
         if member.bot:
+            return
+        from src.core.config import GUILD_ID
+        if GUILD_ID and member.guild and str(member.guild.id) != str(GUILD_ID):
             return
         if not before.channel and after.channel:
             # User joined a voice channel
@@ -295,10 +327,14 @@ class AwarenessCog(commands.Cog):
             )
             return
 
-        guilds = self.bot.guilds
-        if not guilds:
+        from src.core.config import GUILD_ID
+        guild = None
+        if GUILD_ID:
+            guild = self.bot.get_guild(int(GUILD_ID))
+        if not guild and self.bot.guilds:
+            guild = self.bot.guilds[0]
+        if not guild:
             return
-        guild = guilds[0]
         
         # --- Check Agenda ---
         pending_agendas = db.get_pending_agenda(priority=1)  # Priority 1 first

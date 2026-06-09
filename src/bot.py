@@ -80,6 +80,15 @@ class ShimizuBot(commands.Bot):
             await message.channel.send(f"📦 **Loaded modules:** `{loaded}`")
             return
 
+        # Kiểm tra giới hạn máy chủ và kênh (nếu GUILD_ID được cấu hình)
+        if GUILD_ID:
+            is_owner = await self.is_owner(message.author)
+            if not is_owner:
+                if not message.guild or str(message.guild.id) != str(GUILD_ID):
+                    return
+                if getattr(message.channel, 'name', '') != 'general':
+                    return
+
         await self.process_commands(message)
 
 bot = ShimizuBot()
