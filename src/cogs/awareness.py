@@ -80,6 +80,17 @@ class AwarenessCog(commands.Cog):
         self.shimizu_heartbeat.start()
         self.dream_cycle_check.start()
 
+    async def send_debug_msg(self, content: str):
+        import os
+        debug_chan_id = int(os.getenv("DEBUG_CHANNEL_ID", "0"))
+        if debug_chan_id:
+            channel = self.bot.get_channel(debug_chan_id)
+            if channel:
+                try:
+                    await channel.send(f"```[Heartbeat ACT] {content}```")
+                except Exception as e:
+                    log.error(f"Failed to send debug msg to channel {debug_chan_id}: {e}")
+
     def cog_unload(self):
         self.shimizu_heartbeat.cancel()
         self.dream_cycle_check.cancel()
@@ -223,8 +234,8 @@ class AwarenessCog(commands.Cog):
 
     # --- Heartbeat Loop (5 minutes) ---
     @tasks.loop(minutes=5)
-    async def shimizu_heartbeat(self):
-        log.info("Starting heartbeat loop evaluation...")
+    async def shimizu_heartbeat(self, force=False):
+        log.info(f"Starting heartbeat loop evaluation (force={force})...")
         
         # 1. Update weather context if needed
         try:
@@ -238,31 +249,52 @@ class AwarenessCog(commands.Cog):
         # Refresh WorldState variables
         self.world.recompute_state()
         psyche = load_psyche()
+        db = get_db_service()
         
         # --- Hard gates ---
-        # 1. Night check (0h - 6h)
-        hour = datetime.now().hour
-        if 0 <= hour < 6:
-            log.info("Heartbeat Gate: Night mode (0h-6h) active. Sleeping...")
-            return
-            
-        # 2. Minimum cooldown between actions (45 mins)
-        min_cooldown_passed = minutes_since(psyche.last_acted) >= 45.0
-        if not min_cooldown_passed:
-            log.info(f"Heartbeat Gate: Cooldown active. Last acted {minutes_since(psyche.last_acted):.1f} mins ago (need 45 mins).")
-            return
-            
-        # 3. Active conversation check (ignore if users are actively talking to each other)
-        if self.world.active_conversation:
-            log.info("Heartbeat Gate: Users are in active conversation. Shimizu stays silent.")
-            return
-            
-        # 4. Ignored recently check (don't force conversation if ignored)
-        if self.world.times_ignored_recently >= 3:
-            log.info(f"Heartbeat Gate: Ignored recently count = {self.world.times_ignored_recently}. Shimizu withdraws.")
+        passed_gates = []
+        failed_gates = []
+
+        if force:
+            passed_gates = ["force_bypass"]
+        else:
+            # 1. Night check (0h - 6h)
+            hour = datetime.now().hour
+            if 0 <= hour < 6:
+                failed_gates.append("not_night")
+            else:
+                passed_gates.append("not_night")
+                
+            # 2. Minimum cooldown between actions (45 mins)
+            min_cooldown_passed = minutes_since(psyche.last_acted) >= 45.0
+            if min_cooldown_passed:
+                passed_gates.append("cooldown_ok")
+            else:
+                failed_gates.append("cooldown_ok")
+                
+            # 3. Active conversation check
+            if not self.world.active_conversation:
+                passed_gates.append("not_active_conversation")
+            else:
+                failed_gates.append("not_active_conversation")
+                
+            # 4. Ignored recently check
+            if self.world.times_ignored_recently < 3:
+                passed_gates.append("not_ignored_recently")
+            else:
+                failed_gates.append("not_ignored_recently")
+
+        if failed_gates:
+            log.info(f"Heartbeat Gate check failed: {failed_gates}. Skipping heartbeat action.")
+            db.log_heartbeat(
+                gates_passed=passed_gates,
+                gates_failed=failed_gates,
+                signals_score=0.0,
+                action_taken=None,
+                action_reason=f"Blocked by gates: {', '.join(failed_gates)}"
+            )
             return
 
-        db = get_db_service()
         guilds = self.bot.guilds
         if not guilds:
             return
@@ -274,27 +306,61 @@ class AwarenessCog(commands.Cog):
             pending_agendas = db.get_pending_agenda()  # Priority 2/3 fallback
             
         for item in pending_agendas:
-            if self.is_context_suitable(item):
+            if force or self.is_context_suitable(item):
                 log.info(f"Executing agenda item: {item['description']}")
+                db.log_heartbeat(
+                    gates_passed=passed_gates,
+                    gates_failed=failed_gates,
+                    signals_score=0.0,
+                    action_taken="agenda_execution",
+                    action_reason=f"Executed agenda item: {item['description']}"
+                )
                 await self.execute_agenda_item(item, psyche, guild)
                 return
 
         # --- Entropy Check ---
-        if psyche.restlessness > 0.75:
+        if not force and psyche.restlessness > 0.75:
             log.info(f"Restlessness high ({psyche.restlessness:.2f}). Triggering Entropy Action.")
+            db.log_heartbeat(
+                gates_passed=passed_gates,
+                gates_failed=failed_gates,
+                signals_score=0.0,
+                action_taken="entropy_action",
+                action_reason=f"Restlessness too high ({psyche.restlessness:.2f})"
+            )
             await self.entropy_action(psyche, guild)
             return
 
         # --- Signal Evaluation ---
         signals = self.evaluate_signals(psyche)
         log.info(f"Evaluated signals: score={signals['score']:.2f}, reasons={signals['reasons']}")
-        if signals["score"] < 0.6:
+        if not force and signals["score"] < 0.6:
+            db.log_heartbeat(
+                gates_passed=passed_gates,
+                gates_failed=failed_gates,
+                signals_score=signals["score"],
+                action_taken=None,
+                action_reason=f"Signals score ({signals['score']:.2f}) below threshold"
+            )
             return
 
         # --- LLM decision (classify only) ---
         decision = await self.decide_action(signals, psyche)
         log.info(f"LLM Heartbeat Decision: {decision}")
-        if not decision.get("should_act"):
+        
+        should_act = decision.get("should_act", False) or force
+        action_type = decision.get("action_type")
+        reasoning = decision.get("reasoning", "")
+        
+        db.log_heartbeat(
+            gates_passed=passed_gates,
+            gates_failed=failed_gates,
+            signals_score=signals["score"],
+            action_taken=action_type if should_act else None,
+            action_reason=f"LLM Decision. should_act={should_act}. reasoning={reasoning}"
+        )
+        
+        if not should_act:
             return
 
         # Execute action decided by LLM
@@ -353,7 +419,10 @@ class AwarenessCog(commands.Cog):
                 # Update psyche
                 psyche.last_acted = datetime.now()
                 psyche.restlessness = max(0.1, psyche.restlessness - 0.3)
-                save_psyche(psyche)
+                save_psyche(psyche, trigger="agenda")
+
+                # Send debug log
+                await self.send_debug_msg(f"agenda_execution: {agenda_item['description']}")
                 
             except Exception as e:
                 log.error(f"Error executing agenda item {agenda_item['id']}: {e}")
@@ -497,15 +566,18 @@ class AwarenessCog(commands.Cog):
                 if action_type == "idle_comment" and psyche.unresolved_thought:
                     psyche.unresolved_thought = ""
                     
-                save_psyche(psyche)
+                save_psyche(psyche, trigger="proactive_action")
+                
+                # Send debug log
+                await self.send_debug_msg(f"proactive_action: {action_type} (reason: {decision.get('reasoning', '')})")
                 
             except Exception as e:
                 log.error(f"Error executing proactive action {action_type}: {e}")
 
     # --- Entropy Engine ---
-    async def entropy_action(self, psyche, guild):
+    async def entropy_action(self, psyche, guild, force=False):
         import random
-        pool = [item for item in ENTROPY_POOL if item["condition"](psyche)]
+        pool = [item for item in ENTROPY_POOL if force or item["condition"](psyche)]
         if not pool:
             return
             
@@ -521,15 +593,16 @@ class AwarenessCog(commands.Cog):
             upto += item["weight"]
             
         action_type = selected["type"]
-        log.info(f"Triggering entropy action: {action_type}")
+        log.info(f"Triggering entropy action: {action_type} (force={force})")
         
         db = get_db_service()
         cooldown_key = "entropy_action"
-        last_ex = db.get_cooldown(cooldown_key)
-        if last_ex:
-            if minutes_since(datetime.fromisoformat(last_ex)) < 120.0:  # 2 hours cooldown
-                log.info("Entropy action is on cooldown")
-                return
+        if not force:
+            last_ex = db.get_cooldown(cooldown_key)
+            if last_ex:
+                if minutes_since(datetime.fromisoformat(last_ex)) < 120.0:  # 2 hours cooldown
+                    log.info("Entropy action is on cooldown")
+                    return
 
         channel = self.get_target_channel(guild)
         if not channel:
@@ -546,7 +619,10 @@ class AwarenessCog(commands.Cog):
             db.set_cooldown(cooldown_key)
             psyche.last_acted = datetime.now()
             psyche.restlessness = max(0.1, psyche.restlessness - 0.3)
-            save_psyche(psyche)
+            save_psyche(psyche, trigger="entropy_silent_gif")
+            
+            # Send debug log
+            await self.send_debug_msg(f"entropy_action: silent_gif")
             return
 
         prompt = ""
@@ -576,7 +652,10 @@ class AwarenessCog(commands.Cog):
                 db.set_cooldown(cooldown_key)
                 psyche.last_acted = datetime.now()
                 psyche.restlessness = max(0.1, psyche.restlessness - 0.4)
-                save_psyche(psyche)
+                save_psyche(psyche, trigger=f"entropy_{action_type}")
+                
+                # Send debug log
+                await self.send_debug_msg(f"entropy_action: {action_type}")
             except Exception as e:
                 log.error(f"Error executing entropy action {action_type}: {e}")
 
@@ -690,7 +769,15 @@ class AwarenessCog(commands.Cog):
                                 user_beliefs.pop(0)
                             psyche.beliefs_about_users[about] = user_beliefs
                 
-                save_psyche(psyche)
+                save_psyche(psyche, trigger="dream_cycle")
+                db.log_dream(
+                    episodes_reviewed=len(today_episodes),
+                    energy_delta=data.get("energy_delta", 0.0),
+                    new_interest=data.get("new_interest"),
+                    unresolved=data.get("unresolved"),
+                    agenda_created=data.get("agenda_tomorrow", []),
+                    belief_update=belief_update
+                )
                 db.mark_dream_done_today()
                 log.info("Dream Cycle completed successfully.")
         except Exception as e:

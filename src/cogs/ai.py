@@ -170,7 +170,7 @@ class AICog(commands.Cog):
                 psyche.attachment[user_id_str] = min(1.0, psyche.attachment.get(user_id_str, 0.0) + 0.05)
                 psyche.restlessness = max(0.0, psyche.restlessness - 0.2)
                 psyche.last_acted = datetime.now()
-                save_psyche(psyche)
+                save_psyche(psyche, trigger="user_message")
                 
                 world.last_shimizu_spoke = datetime.now()
                 world.times_ignored_recently = 0

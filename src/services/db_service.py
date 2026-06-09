@@ -118,6 +118,47 @@ class DBService:
                 )
             """)
 
+            # 10. heartbeat_log: Log each heartbeat tick status
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS heartbeat_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    tick_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    gates_passed TEXT,      -- JSON array
+                    gates_failed TEXT,      -- JSON array
+                    signals_score REAL,
+                    action_taken TEXT,
+                    action_reason TEXT
+                )
+            """)
+
+            # 11. psyche_log: Psyche snapshots logged on significant changes
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS psyche_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    logged_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    energy REAL,
+                    curiosity REAL,
+                    restlessness REAL,
+                    current_interest TEXT,
+                    unresolved_thought TEXT,
+                    trigger TEXT
+                )
+            """)
+
+            # 12. dream_log: Dream cycle output summary
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS dream_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ran_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    episodes_reviewed INTEGER,
+                    energy_delta REAL,
+                    new_interest TEXT,
+                    unresolved TEXT,
+                    agenda_created TEXT,    -- JSON array
+                    belief_update TEXT      -- JSON
+                )
+            """)
+
             conn.commit()
             log.info("Database initialized successfully.")
 
@@ -410,6 +451,63 @@ class DBService:
                 (min_confidence,)
             )
             return [dict(r) for r in cursor.fetchall()]
+
+    # --- debug logging methods ---
+    def log_heartbeat(self, gates_passed: list, gates_failed: list, 
+                      signals_score: float, action_taken: str = None, 
+                      action_reason: str = None):
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO heartbeat_log (gates_passed, gates_failed, signals_score, action_taken, action_reason) VALUES (?,?,?,?,?)",
+                (json.dumps(gates_passed), json.dumps(gates_failed), 
+                 signals_score, action_taken, action_reason)
+            )
+            conn.commit()
+
+    def get_heartbeat_log(self, limit: int = 20) -> list:
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM heartbeat_log ORDER BY tick_at DESC LIMIT ?", (limit,))
+            rows = cursor.fetchall()
+            return [dict(r) for r in rows]
+
+    def log_psyche(self, energy: float, curiosity: float, restlessness: float,
+                   current_interest: str, unresolved: str, trigger: str):
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO psyche_log (energy, curiosity, restlessness, current_interest, unresolved_thought, trigger) VALUES (?,?,?,?,?,?)",
+                (energy, curiosity, restlessness, current_interest, unresolved, trigger)
+            )
+            conn.commit()
+
+    def log_dream(self, episodes_reviewed: int, energy_delta: float,
+                  new_interest: str, unresolved: str, 
+                  agenda_created: list, belief_update: dict = None):
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO dream_log (episodes_reviewed, energy_delta, new_interest, unresolved, agenda_created, belief_update) VALUES (?,?,?,?,?,?)",
+                (episodes_reviewed, energy_delta, new_interest, unresolved,
+                 json.dumps(agenda_created), json.dumps(belief_update) if belief_update else None)
+            )
+            conn.commit()
+
+    def get_latest_dream(self) -> dict:
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM dream_log ORDER BY ran_at DESC LIMIT 1")
+            row = cursor.fetchone()
+            return dict(row) if row else None
+
+    def cleanup_old_logs(self, days: int = 7):
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM heartbeat_log WHERE tick_at < datetime('now', ?)", (f'-{days} days',))
+            cursor.execute("DELETE FROM psyche_log WHERE logged_at < datetime('now', ?)", (f'-{days} days',))
+            cursor.execute("DELETE FROM dream_log WHERE ran_at < datetime('now', ?)", (f'-{days} days',))
+            conn.commit()
 
 # Singleton helper
 _db_service = None

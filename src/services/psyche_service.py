@@ -89,7 +89,7 @@ def load_psyche() -> ShimizuPsyche:
     if not raw:
         # Create new default psyche and save it
         p = ShimizuPsyche()
-        save_psyche(p)
+        save_psyche(p, trigger="initial")
         return p
     try:
         data = json.loads(raw)
@@ -101,18 +101,28 @@ def load_psyche() -> ShimizuPsyche:
         if hours_passed > 0.1:  # decay every 6 mins or more
             apply_natural_decay(p, hours_passed)
             p.last_updated = now
-            save_psyche(p)
+            save_psyche(p, trigger="decay")
             
         return p
     except Exception as e:
         log.error(f"Failed to load psyche, returning default: {e}", exc_info=True)
         return ShimizuPsyche()
 
-def save_psyche(psyche: ShimizuPsyche):
+def save_psyche(psyche: ShimizuPsyche, trigger: str = "unknown"):
     try:
         db = get_db_service()
         data = psyche.to_dict()
         db.save_psyche_raw("shimizu_psyche", json.dumps(data))
+        
+        # Log psyche snapshot
+        db.log_psyche(
+            energy=psyche.energy,
+            curiosity=psyche.curiosity,
+            restlessness=psyche.restlessness,
+            current_interest=psyche.current_interest,
+            unresolved=psyche.unresolved_thought,
+            trigger=trigger
+        )
     except Exception as e:
         log.error(f"Failed to save psyche: {e}", exc_info=True)
 
