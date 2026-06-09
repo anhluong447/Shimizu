@@ -29,6 +29,10 @@ class ShimizuHelp(commands.HelpCommand):
             "🛠️ Tiện Ích & Fun": ["Utility", "TarotCog", "Trivia"],
             "📋 Hệ Thống": ["General", "Presence"]
         }
+        
+        is_owner = await ctx.bot.is_owner(ctx.author)
+        if is_owner:
+            categories["⚙️ Quản Trị & Debug"] = ["Debug"]
 
         for cat_name, cog_names in categories.items():
             cmd_list = []

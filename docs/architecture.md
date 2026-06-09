@@ -16,11 +16,11 @@ D:\Shits\Bot\
 ├── DEV_LOG.md                  # Development notes and log history.
 │
 ├── data/                       # Local data storage.
-│   └── shimizu.db              # SQLite Database holding history, memories, psyche, cooldowns, and patterns.
+│   └── shimizu.db              # SQLite Database holding history, memories, psyche, cooldowns, patterns, and logs.
 │
 ├── docs/                       # Project documentation.
 │   ├── architecture.md         # Architecture and structural overview.
-│   └── usage.md                # Usage manual (how bot's mind and proactive engine works).
+│   └── usage.md                # Usage manual (how bot's mind, proactive engine, and debug system works).
 │
 ├── updates/                    # Project roadmaps and planning guides.
 │   ├── SHIMIZU_ROADMAP.md      # Future feature roadmaps.
@@ -29,7 +29,8 @@ D:\Shits\Bot\
 ├── scratch/                    # Temporary developer scripts (ignored by Git).
 │   ├── test_simple_ai.py       # AICog integration testing.
 │   ├── test_refusal.py         # Refusal testing harness.
-│   └── test_psyche.py          # Psyche and WorldState dry-run tester.
+│   ├── test_psyche.py          # Psyche and WorldState dry-run tester.
+│   └── test_observability.py   # Observability and database logging tester.
 │
 └── src/                        # Core codebase.
     ├── core/                   # System core configurations.
@@ -39,7 +40,8 @@ D:\Shits\Bot\
     │
     ├── cogs/                   # Discord Cogs (Command categories).
     │   ├── ai.py               # AICog: Chatbot prompt generation and interactive ask command.
-    │   └── awareness.py        # AwarenessCog: Real-time listeners, Heartbeat proactive loops, and Dream Cycles.
+    │   ├── awareness.py        # AwarenessCog: Real-time listeners, Heartbeat proactive loops, and Dream Cycles.
+    │   └── debug.py            # DebugCog: Owner-only administrative and observability commands.
     │
     └── services/               # API clients, state engines, and services.
         ├── openrouter_client.py# OpenRouter chat client with model rotation.
@@ -47,7 +49,7 @@ D:\Shits\Bot\
         ├── groq_rotator.py     # Groq Async Client with key/model rotation.
         ├── unified_rotator.py  # Unified interface to access OpenRouter/Gemini/Groq.
         ├── weather.py          # Weather lookup helper.
-        ├── db_service.py       # SQLite interface for facts, messages, cooldowns, agendas, and patterns.
+        ├── db_service.py       # SQLite interface for facts, messages, cooldowns, agendas, patterns, and logs.
         ├── psyche_service.py   # ShimizuPsyche dataclass, natural decay formulas, and serialization.
         └── world_state.py      # WorldState RAM tracker for rolling server energy and active conversations.
 ```
@@ -59,7 +61,7 @@ D:\Shits\Bot\
 ### 1. Bot Shell (`main.py`)
 - Initializes the `discord.ext.commands.Bot` instance.
 - Configures gateway intents (including `members`, `presences`, `reactions`, and `voice_states`).
-- Dynamically loads cogs located under `src/cogs/`.
+- Dynamically loads cogs located under `src/cogs/` (including `DebugCog` automatically).
 - Starts the bot connection using `DISCORD_TOKEN`.
 
 ### 2. Living Entity Core Services (`src/services/`)
@@ -72,6 +74,9 @@ Provides persistent storage for memories, short-term history, caching, and cogni
 - `agenda`: Action items queue for proactive tasks.
 - `action_cooldowns`: Strict rate limit trackers for bot proactive messages.
 - `server_patterns`: Statistical metrics (peak hours, common topics).
+- `heartbeat_log`: Log records of every heartbeat tick containing gate flags, signal score, actions, and reasonings.
+- `psyche_log`: Snaphots of emotional states triggered by decay, manual settings, dream cycles, or user chats.
+- `dream_log`: Daily summaries, energy delta, new interests, unresolved thoughts, tomorrow's agendas, and belief updates.
 
 #### B. Psyche Engine (`psyche_service.py`)
 - Holds `ShimizuPsyche` representing emotional variables (`energy`, `curiosity`, `restlessness`), user attachments (`attachment`), self-beliefs (`beliefs_about_self`), and user-specific beliefs (`beliefs_about_users`).

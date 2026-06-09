@@ -77,3 +77,31 @@ Khi server chìm vào im lặng kéo dài ít nhất 2 giờ và đã hết ngà
     - *Khung giờ cao điểm:* Khung giờ server hoạt động sôi nổi nhất để chuẩn bị tinh thần đón tiếp.
     - *Chủ đề lặp lại:* Những keyword được nhắc đến nhiều để đưa vào vùng quan tâm.
     - *Mối quan hệ thành viên:* Tìm ra các cặp đôi thường hoạt động cùng múi giờ để dễ dàng bắt chuyện chung.
+
+---
+
+## 5. Giám sát & Gỡ lỗi (Debug & Observability)
+
+Nhằm đảm bảo tính minh bạch và khả năng kiểm thử "đời sống nội tâm" của Shimizu mà không làm ảnh hưởng đến hiệu năng, hệ thống hỗ trợ giám sát toàn diện qua SQLite logs và Kênh Discord gỡ lỗi chuyên biệt.
+
+### Kênh Log Real-time
+Nếu biến môi trường `DEBUG_CHANNEL_ID` được cấu hình, Shimizu sẽ tự động gửi log trực tiếp đến kênh Discord chỉ định mỗi khi thực hiện hành động chủ động từ Heartbeat Tick (ví dụ: `[Heartbeat ACT] sharing_thought: ...`).
+
+### Bảng lệnh Debug (Chỉ dành cho Owner)
+Các lệnh gỡ lỗi được đăng ký trong Cog `Debug` và giới hạn quyền thực thi cho chủ sở hữu bot:
+
+| Lệnh | Mô tả | Ứng dụng |
+| :--- | :--- | :--- |
+| `!debug_help` | Hiển thị danh sách và mô tả tất cả lệnh debug. | Tra cứu nhanh. |
+| `!debug_psyche` | Hiển thị biểu đồ thanh trực quan về `energy`, `curiosity`, `restlessness`. | Kiểm tra trạng thái cảm xúc hiện tại. |
+| `!debug_psyche_history [N]` | Xem lịch sử N lần biến đổi trạng thái cảm xúc gần nhất. | Phân tích xu hướng drift cảm xúc theo trigger. |
+| `!debug_heartbeat [N]` | Xem trạng thái N tick heartbeat gần nhất (đã bỏ qua/thực thi và lý do). | Debug tại sao bot im lặng (gate chặn). |
+| `!debug_dream` | Hiển thị chi tiết phản chiếu từ Dream Cycle gần nhất. | Theo dõi việc học hỏi, cập nhật belief và agenda. |
+| `!debug_memory [@user]` | Hiển thị các facts (ký ức dài hạn) và tóm tắt episodes của một user. | Xem bot đang nhớ gì về người dùng. |
+| `!debug_scores [N]` | Xem điểm số đánh giá chất lượng câu trả lời từ LLM Judge. | Giám sát độ lệch nhân cách (jailbreak check). |
+| `!debug_db` | Kiểm tra kích thước file DB sqlite và số dòng dữ liệu từng bảng. | Giám sát sức khỏe cơ sở dữ liệu. |
+| `!debug_force_heartbeat` | Bỏ qua mọi gate điều kiện, cưỡng bức chạy heartbeat tick ngay lập tức. | Test phản ứng chủ động. |
+| `!debug_force_dream` | Cưỡng bức chạy Dream Cycle ngay lập tức. | Test phản chiếu và tự học hỏi. |
+| `!debug_force_entropy` | Cưỡng bức kích hoạt một hành động Entropy ngẫu nhiên của bot. | Test hành vi tự phát (restless). |
+| `!debug_set_psyche <field> <value>`| Override thủ công giá trị của một thuộc tính cảm xúc (0.0 - 1.0). | Đưa bot vào trạng thái restless/low-energy để test. |
+| `!debug_cleanup [days]` | Dọn dẹp các bản ghi log cũ hơn N ngày trong SQLite. | Tối ưu dung lượng lưu trữ. |
