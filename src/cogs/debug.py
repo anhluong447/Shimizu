@@ -39,7 +39,7 @@ curiosity     {bar(r['curiosity'])}  {r['curiosity']:.2f}
 restlessness  {bar(r['restlessness'])}  {r['restlessness']:.2f}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 interest    : {r['current_interest'] or '(none)'}
-unresolved  : {r['unresolved'] or '(none)'}
+unresolved  : {r['unresolved_thought'] or '(none)'}
 trigger     : {r['trigger']}
 ```"""
         await ctx.send(msg)
