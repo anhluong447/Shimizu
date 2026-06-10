@@ -1,10 +1,42 @@
 import asyncio
 import hashlib
 import logging
+import aiohttp
 from ddgs import DDGS
 from src.services.db_service import get_db_service
 
 log = logging.getLogger("SearchService")
+
+JINA_BASE = "https://r.jina.ai/"
+JINA_TIMEOUT = 5  # seconds — đủ cho wiki page, không block quá lâu
+SNIPPET_MIN_LENGTH = 300  # dưới mức này thì fetch full page
+
+async def fetch_full_content(url: str, max_chars: int = 3000) -> str:
+    """
+    Fetch nội dung đầy đủ của một URL qua Jina Reader.
+    Trả về plain text, cắt ở max_chars.
+    Trả về None nếu timeout hoặc lỗi.
+    """
+    try:
+        jina_url = JINA_BASE + url
+        headers = {"Accept": "text/plain"}
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                jina_url,
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=JINA_TIMEOUT)
+            ) as resp:
+                if resp.status != 200:
+                    return None
+                text = await resp.text()
+                # Cắt bớt, giữ phần đầu là relevant nhất
+                return text[:max_chars] if len(text) > max_chars else text
+    except asyncio.TimeoutError:
+        log.warning(f"Jina fetch timeout for: {url}")
+        return None
+    except Exception as e:
+        log.warning(f"Jina fetch failed for {url}: {e}")
+        return None
 
 async def determine_search_intent(prompt: str, rotator) -> bool:
     """Quyết định xem câu hỏi có cần tìm kiếm Web hay không."""
@@ -84,11 +116,45 @@ async def search_web_async(prompt: str, rotator) -> str:
     if not results:
         return None
         
-    # 5. Định dạng kết quả tìm kiếm
-    formatted = "\n".join(
-        f"- Tiêu đề: {r.get('title', '')} | URL: {r.get('href', '')}\n  Nội dung: {r.get('body', '')}"
-        for r in results
-    )
+    # 5. Build context: snippet trước, fetch full nếu snippet ngắn
+    context_parts = []
+
+    for i, r in enumerate(results[:3]):  # chỉ xử lý top 3
+        title = r.get('title', '')
+        url = r.get('href', '')
+        snippet = r.get('body', '')
+
+        if len(snippet) >= SNIPPET_MIN_LENGTH:
+            # Snippet đủ dài → dùng luôn, không cần fetch
+            context_parts.append(
+                f"[Nguồn {i+1}] {title}\n{snippet}"
+            )
+        else:
+            # Snippet quá ngắn → fetch full page qua Jina
+            log.info(f"Snippet too short ({len(snippet)} chars), fetching full: {url}")
+            full_content = await fetch_full_content(url)
+
+            if full_content:
+                context_parts.append(
+                    f"[Nguồn {i+1}] {title} ({url})\n{full_content}"
+                )
+            else:
+                # Jina fail → fallback về snippet dù ngắn
+                context_parts.append(
+                    f"[Nguồn {i+1}] {title}\n{snippet}"
+                )
+
+        # Chỉ cần 1 full content là đủ cho hầu hết queries
+        # Nếu đã có full content từ result đầu tiên, skip fetch cho các result sau
+        if i == 0 and len(context_parts[0]) > 1000:
+            # Thêm snippets của các result còn lại không cần fetch
+            for j, remaining in enumerate(results[1:3], 2):
+                context_parts.append(
+                    f"[Nguồn {j}] {remaining.get('title', '')}\n{remaining.get('body', '')}"
+                )
+            break
+
+    formatted = "\n\n".join(context_parts)
     
     # 6. Lưu cache
     db.save_search_cache(query_hash, formatted)
