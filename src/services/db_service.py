@@ -4,6 +4,7 @@ import json
 import logging
 import re
 from datetime import datetime
+from src.core.config import vietnam_now
 
 log = logging.getLogger("DBService")
 DB_PATH = os.path.join("data", "shimizu.db")
@@ -179,7 +180,7 @@ class DBService:
             # Delete old messages first
             cursor.execute("DELETE FROM message_history WHERE user_id = ?", (str(user_id),))
             # Insert the new list
-            now = datetime.now().isoformat()
+            now = vietnam_now().isoformat()
             for msg in messages:
                 cursor.execute(
                     "INSERT INTO message_history (user_id, role, content, created_at) VALUES (?, ?, ?, ?)",
@@ -197,7 +198,7 @@ class DBService:
     def save_fact(self, user_id: str, key: str, value: str):
         with self._get_conn() as conn:
             cursor = conn.cursor()
-            now = datetime.now().isoformat()
+            now = vietnam_now().isoformat()
             cursor.execute(
                 """INSERT OR REPLACE INTO user_facts (user_id, key, value, updated_at) 
                    VALUES (?, ?, ?, ?)""",
@@ -216,7 +217,7 @@ class DBService:
     def save_episode(self, user_id: str, summary: str, keywords: list):
         with self._get_conn() as conn:
             cursor = conn.cursor()
-            now = datetime.now().isoformat()
+            now = vietnam_now().isoformat()
             cursor.execute(
                 "INSERT INTO episodes (user_id, summary, keywords, created_at) VALUES (?, ?, ?, ?)",
                 (str(user_id), summary.strip(), json.dumps(keywords), now)
@@ -270,15 +271,18 @@ class DBService:
             row = cursor.fetchone()
             if row:
                 created_at = datetime.fromisoformat(row["created_at"])
+                if created_at.tzinfo is None:
+                    from src.core.config import TIMEZONE
+                    created_at = created_at.replace(tzinfo=TIMEZONE)
                 # Expire after 24 hours
-                if (datetime.now() - created_at).total_seconds() < 86400:
+                if (vietnam_now() - created_at).total_seconds() < 86400:
                     return row["result"]
             return None
 
     def save_search_cache(self, query_hash: str, result: str):
         with self._get_conn() as conn:
             cursor = conn.cursor()
-            now = datetime.now().isoformat()
+            now = vietnam_now().isoformat()
             cursor.execute(
                 "INSERT OR REPLACE INTO search_cache (query_hash, result, created_at) VALUES (?, ?, ?)",
                 (query_hash, result, now)
@@ -289,7 +293,7 @@ class DBService:
     def save_response(self, user_id: str, user_msg: str, bot_reply: str, score: int):
         with self._get_conn() as conn:
             cursor = conn.cursor()
-            now = datetime.now().isoformat()
+            now = vietnam_now().isoformat()
             cursor.execute(
                 "INSERT INTO responses (user_id, user_msg, bot_reply, score, created_at) VALUES (?, ?, ?, ?, ?)",
                 (str(user_id), user_msg, bot_reply, score, now)
@@ -309,7 +313,7 @@ class DBService:
     def save_psyche_raw(self, key: str, value: str):
         with self._get_conn() as conn:
             cursor = conn.cursor()
-            now = datetime.now().isoformat()
+            now = vietnam_now().isoformat()
             cursor.execute(
                 "INSERT OR REPLACE INTO psyche (key, value, updated_at) VALUES (?, ?, ?)",
                 (key, value, now)
@@ -341,7 +345,7 @@ class DBService:
     def save_agenda(self, description: str, priority: int = 2, context: str = None):
         with self._get_conn() as conn:
             cursor = conn.cursor()
-            now = datetime.now().isoformat()
+            now = vietnam_now().isoformat()
             cursor.execute(
                 "INSERT INTO agenda (description, priority, context, created_at) VALUES (?, ?, ?, ?)",
                 (description, priority, context, now)
@@ -351,7 +355,7 @@ class DBService:
     def mark_agenda_executed(self, agenda_id: int):
         with self._get_conn() as conn:
             cursor = conn.cursor()
-            now = datetime.now().isoformat()
+            now = vietnam_now().isoformat()
             cursor.execute(
                 "UPDATE agenda SET executed_at = ? WHERE id = ?",
                 (now, agenda_id)
@@ -368,7 +372,7 @@ class DBService:
 
     def set_cooldown(self, action_type: str, last_executed: str = None):
         if last_executed is None:
-            last_executed = datetime.now().isoformat()
+            last_executed = vietnam_now().isoformat()
         with self._get_conn() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -379,7 +383,7 @@ class DBService:
 
     # --- today data for dream ---
     def get_today_episodes(self) -> list:
-        today_str = datetime.now().strftime("%Y-%m-%d")
+        today_str = vietnam_now().strftime("%Y-%m-%d")
         with self._get_conn() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -397,7 +401,7 @@ class DBService:
             return result
 
     def get_today_responses(self) -> list:
-        today_str = datetime.now().strftime("%Y-%m-%d")
+        today_str = vietnam_now().strftime("%Y-%m-%d")
         with self._get_conn() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -410,18 +414,18 @@ class DBService:
         val = self.get_psyche_raw("dream_last_run")
         if not val:
             return False
-        today_str = datetime.now().strftime("%Y-%m-%d")
+        today_str = vietnam_now().strftime("%Y-%m-%d")
         return val == today_str
-
+    
     def mark_dream_done_today(self):
-        today_str = datetime.now().strftime("%Y-%m-%d")
+        today_str = vietnam_now().strftime("%Y-%m-%d")
         self.save_psyche_raw("dream_last_run", today_str)
 
     # --- server_patterns ---
     def upsert_pattern(self, pattern_type: str, description: str, initial_confidence: float = 0.3):
         with self._get_conn() as conn:
             cursor = conn.cursor()
-            now = datetime.now().isoformat()
+            now = vietnam_now().isoformat()
             cursor.execute(
                 "SELECT id, confidence, observation_count FROM server_patterns WHERE pattern_type = ? AND description = ?",
                 (pattern_type, description)

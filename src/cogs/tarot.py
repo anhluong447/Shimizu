@@ -3,6 +3,7 @@ import json
 import random
 import asyncio
 from datetime import datetime, timedelta
+from src.core.config import vietnam_now
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -170,7 +171,7 @@ class Tarot(commands.Cog):
             elif rev and self.history[user_id].get('last_rev'):
                 personal_msg = "👁️‍🗨️ Lại là một lá ngược. Năng lượng của bạn dạo này hơi tắc nghẽn rồi đấy."
 
-        self.history[user_id] = {'last_draw': card['id'], 'last_rev': rev, 'timestamp': datetime.now().isoformat()}
+        self.history[user_id] = {'last_draw': card['id'], 'last_rev': rev, 'timestamp': vietnam_now().isoformat()}
         self._save_history()
 
         view = TarotCardView(self.bot, card, rev, affinity, personal_msg, ctx.author)

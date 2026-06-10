@@ -5,6 +5,8 @@ import logging
 
 log = logging.getLogger("WorldState")
 
+from src.core.config import vietnam_now
+
 @dataclass
 class WorldState:
     # Server awareness
@@ -23,15 +25,15 @@ class WorldState:
     weather_context: str = "Thời tiết mát mẻ"
     
     # Shimizu self-awareness
-    last_shimizu_spoke: datetime = field(default_factory=datetime.now)
+    last_shimizu_spoke: datetime = field(default_factory=vietnam_now)
     times_ignored_recently: int = 0
     
     # Internal sliding windows
     _msg_timestamps_30m: list[float] = field(default_factory=list) # timestamps of messages in last 30 minutes
     _recent_msg_details: list[dict] = field(default_factory=list)  # [{"author_id": int, "timestamp": float}] in last 5 minutes
-
+ 
     def update_time_of_day(self):
-        hour = datetime.now().hour
+        hour = vietnam_now().hour
         if 5 <= hour < 12:
             self.time_of_day = "morning"
         elif 12 <= hour < 18:

@@ -131,7 +131,7 @@ class Utility(commands.Cog):
             if notif['time'] == current_time:
                 channel = None
                 for guild in self.bot.guilds:
-                    channel = discord.utils.get(guild.text_channels, name='general')
+                    channel = discord.utils.get(guild.text_channels, name='bot')
                     if channel:
                         break
                 

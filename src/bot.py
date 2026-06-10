@@ -86,7 +86,7 @@ class ShimizuBot(commands.Bot):
             if not is_owner:
                 if not message.guild or str(message.guild.id) != str(GUILD_ID):
                     return
-                if getattr(message.channel, 'name', '') != 'general':
+                if getattr(message.channel, 'name', '') != 'bot':
                     return
 
         await self.process_commands(message)

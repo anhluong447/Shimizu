@@ -7,6 +7,7 @@ import time
 import asyncio
 from datetime import datetime, timedelta
 import logging
+from src.core.config import vietnam_now
 
 from src.core.logger import log
 from src.services.db_service import get_db_service
@@ -62,11 +63,17 @@ def minutes_since(ts) -> float:
     if isinstance(ts, (int, float)):
         return (time.time() - ts) / 60.0
     if isinstance(ts, datetime):
-        return (datetime.now() - ts).total_seconds() / 60.0
+        if ts.tzinfo is None:
+            from src.core.config import TIMEZONE
+            ts = ts.replace(tzinfo=TIMEZONE)
+        return (vietnam_now() - ts).total_seconds() / 60.0
     if isinstance(ts, str):
         try:
             dt = datetime.fromisoformat(ts)
-            return (datetime.now() - dt).total_seconds() / 60.0
+            if dt.tzinfo is None:
+                from src.core.config import TIMEZONE
+                dt = dt.replace(tzinfo=TIMEZONE)
+            return (vietnam_now() - dt).total_seconds() / 60.0
         except ValueError:
             return 9999.0
     return 9999.0
@@ -103,12 +110,12 @@ class AwarenessCog(commands.Cog):
         if GUILD_ID:
             if str(guild.id) != str(GUILD_ID):
                 return None
-            general_chan = discord.utils.get(guild.text_channels, name='general')
-            if general_chan and general_chan.permissions_for(guild.me).send_messages:
-                return general_chan
-            # Fallback to any text channel named 'general'
+            bot_chan = discord.utils.get(guild.text_channels, name='bot')
+            if bot_chan and bot_chan.permissions_for(guild.me).send_messages:
+                return bot_chan
+            # Fallback to any text channel named 'bot'
             for channel in guild.text_channels:
-                if channel.name == 'general' and channel.permissions_for(guild.me).send_messages:
+                if channel.name == 'bot' and channel.permissions_for(guild.me).send_messages:
                     return channel
             return None
 
@@ -152,7 +159,7 @@ class AwarenessCog(commands.Cog):
         if GUILD_ID:
             if not message.guild or str(message.guild.id) != str(GUILD_ID):
                 return
-            if getattr(message.channel, 'name', '') != 'general':
+            if getattr(message.channel, 'name', '') != 'bot':
                 return
             
         # Update WorldState message record
@@ -231,7 +238,7 @@ class AwarenessCog(commands.Cog):
         if GUILD_ID:
             if not reaction.message.guild or str(reaction.message.guild.id) != str(GUILD_ID):
                 return
-            if getattr(reaction.message.channel, 'name', '') != 'general':
+            if getattr(reaction.message.channel, 'name', '') != 'bot':
                 return
         # Reaction counts as activity, updates rolling averages
         self.world.record_message(
@@ -290,8 +297,8 @@ class AwarenessCog(commands.Cog):
         if force:
             passed_gates = ["force_bypass"]
         else:
-            # 1. Night check (0h - 6h)
-            hour = datetime.now().hour
+            # 1. Night check (0h - 6h VST)
+            hour = vietnam_now().hour
             if 0 <= hour < 6:
                 failed_gates.append("not_night")
             else:
@@ -453,7 +460,7 @@ class AwarenessCog(commands.Cog):
                 db.set_cooldown("agenda")
                 
                 # Update psyche
-                psyche.last_acted = datetime.now()
+                psyche.last_acted = vietnam_now()
                 psyche.restlessness = max(0.1, psyche.restlessness - 0.3)
                 save_psyche(psyche, trigger="agenda")
 
@@ -595,7 +602,7 @@ class AwarenessCog(commands.Cog):
                 
                 # Update cooldown and psyche
                 db.set_cooldown(cooldown_key)
-                psyche.last_acted = datetime.now()
+                psyche.last_acted = vietnam_now()
                 psyche.restlessness = max(0.1, psyche.restlessness - 0.2)
                 
                 # Clear unresolved thought if we just spoke it
@@ -653,7 +660,7 @@ class AwarenessCog(commands.Cog):
             ]
             await channel.send(random.choice(gifs))
             db.set_cooldown(cooldown_key)
-            psyche.last_acted = datetime.now()
+            psyche.last_acted = vietnam_now()
             psyche.restlessness = max(0.1, psyche.restlessness - 0.3)
             save_psyche(psyche, trigger="entropy_silent_gif")
             
@@ -686,7 +693,7 @@ class AwarenessCog(commands.Cog):
                 await channel.send(answer)
                 
                 db.set_cooldown(cooldown_key)
-                psyche.last_acted = datetime.now()
+                psyche.last_acted = vietnam_now()
                 psyche.restlessness = max(0.1, psyche.restlessness - 0.4)
                 save_psyche(psyche, trigger=f"entropy_{action_type}")
                 
@@ -701,25 +708,27 @@ class AwarenessCog(commands.Cog):
         log.info("Checking dream cycle conditions...")
         db = get_db_service()
         
-        # Hard gates:
-        # 1. Server silent for at least 2 hours
-        last_msg = self.world.get_last_message_any()
-        if last_msg > 0 and minutes_since(last_msg) < 120.0:
-            log.info("Dream Cycle Gate: Server was active recently (less than 2 hours).")
-            return
-            
-        # 2. Server energy very low
-        if self.world.server_energy > 0.05:
-            log.info(f"Dream Cycle Gate: Server energy is too high ({self.world.server_energy:.2f}).")
-            return
-            
-        # 3. Dream not done today
+        # 1. Dream not done today
         if db.dream_done_today():
             log.info("Dream Cycle Gate: Dream cycle already ran today.")
             return
 
-        log.info("All gates passed. Running Dream Cycle...")
-        await self.run_dream_cycle()
+        # 2. Time-of-day Check: We only want to sleep/dream during the night/early morning (0:00 to 6:00 VST)
+        now_vn = vietnam_now()
+        current_hour = now_vn.hour
+        
+        if 0 <= current_hour <= 6:
+            # Check if server has been silent for 20 minutes OR if it is past 5:00 AM (force run)
+            last_msg = self.world.get_last_message_any()
+            is_silent = (last_msg <= 0 or minutes_since(last_msg) >= 20.0)
+            
+            if is_silent or current_hour >= 5:
+                log.info(f"Dream Cycle Gate passed (is_silent={is_silent}, hour={current_hour}). Running Dream Cycle...")
+                await self.run_dream_cycle()
+            else:
+                log.info(f"Dream Cycle Gate: Server is active (last msg {minutes_since(last_msg):.1f}m ago) and hour is {current_hour}, waiting for silence.")
+        else:
+            log.info(f"Dream Cycle Gate: Not within sleeping hours (0:00 - 6:00 VST). Current hour is {current_hour}.")
 
     @dream_cycle_check.before_loop
     async def before_dream_cycle_check(self):

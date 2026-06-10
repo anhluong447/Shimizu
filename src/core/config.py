@@ -13,6 +13,10 @@ GUILD_ID = os.getenv('GUILD_ID')
 PREFIX = '!'
 TIMEZONE = timezone(timedelta(hours=7))
 
+def vietnam_now():
+    from datetime import datetime
+    return datetime.now(TIMEZONE)
+
 # --- Ollama Config ---
 OLLAMA_API_URL = os.getenv('OLLAMA_API_URL', 'http://localhost:11434')
 OLLAMA_MODEL = os.getenv('OLLAMA_MODEL', 'shimizu-qwen')

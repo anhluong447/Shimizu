@@ -2,6 +2,7 @@ import json
 import logging
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
+from src.core.config import vietnam_now
 from src.services.db_service import get_db_service
 
 log = logging.getLogger("PsycheService")
@@ -38,9 +39,8 @@ class ShimizuPsyche:
     beliefs_about_users: dict[str, list[str]] = field(default_factory=dict)  # {user_id_str: [beliefs...]}
     things_i_want: list[str] = field(default_factory=lambda: list(DEFAULT_SELF_MODEL["things_i_want"]))
     
-    # Meta
-    last_updated: datetime = field(default_factory=datetime.now)
-    last_acted: datetime = field(default_factory=datetime.now)
+    last_updated: datetime = field(default_factory=vietnam_now)
+    last_acted: datetime = field(default_factory=vietnam_now)
 
     def to_dict(self) -> dict:
         data = asdict(self)
@@ -52,14 +52,22 @@ class ShimizuPsyche:
     def from_dict(cls, data: dict) -> "ShimizuPsyche":
         # Parse datetimes
         if "last_updated" in data and isinstance(data["last_updated"], str):
-            data["last_updated"] = datetime.fromisoformat(data["last_updated"])
+            dt = datetime.fromisoformat(data["last_updated"])
+            if dt.tzinfo is None:
+                from src.core.config import TIMEZONE
+                dt = dt.replace(tzinfo=TIMEZONE)
+            data["last_updated"] = dt
         else:
-            data["last_updated"] = datetime.now()
+            data["last_updated"] = vietnam_now()
             
         if "last_acted" in data and isinstance(data["last_acted"], str):
-            data["last_acted"] = datetime.fromisoformat(data["last_acted"])
+            dt = datetime.fromisoformat(data["last_acted"])
+            if dt.tzinfo is None:
+                from src.core.config import TIMEZONE
+                dt = dt.replace(tzinfo=TIMEZONE)
+            data["last_acted"] = dt
         else:
-            data["last_acted"] = datetime.now()
+            data["last_acted"] = vietnam_now()
             
         # Ensure type correctness for float attributes
         for float_field in ["energy", "curiosity", "restlessness"]:
@@ -96,7 +104,7 @@ def load_psyche() -> ShimizuPsyche:
         p = ShimizuPsyche.from_dict(data)
         
         # Apply natural decay based on elapsed time
-        now = datetime.now()
+        now = vietnam_now()
         hours_passed = (now - p.last_updated).total_seconds() / 3600.0
         if hours_passed > 0.1:  # decay every 6 mins or more
             apply_natural_decay(p, hours_passed)

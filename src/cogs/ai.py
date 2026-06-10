@@ -9,6 +9,7 @@ import asyncio
 from src.core.logger import log
 from src.core.benchmark import AIBenchmark
 from datetime import datetime
+from src.core.config import vietnam_now
 from src.services.db_service import get_db_service
 from src.services.search_service import search_web_async
 from src.services.psyche_service import load_psyche, save_psyche
@@ -169,10 +170,10 @@ class AICog(commands.Cog):
                 psyche.energy = min(1.0, psyche.energy + 0.1)
                 psyche.attachment[user_id_str] = min(1.0, psyche.attachment.get(user_id_str, 0.0) + 0.05)
                 psyche.restlessness = max(0.0, psyche.restlessness - 0.2)
-                psyche.last_acted = datetime.now()
+                psyche.last_acted = vietnam_now()
                 save_psyche(psyche, trigger="user_message")
                 
-                world.last_shimizu_spoke = datetime.now()
+                world.last_shimizu_spoke = vietnam_now()
                 world.times_ignored_recently = 0
                 
                 # Lưu hội thoại vào SQLite

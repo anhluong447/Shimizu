@@ -12,25 +12,25 @@ class UnifiedRotator:
         self.gemini = get_gemini_rotator()
 
     async def generate_content_async(self, messages: list, system_instruction: str = None, temperature: float = 0.8) -> str:
-        """Thử OpenRouter trước, nếu lỗi thì chuyển sang Groq làm dự phòng."""
+        """Thử Groq trước, nếu tất cả các key/model của Groq bị cạn kiệt thì chuyển sang OpenRouter làm dự phòng."""
         try:
-            log.info("Attempting to generate content using OpenRouter...")
-            return await self.openrouter.generate_content_async(
+            log.info("Attempting to generate content using Groq rotator...")
+            return await self.groq.generate_content_async(
                 messages=messages,
                 system_instruction=system_instruction,
                 temperature=temperature
             )
         except Exception as e:
-            log.warning(f"OpenRouter call failed: {e}. Falling back to Groq...")
+            log.warning(f"Groq rotator call failed: {e}. Falling back to OpenRouter...")
             try:
-                return await self.groq.generate_content_async(
+                return await self.openrouter.generate_content_async(
                     messages=messages,
                     system_instruction=system_instruction,
                     temperature=temperature
                 )
-            except Exception as ge:
-                log.error(f"Groq fallback also failed: {ge}")
-                return "Cả OpenRouter và Groq hiện tại đều không khả dụng. Vui lòng thử lại sau."
+            except Exception as oe:
+                log.error(f"OpenRouter fallback also failed: {oe}")
+                return "Cả Groq và OpenRouter hiện tại đều không khả dụng. Vui lòng thử lại sau."
 
 # Singleton instance
 unified_rotator = None
