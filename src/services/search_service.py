@@ -2,6 +2,7 @@ import asyncio
 import hashlib
 import logging
 import aiohttp
+import re
 from ddgs import DDGS
 from src.services.db_service import get_db_service
 
@@ -11,7 +12,33 @@ JINA_BASE = "https://r.jina.ai/"
 JINA_TIMEOUT = 5  # seconds — đủ cho wiki page, không block quá lâu
 SNIPPET_MIN_LENGTH = 300  # dưới mức này thì fetch full page
 
-async def fetch_full_content(url: str, max_chars: int = 3000) -> str:
+# Domain blacklist & whitelist scoring
+BLACKLIST = ["youtube.com", "youtu.be", "reddit.com", "twitter.com", "tiktok.com", "instagram.com", "facebook.com"]
+WHITELIST = ["fandom.com", "wiki", "wikipedia.org", "ign.com", "gamespot.com", "vnexpress.net", "tuoitre.vn", "thanhnien.vn"]
+
+def score_url(url: str) -> int:
+    url_lower = url.lower()
+    if any(b in url_lower for b in BLACKLIST):
+        return -1      # loại hoàn toàn
+    if any(w in url_lower for w in WHITELIST):
+        return 2       # ưu tiên fetch trước
+    return 1           # bình thường
+
+def clean_markdown(text: str) -> str:
+    """Loại bỏ các thành phần dư thừa như link, ảnh và tag HTML từ Markdown cào về."""
+    # 1. Remove images: ![alt](url)
+    text = re.sub(r'!\[.*?\]\((?:[^()]|\([^()]*\))*\)', '', text)
+    # 2. Convert links: [text](url) -> text
+    text = re.sub(r'\[(.*?)\]\((?:[^()]|\([^()]*\))*\)', r'\1', text)
+    # 3. Remove raw HTML tags: <img>
+    text = re.sub(r'<img\s+[^>]*>', '', text)
+    # Convert <a ...>text</a> -> text
+    text = re.sub(r'<a\s+[^>]*>(.*?)</a>', r'\1', text, flags=re.IGNORECASE)
+    # 4. Collapse multiple empty lines
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    return text
+
+async def fetch_full_content(url: str, max_chars: int = 6000) -> str:
     """
     Fetch nội dung đầy đủ của một URL qua Jina Reader.
     Trả về plain text, cắt ở max_chars.
@@ -29,8 +56,10 @@ async def fetch_full_content(url: str, max_chars: int = 3000) -> str:
                 if resp.status != 200:
                     return None
                 text = await resp.text()
+                # Dọn dẹp nội dung markdown cào về
+                cleaned_text = clean_markdown(text)
                 # Cắt bớt, giữ phần đầu là relevant nhất
-                return text[:max_chars] if len(text) > max_chars else text
+                return cleaned_text[:max_chars] if len(cleaned_text) > max_chars else cleaned_text
     except asyncio.TimeoutError:
         log.warning(f"Jina fetch timeout for: {url}")
         return None
@@ -68,8 +97,9 @@ Câu hỏi: {prompt}"""
 
 async def rewrite_query(prompt: str, rotator) -> str:
     """Viết lại câu hỏi thành một query tìm kiếm tối ưu."""
-    rewrite_prompt = f"""Viết lại câu hỏi sau thành một search query ngắn gọn bằng tiếng Anh hoặc tiếng Việt (3-6 từ).
+    rewrite_prompt = f"""Viết lại câu hỏi sau thành một search query duy nhất, ngắn gọn bằng tiếng Anh hoặc tiếng Việt (3-6 từ).
 Bỏ hết các từ thừa (ví dụ: "mày biết", "cho tao hỏi", "nhỉ", "không"), chỉ giữ lại các từ khóa quan trọng để tìm kiếm hiệu quả trên Google/DuckDuckGo.
+Chỉ trả về duy nhất chuỗi từ khóa tìm kiếm (search query), không thêm dấu ngoặc kép, không thêm lời dẫn giải, không giải thích, không liệt kê danh sách các phương án.
 
 Câu hỏi: {prompt}
 Search query:"""
@@ -111,49 +141,59 @@ async def search_web_async(prompt: str, rotator) -> str:
         log.info("Search cache hit!")
         return cached
         
-    # 4. Tìm kiếm DuckDuckGo
-    results = await asyncio.to_thread(_ddg_text_search, query, 5)
+    # 4. Tìm kiếm DuckDuckGo (lấy 10 kết quả)
+    results = await asyncio.to_thread(_ddg_text_search, query, 10)
     if not results:
         return None
         
-    # 5. Build context: snippet trước, fetch full nếu snippet ngắn
+    # 5. Filter & Score Results
+    scored_results = []
+    for r in results:
+        url = r.get('href', '')
+        score = score_url(url)
+        if score > 0:
+            scored_results.append((score, r))
+            
+    # Sắp xếp theo score giảm dần
+    scored_results.sort(key=lambda x: x[0], reverse=True)
+    sorted_results = [r for score, r in scored_results]
+    
+    if not sorted_results:
+        return None
+        
     context_parts = []
-
-    for i, r in enumerate(results[:3]):  # chỉ xử lý top 3
+    
+    # Fetch top 2 song song qua Jina
+    top_results = sorted_results[:2]
+    tasks = [fetch_full_content(r.get('href', '')) for r in top_results]
+    fetched_contents = await asyncio.gather(*tasks, return_exceptions=True)
+    
+    # Xử lý kết quả fetch của top 2
+    for idx, r in enumerate(top_results):
         title = r.get('title', '')
         url = r.get('href', '')
         snippet = r.get('body', '')
-
-        if len(snippet) >= SNIPPET_MIN_LENGTH:
-            # Snippet đủ dài → dùng luôn, không cần fetch
+        content = fetched_contents[idx]
+        
+        # Kiểm tra nếu cào Jina thành công
+        if isinstance(content, str) and content.strip():
             context_parts.append(
-                f"[Nguồn {i+1}] {title}\n{snippet}"
+                f"[Nguồn {idx+1}] {title} ({url})\n{content}"
             )
         else:
-            # Snippet quá ngắn → fetch full page qua Jina
-            log.info(f"Snippet too short ({len(snippet)} chars), fetching full: {url}")
-            full_content = await fetch_full_content(url)
-
-            if full_content:
-                context_parts.append(
-                    f"[Nguồn {i+1}] {title} ({url})\n{full_content}"
-                )
-            else:
-                # Jina fail → fallback về snippet dù ngắn
-                context_parts.append(
-                    f"[Nguồn {i+1}] {title}\n{snippet}"
-                )
-
-        # Chỉ cần 1 full content là đủ cho hầu hết queries
-        # Nếu đã có full content từ result đầu tiên, skip fetch cho các result sau
-        if i == 0 and len(context_parts[0]) > 1000:
-            # Thêm snippets của các result còn lại không cần fetch
-            for j, remaining in enumerate(results[1:3], 2):
-                context_parts.append(
-                    f"[Nguồn {j}] {remaining.get('title', '')}\n{remaining.get('body', '')}"
-                )
-            break
-
+            log.info(f"Jina fetch failed or timed out for {url}, falling back to snippet.")
+            context_parts.append(
+                f"[Nguồn {idx+1}] {title}\n{snippet}"
+            )
+            
+    # Thêm snippet trực tiếp cho các nguồn còn lại (từ nguồn 3 đến 5)
+    for idx, r in enumerate(sorted_results[2:5], 2):
+        title = r.get('title', '')
+        snippet = r.get('body', '')
+        context_parts.append(
+            f"[Nguồn {idx+1}] {title}\n{snippet}"
+        )
+        
     formatted = "\n\n".join(context_parts)
     
     # 6. Lưu cache
