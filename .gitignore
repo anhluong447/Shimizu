@@ -52,3 +52,4 @@ updates/
 *.db
 data/*.db
 .agents/
+.graphrag_data/
