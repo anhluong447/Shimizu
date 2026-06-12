@@ -51,3 +51,4 @@ data/vector_memory/
 updates/
 *.db
 data/*.db
+.agents/
